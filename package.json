@@ -1,0 +1,13 @@
+{
+  "name": "bmw-kaluga-cameras",
+  "version": "0.1.0",
+  "private": true,
+  "license": "GPL-3.0-or-later",
+  "description": "BMW iDrive 7 camera diagnostics and conditional HUD/cluster alerts for Kaluga",
+  "scripts": {
+    "build": "node tools/build.js",
+    "test": "node tools/test_control.js && node tools/test_frontend.js && node tools/service.test.js && node tools/test_guidance.js && node tools/test_layers.js",
+    "test:packages": "node tools/test_packages.js"
+  },
+  "devDependencies": {"osm-pbf-parser-node": "1.1.4"}
+}

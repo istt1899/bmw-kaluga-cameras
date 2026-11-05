@@ -1,0 +1,71 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+'use strict';
+
+const EventEmitter = require('events');
+const net = require('net');
+
+class CameraControl extends EventEmitter {
+    constructor(options) {
+        super();
+        const o = options || {};
+        this.path = o.path || '/run/marku-kaluga-cameras/ctl.sock';
+        this.retryMs = o.retryMs || 1000;
+        this.state = null; this.link = 'down'; this.sock = null;
+        this.opened = false; this.buffer = ''; this.timer = null;
+    }
+    open() {
+        if (this.opened) return;
+        this.opened = true;
+        this.connect();
+    }
+    close() {
+        this.opened = false;
+        clearTimeout(this.timer); this.timer = null;
+        const sock = this.sock;
+        this.sock = null; this.state = null; this.link = 'down';
+        if (sock) sock.destroy();
+        this.emit('change');
+    }
+    connect() {
+        if (!this.opened || this.sock) return;
+        const sock = net.connect(this.path);
+        this.sock = sock; this.buffer = '';
+        sock.setEncoding('utf8');
+        sock.on('error', (err) => {
+            if (this.sock !== sock) return;
+            this.link = err.code === 'ENOENT' ? 'absent' : 'failed';
+            this.state = null; this.emit('change');
+        });
+        sock.on('connect', () => {
+            if (this.sock !== sock) return;
+            this.link = 'up'; this.emit('change'); this.send({ cmd: 'status' });
+        });
+        sock.on('data', (chunk) => {
+            if (this.sock !== sock) return;
+            this.buffer += chunk;
+            if (this.buffer.length > 131072) { sock.destroy(); return; }
+            let nl;
+            while ((nl = this.buffer.indexOf('\n')) >= 0) {
+                const line = this.buffer.slice(0, nl).trim(); this.buffer = this.buffer.slice(nl + 1);
+                if (!line) continue;
+                let msg;
+                try { msg = JSON.parse(line); } catch (err) { continue; }
+                if (msg.ev === 'status' && msg.state && typeof msg.state === 'object') {
+                    this.state = msg.state; this.emit('change');
+                }
+            }
+        });
+        sock.on('close', () => {
+            if (this.sock !== sock) return;
+            this.sock = null; this.state = null; this.link = 'down'; this.emit('change');
+            if (this.opened) this.timer = setTimeout(() => { this.timer = null; this.connect(); }, this.retryMs);
+        });
+    }
+    send(message) {
+        if (!this.sock || this.link !== 'up') return false;
+        this.sock.write(JSON.stringify(message) + '\n');
+        return true;
+    }
+}
+
+module.exports = { CameraControl };

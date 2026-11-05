@@ -1,0 +1,27 @@
+{
+  "id": "marku-kaluga-cameras",
+  "kind": "tool",
+  "version": "0.1.0",
+  "title": "Kaluga Cameras service",
+  "description": "Local Kaluga OSM camera snapshot, strict GPS diagnostics and optional verified-road camera alerts",
+  "optional": true,
+  "uninstallable": true,
+  "requires": { "cluster-render": "0.4.0" },
+  "mguHmi": ["ID7"],
+  "files": [
+    { "path": "marku-kaluga-cameras.js", "mode": "0644" },
+    { "path": "gps-source.js", "mode": "0644" },
+    { "path": "kaluga-speed.json", "mode": "0644" },
+    { "path": "road-zones.json", "mode": "0644" },
+    { "path": "vehicle-guidance.js", "mode": "0644" },
+    { "path": "camera-layers.js", "mode": "0644" },
+    { "path": "cluster_render_client.js", "mode": "0644" },
+    { "path": "LICENSE", "mode": "0644" },
+    { "path": "NOTICE-data.txt", "mode": "0644" },
+    { "path": "LICENSE.MPL-2.0", "mode": "0644" }
+  ],
+  "units": [{ "name": "marku-kaluga-cameras.service" }],
+  "enable": [{ "unit": "marku-kaluga-cameras.service", "target": "multi-user.target" }],
+  "recmgr": ["marku-kaluga-cameras"],
+  "restart": ["marku-kaluga-cameras.service"]
+}

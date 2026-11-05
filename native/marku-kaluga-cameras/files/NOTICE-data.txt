@@ -1,0 +1,14 @@
+Kaluga camera locations and local road geometry: © OpenStreetMap contributors.
+Database under the Open Data Commons Open Database License (ODbL) 1.0.
+https://www.openstreetmap.org/copyright
+https://opendatacommons.org/licenses/odbl/1-0/
+
+Snapshot for RU-KLU: 2026-11-05T00:06:20Z (OSM replication timestamp).
+Source PBF: https://download.openstreetmap.fr/extracts/russia/central_federal_district/kaluga_oblast.osm.pbf
+Source MD5 at build time: bd360458900c604d889f78d73ef66f64.
+150 mapped speed-camera nodes inside OSM relation 81995. Only explicit
+numeric speed limits and direction tags available in the extract are used.
+The local road zones additionally require that a drivable way contains the
+camera node. Raw camera facing directions are converted to travel headings.
+Road matching is a conservative estimate based on GNSS and this OSM snapshot.
+The code is separately licensed. See LICENSE and LICENSE.MPL-2.0.

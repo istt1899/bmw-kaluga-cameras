@@ -1,0 +1,6 @@
+{
+  "build": "node ../../tools/build.js",
+  "requires": { "marku-kaluga-cameras": "0.1.0", "mgu-deploy": "0.7.11" },
+  "uninstallable": true,
+  "mguHmi": ["ID7"]
+}

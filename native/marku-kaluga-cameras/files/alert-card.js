@@ -31,7 +31,7 @@ function card(alert, target) {
     }
     text(alert.test?'ТЕСТ УВЕДОМЛЕНИЯ':alert.title||'Камера',45,25,18,signal?red:amber,270);
     text(alert.description||'Описание камеры не указано',10,47,18,white,300);
-    text(alert.test?'Тест':alert.roadConfirmed?'По дороге':'Рядом',10,85,18,white,102);
+    text(alert.test?'Тест':alert.positionKind==='intersection'?'Ориентир':alert.roadConfirmed?'По дороге':'Рядом',10,85,18,white,102);
     if(alert.roadConfirmed&&Number.isFinite(alert.limitKmh)) {
         circle(142,76,18,red);circle(142,76,14,[244,247,250]);
         const number=String(alert.limitKmh),font=f(18),w=Array.from(number).reduce((v,c)=>v+(font.glyphs[c.codePointAt(0)]||font.glyphs[63])[6],0);

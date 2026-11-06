@@ -12,3 +12,9 @@ The local road zones additionally require that a drivable way contains the
 camera node. Raw camera facing directions are converted to travel headings.
 Road matching is a conservative estimate based on GNSS and this OSM snapshot.
 The code is separately licensed. See LICENSE and LICENSE.MPL-2.0.
+
+Separate owner report: Болдина — Никитина, Калуга. Camera existence is
+reported by the owner; type, controls, device position and limit are unverified.
+The reference point is the intersection, not a surveyed camera location.
+Intersection position: © OpenStreetMap contributors, ODbL 1.0.
+https://www.openstreetmap.org/node/277492125

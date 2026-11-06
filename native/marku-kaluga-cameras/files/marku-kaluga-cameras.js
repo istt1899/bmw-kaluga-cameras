@@ -53,7 +53,7 @@ function start(options) {
   var settingsPath = path.join(dataDir, 'settings.json'), settings;
   try { settings = readSettings(settingsPath); }
   catch (e) { storageError = e.message; settings = { enabled: true, outputs: { cluster: false, hud: false }, hudOpacityPct: 100 }; }
-  var state = { serviceVersion: '0.3.1', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
+  var state = { serviceVersion: '0.3.2', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
     hudDimming: 'unavailable', capabilities: { outputs: false, update: false, hudOpacity: false, displayTest: false },
     rendererDetails: {}, displayTest: { active: false, untilMs: 0 },
     gps: 'Ожидание моста GPS BMW', gpsFix: null,
@@ -66,7 +66,9 @@ function start(options) {
   try {
     database = loadDatabase(options.database || path.join(__dirname, 'kaluga-speed.json'));
     cameraInfo.enrich(database, options.cameraDetails || path.join(__dirname, 'camera-details.json'));
-    state.database = { state: 'ready', source: database.source, updated: database.sourceTimestamp, count: database.records.length,
+    cameraInfo.supplement(database, options.reportedCameras || path.join(__dirname, 'reported-cameras.json'));
+    state.database = { state: 'ready', source: database.displaySource || database.source, baseSource: database.source,
+      osmCount: database.osmCount, reportedCount: database.reportedCount, updated: database.sourceTimestamp, count: database.records.length,
       version: database.version, error: null, licence: database.licence, metadataRetrievedAt: database.metadataRetrievedAt };
   } catch (e) { state.database.error = e.message; }
   try {

@@ -187,7 +187,10 @@ function main() {
   const roadZones = JSON.parse(fs.readFileSync(path.join(ROOT, 'native', 'marku-kaluga-cameras', 'files', 'road-zones.json'), 'utf8'));
   assert(snapshot.region === 'RU-KLU' && roadZones.region === snapshot.region && roadZones.sourceTimestamp === snapshot.sourceTimestamp &&
     roadZones.pbfMd5 === snapshot.pbfMd5, 'Camera snapshot and road geometry must share the same regional source');
-  const dataCounts = { total: snapshot.records.length, city: snapshot.records.filter(record => record.inKalugaCity).length,
+  const reported = JSON.parse(fs.readFileSync(path.join(ROOT, 'native', 'marku-kaluga-cameras', 'files', 'reported-cameras.json'), 'utf8'));
+  assert(reported.source === 'owner-report' && reported.region === snapshot.region && reported.basePbfMd5 === snapshot.pbfMd5, 'Reported reference must match base region');
+  const dataCounts = { total: snapshot.records.length + reported.records.length, osm: snapshot.records.length, reported: reported.records.length,
+    city: snapshot.records.filter(record => record.inKalugaCity).length,
     withLimit: snapshot.records.filter(record => typeof record.limitKmh === 'number').length, zones: roadZones.zones.length };
   const assets = path.join(output, 'assets'); const exported = path.join(output, 'source');
   fs.mkdirSync(assets, { recursive: true }); fs.mkdirSync(exported, { recursive: true });
@@ -199,12 +202,11 @@ function main() {
   fs.writeFileSync(path.join(assets, 'catalog.json'), JSON.stringify(catalog, null, 2) + '\n');
   fs.writeFileSync(path.join(exported, '.gitignore'), 'dist/\nnode_modules/\n*.pbf\n*.osm.pbf\n.env\n.env.*\n');
   const notes = '# Waze Стрелка ' + version + '\n\n' +
-    'Исправлено подтверждение подъезда при разной частоте RMC/GGA и GST; полное измерение сохраняет свой исходный UTC. Тип и описание камеры отображаются на приборах/HUD. Уведомление «Рядом» явно отделено от подтверждённого подъезда по дороге. Добавлены исходные OSM-теги светофора и описания камер. GPS, карта и прозрачность подтверждены пользователем; вывод новых карточек требует проверки на машине.\n\n' +
-    'Обновить приложение и сервис камер. Камеры → Диагностика: 33 отдельные строки, GPS/камера/вывод, «Зафиксировать снимок» и «Живые данные». На стоянке со свежим GPS — тест уведомления на 5 секунд, явно помеченный ТЕСТ. Новые карточки не являются exclusive, запрашивают только включённые цели renderer и освобождают их после предупреждения.\n\n' +
-    'Офлайн-снимок OSM Калужской области: ' + dataCounts.total + ' точек, ' + dataCounts.city + ' в Калуге, ' + dataCounts.withLimit + ' с числовым лимитом. ' +
-    dataCounts.zones + ' дорожных зон допускают предупреждения по дороге; для остальных точек доступно отдельно обозначенное уведомление о близком объекте. ' +
-    'Это не полная база камер. Оба выхода изначально выключены.\n\n' +
-    '© OpenStreetMap contributors, ODbL 1.0. Полные ограничения и атрибуция — в README исходников.\n';
+    'Исправлена воспроизведённая регрессия GPS 0.3.1: координаты/UTC берутся из GGA, RMC даёт дату и движение с допуском 500 мс, GST совпадает с GGA в пределах 100 мс. Исходная свежесть до 3 секунд и метрическая точность до 15 м сохранены. Фактическое расхождение сообщений этой BMW пока не измерено; требуется проверка на автомобиле.\n\n' +
+    'Обновить приложение и сервис до ' + version + '. Камеры → Диагностика: 40 строк доступны контроллером iDrive. Вверху — причина, UTC/возраст RMC, GGA, GST и разницы времени. Зафиксировать снимок сохраняет все данные для фотографий. Проекция карты и прозрачность сохранены.\n\n' +
+    'База: ' + dataCounts.total + ' записей = ' + dataCounts.osm + ' исходных OSM-точек и ' + dataCounts.reported + ' отдельный отчёт владельца. Болдина — Никитина добавлена как ориентир перекрёстка: тип камеры, нарушения и лимит не подтверждены. Расстояние относится к перекрёстку, а не к измеренному положению устройства. ' +
+    dataCounts.zones + ' прежних дорожных зон сохранены. Это не полная база действующих камер.\n\n' +
+    '© OpenStreetMap contributors, ODbL 1.0. Полная атрибуция и ограничения — в README.\n';
   fs.writeFileSync(path.join(output, 'release-notes.md'), notes);
   const commands = [
     '# Review source/ and assets/ before running. This file has NOT been executed.',

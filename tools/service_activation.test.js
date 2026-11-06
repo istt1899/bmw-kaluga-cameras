@@ -41,7 +41,9 @@ function run(mode) {
     if (mode === 'inherited') {
       assert.strictEqual(listenAt[0].fd, 3); assert.strictEqual(unlinks.length, 0);
       var frames = [], client = new EventEmitter(); client.setEncoding = client.destroy = function () {}; client.write = function (line) { frames.push(JSON.parse(line)); };
-      accepted(client); assert.strictEqual(frames[0].state.database.count, 150);
+      accepted(client); assert.strictEqual(frames[0].state.database.count, 151);
+      assert.strictEqual(frames[0].state.database.osmCount, 150);
+      assert.strictEqual(frames[0].state.database.reportedCount, 1);
     } else if (mode === 'stale') { assert.strictEqual(unlinks.length, 1); assert.strictEqual(listenAt[0], socket); }
     else { assert.strictEqual(unlinks.length, 0); assert.strictEqual(listenAt.length, 0); assert.strictEqual(failed[0], 'EADDRINUSE'); }
     var count = unlinks.length; app.close();

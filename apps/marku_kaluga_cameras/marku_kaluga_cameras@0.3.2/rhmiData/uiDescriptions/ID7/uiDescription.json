@@ -1549,7 +1549,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1571,7 +1571,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1593,7 +1593,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1615,7 +1615,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1637,7 +1637,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1659,7 +1659,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1681,7 +1681,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1703,7 +1703,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1725,7 +1725,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1747,7 +1747,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1769,7 +1769,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1791,7 +1791,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1813,7 +1813,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1835,7 +1835,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1857,7 +1857,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1879,7 +1879,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1901,7 +1901,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1923,7 +1923,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1945,7 +1945,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1967,7 +1967,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -1989,7 +1989,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -2011,7 +2011,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -2033,7 +2033,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -2055,7 +2055,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -2077,7 +2077,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -2099,7 +2099,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -2121,7 +2121,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -2143,7 +2143,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -2165,7 +2165,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -2187,7 +2187,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -2209,7 +2209,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -2231,7 +2231,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -2253,7 +2253,7 @@
               "type": "UInt"
             },
             "Focusable": {
-              "value": 0,
+              "value": 3,
               "type": "UInt"
             }
           },
@@ -2282,7 +2282,7 @@
           "rows": [
             {
               "Text": {
-                "value": "GPS",
+                "value": "GPS и время NMEA",
                 "type": "Text"
               }
             }
@@ -2327,6 +2327,160 @@
             {
               "Text": {
                 "value": "Приборы и HUD",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "480": {
+          "type": "label",
+          "name": "cameraDiag_health",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "—",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "481": {
+          "type": "label",
+          "name": "cameraDiag_nmeaRmc",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "—",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "482": {
+          "type": "label",
+          "name": "cameraDiag_nmeaGga",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "—",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "483": {
+          "type": "label",
+          "name": "cameraDiag_nmeaGst",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "—",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "484": {
+          "type": "label",
+          "name": "cameraDiag_nmeaRmcGga",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "—",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "485": {
+          "type": "label",
+          "name": "cameraDiag_nmeaGgaGst",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "—",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "486": {
+          "type": "label",
+          "name": "cameraDiag_nmeaPair",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "—",
                 "type": "Text"
               }
             }

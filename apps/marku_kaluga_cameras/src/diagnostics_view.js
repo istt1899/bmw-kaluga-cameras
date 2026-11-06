@@ -1,5 +1,6 @@
 'use strict';
-const KEYS = ['stamp','versions','service','position','fixUtc','age','accuracy','motion','gnss','bridge','counts','reject','gpsStatus','gpsStatusMore','rejectReason',
+const KEYS = ['stamp','versions','service','health','nmeaPair','nmeaRmc','nmeaGga','nmeaGst','nmeaRmcGga','nmeaGgaGst',
+    'position','fixUtc','age','accuracy','motion','gnss','bridge','counts','reject','gpsStatus','gpsStatusMore','rejectReason',
     'nearest','type','description','descriptionMore','limit','mode','reason','way','samples','alert','outputs','map','hud','test','dimmer','database','error','errorMore'];
 const REASONS = { WAITING_GPS:'Ожидание GPS', GPS_INVALID:'Нет свежей точной позиции', DISABLED:'Предупреждения выключены', GPS_REPLAY:'UTC пришёл в обратном порядке',
     WAITING_MOTION:'Ожидание движения', WAITING_APPROACH:'Нужны две позиции подъезда', NO_ROAD_ZONE:'Для объекта нет дорожной зоны',
@@ -11,7 +12,7 @@ const clean = v => v === null || v === undefined || v === '' ? '—' : String(v)
 const n = (v, digits) => Number.isFinite(v) ? v.toFixed(digits === undefined ? 1 : digits) : '—';
 const utc = v => Number.isFinite(v) ? new Date(v).toISOString() : '—';
 function values(state, version, frozen) {
-    const s = state || {}, f = s.gpsFix || {}, input = s.gpsInput || {}, kinds = input.sentences || {}, b = s.gpsBridge || {};
+    const s = state || {}, f = s.gpsFix || {}, input = s.gpsInput || {}, timing = input.nmeaTiming || {}, kinds = input.sentences || {}, b = s.gpsBridge || {};
     const g = s.guidance || {}, a = s.alert, c = a || s.nearest || {}, r = s.rendererDetails || {}, o = s.outputs || {};
     const now = s.observedAtMs, error = clean(s.controlError || s.error), on = x => x ? 'вкл' : 'выкл';
     const layer = key => r[key] ? clean(r[key].state) + (r[key].target ? ' / '+clean(r[key].target) : '') +
@@ -20,6 +21,14 @@ function values(state, version, frozen) {
         stamp: (frozen ? 'Снимок зафиксирован: ' : 'Живые данные: ') + utc(now),
         versions:'Приложение ' + version + ' • сервис ' + clean(s.serviceVersion),
         service:'Сервис: ' + (state ? 'отвечает' : 'нет связи') + ' • предупреждения ' + on(s.enabled),
+        health:'GPS: ' + (Number.isFinite(f.lat) && Number.isFinite(f.lon) ? 'позиция принята' : 'нет позиции') +
+            ' • ' + clean(timing.pairReason),
+        nmeaPair:'Сопряжение NMEA: ' + clean(timing.pairReason),
+        nmeaRmc:'RMC UTC ' + clean(timing.rmcTime) + ' • возраст ' + n(Number.isFinite(timing.lastRmcAgeMs)?timing.lastRmcAgeMs/1000:null,2) + ' с',
+        nmeaGga:'GGA UTC ' + clean(timing.ggaTime) + ' • возраст ' + n(Number.isFinite(timing.lastGgaAgeMs)?timing.lastGgaAgeMs/1000:null,2) + ' с',
+        nmeaGst:'GST UTC ' + clean(timing.gstTime) + ' • возраст ' + n(Number.isFinite(timing.lastGstAgeMs)?timing.lastGstAgeMs/1000:null,2) + ' с',
+        nmeaRmcGga:'Разница UTC (GGA − RMC): ' + n(timing.rmcGgaDeltaMs,0) + ' мс',
+        nmeaGgaGst:'Разница UTC (GST − GGA): ' + n(timing.ggaGstDeltaMs,0) + ' мс',
         position:'Широта ' + n(f.lat,6) + ' • долгота ' + n(f.lon,6), fixUtc:'UTC позиции: ' + utc(f.timeMs),
         age:'Возраст позиции ' + n(Number.isFinite(now) && Number.isFinite(f.timeMs) ? (now-f.timeMs)/1000 : null,2) + ' с • пакета ' + n(Number.isFinite(input.lastPacketAgeMs)?input.lastPacketAgeMs/1000:null,2) + ' с',
         accuracy:'Оценка точности: ' + n(f.accuracyM) + ' м • ' + clean(f.source),
@@ -31,10 +40,10 @@ function values(state, version, frozen) {
         gpsStatus:'GPS: ' + clean(s.gps).slice(0,60), gpsStatusMore:clean(s.gps).length>60?'GPS далее: '+clean(s.gps).slice(60,120):'GPS далее: —',
         rejectReason:'Отброшен GPS: '+clean(input.rejectReason),
         nearest:'Объект: ' + clean(c.id) + ' • ' + n(c.distanceM === undefined ? c.distance : c.distanceM,0) + ' м',
-        type:'Тип: ' + clean(c.title || TYPES[c.type]), description:'Описание OSM: ' + clean(c.description).slice(0,50),
+        type:'Тип: ' + clean(c.title || TYPES[c.type]), description:(c.provenance === 'owner-report' ? 'Сообщение владельца: ' : 'Описание OSM: ') + clean(c.description).slice(0,50),
         descriptionMore:clean(c.description).length>50?'Описание далее: '+clean(c.description).slice(50,100):'Описание далее: —',
         limit:'Лимит объекта: ' + n(c.cameraLimitKmh === undefined ? (c.limitKmh === undefined ? c.limit : c.limitKmh) : c.cameraLimitKmh,0) + ' км/ч',
-        mode:'Режим: ' + clean(g.mode) + ' • UTC NMEA: ' + n(Number.isFinite(input.sourceUtcAgeMs)?input.sourceUtcAgeMs/1000:null,2) + ' с',
+        mode:'Режим: ' + (c.positionKind === 'intersection' ? 'ориентир перекрёстка' : clean(g.mode)) + ' • UTC NMEA: ' + n(Number.isFinite(input.sourceUtcAgeMs)?input.sourceUtcAgeMs/1000:null,2) + ' с',
         reason:'Дорожный фильтр: ' + clean(REASONS[g.roadReason || g.reason] || g.roadReason || g.reason),
         way:'Дорога OSM: ' + clean(g.way) + ' • отклонение ' + n(g.lateralErrorM) + ' м',
         samples:'Подъезд: ' + clean(g.approachSamples) + ' позиции • зоны ' + clean(g.zoneCount) + '/' + clean(g.cameraCount),

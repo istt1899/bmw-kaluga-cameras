@@ -56,6 +56,7 @@ const path = require('path');
 const { FakeRender, FakePatch, FakeLogs, RENDER_PAGE, RENDER_FPS } = require('./fakes.js');
 const { RENDER_PATH, PATCH_PATH, PENDING_PATH, SIZE, SAFE, HUD_SIZE_STEPS } = require('../src/waze_cluster_control.js');
 const { LOGS_PATH } = require('../src/logs_control.js');
+const { KEYS: DIAGNOSTIC_KEYS } = require('../src/diagnostics_view.js');
 
 const STAGED = fs.readdirSync(path.join(__dirname, '..'))
     .find((name) => name.startsWith('marku_kaluga_cameras@') && !name.endsWith('.tgz'));
@@ -350,6 +351,36 @@ async function main() {
         .slice(0, 4), ['Start capture', 'Capture: Unavailable', 'Save logs', 'Saved logs: Connecting…']);
     console.log('ok   the Logs page: Start capture and its row, Save logs and its row, QR code, address, five archives; a child of the main page');
 
+    const diagnosticPage = UI.containers['4'];
+    const diagnosticRows = xmlIds('4');
+    assert.deepStrictEqual(diagnosticRows.map(([id, type]) => `${id} ${type}`).sort(),
+        Object.entries(diagnosticPage.components).map(([id, d]) => `${id} ${d.type}`).sort(),
+        'application.xml and uiDescription agree on every diagnostic component');
+    const diagnosticXml = XML.split('<container id="4"')[1];
+    const diagnosticFocus = {};
+    matches(diagnosticXml, /<component id="(\d+)"[^>]*>\s*<property id="2" value="\d"\/>\s*<property id="3" value="(\d)"\/>/g)
+        .forEach((m) => { diagnosticFocus[m[1]] = Number(m[2]); });
+    const diagnosticNames = DIAGNOSTIC_KEYS.map((key) => `cameraDiag_${key}`).sort();
+    assert.deepStrictEqual(Object.values(diagnosticPage.components).filter((d) => /^cameraDiag_/.test(d.name)).map((d) => d.name).sort(),
+        diagnosticNames, 'every diagnostic source row has an HMI component');
+    Object.entries(diagnosticPage.components).forEach(([id, d]) => {
+        if (!/^cameraDiag_|^cameraDiagHead_/.test(d.name)) return;
+        const expected = /^cameraDiagHead_/.test(d.name) ? 0 : 3;
+        assert.strictEqual(d.properties.Focusable.value, expected, `${d.name}: JSON controller focus`);
+        assert.strictEqual(diagnosticFocus[id], expected, `${d.name}: XML controller focus`);
+    });
+    const controllerStops = diagnosticRows.filter(([id]) => diagnosticFocus[id] === 3)
+        .map(([id]) => diagnosticPage.components[id].name);
+    assert.deepStrictEqual(controllerStops.filter((name) => /^cameraDiag_/.test(name)).sort(), diagnosticNames,
+        'the controller can stop on every diagnostic data row, including all rows below GPS');
+    assert.deepStrictEqual(diagnosticRows.slice(0,9).map(([id]) => diagnosticPage.components[id].name),
+        ['cameraDiagTitle','cameraDiagFreeze','cameraDiagLive','cameraDiag_stamp','cameraDiag_versions','cameraDiag_service',
+            'cameraDiagHead_position','cameraDiag_health','cameraDiag_nmeaPair'],
+        'the first diagnostic photo shows GPS health and pairing reason before coordinates');
+    const uniqueRhmiIds = matches(XML, /<(?:container|layoutGroup|component) id="(\d+)"/g).map((m) => m[1]);
+    assert.strictEqual(uniqueRhmiIds.length, new Set(uniqueRhmiIds).size, 'RHMI ids stay globally unique');
+    console.log('ok   all diagnostic data rows are controller stops in JSON/XML; headers are skipped; GPS health and NMEA reason come first');
+
     const render = new FakeRender(RSOCK);
     let patch = new FakePatch(PSOCK);
     await render.listen();
@@ -406,6 +437,8 @@ async function main() {
         cameraState.capabilities.displayTest = true;
         cameraState.outputs = {cluster:true,hud:true};
         cameraState.gpsFix = {lat:54.51758,lon:36.24867,timeMs:cameraState.observedAtMs,speedKmh:0,headingDeg:15,accuracyM:5,source:'bmw-nmea'};
+        cameraState.gpsInput = {nmeaTiming: {rmcTime:'160300.250',ggaTime:'160300.000',gstTime:'160300.000',
+            rmcGgaDeltaMs:-250,ggaGstDeltaMs:0,pairReason:'READY',lastRmcAgeMs:110,lastGgaAgeMs:200,lastGstAgeMs:200}};
         cameraState.nearest = {id:'osm:node:11980400006',title:'Светофор и скорость',description:'Спектр-Поток CCR0047',distanceM:30};
         cameraReply();
         byName.cameraDiagnostics.emit('action');
@@ -413,13 +446,27 @@ async function main() {
         byName.ST_OnlineApps_WazeStrelkaCameras.emit('visible',{visible:false});
         byName.ST_OnlineApps_WazeStrelkaDiagnostics.emit('visible',{visible:true});
         await until('exact GPS coordinates in own diagnostic row', () => byName.cameraDiag_position.text.includes('54.517580') && byName.cameraDiagTest.enabled);
+        assert(byName.cameraDiag_health.text.includes('позиция принята') && byName.cameraDiag_health.text.includes('READY'));
+        assert(byName.cameraDiag_nmeaRmc.text.includes('160300.250') && byName.cameraDiag_nmeaRmc.text.includes('0.11 с'));
+        assert(byName.cameraDiag_nmeaGga.text.includes('160300.000') && byName.cameraDiag_nmeaGst.text.includes('160300.000'));
+        assert(byName.cameraDiag_nmeaRmcGga.text.includes('(GGA − RMC): -250 мс'));
+        assert(byName.cameraDiag_nmeaGgaGst.text.includes('(GST − GGA): 0 мс'));
+        assert(byName.cameraDiag_nmeaPair.text.includes('READY'));
         byName.cameraDiagFreeze.emit('action');
         await until('snapshot frozen',()=>byName.cameraDiag_stamp.text.startsWith('Снимок зафиксирован'));
-        const frozenPosition=byName.cameraDiag_position.text, frozenStamp=byName.cameraDiag_stamp.text;
-        cameraState.observedAtMs+=5000;cameraState.gpsFix.lat=54.518;cameraReply();await sleep(60);
-        assert.strictEqual(byName.cameraDiag_position.text,frozenPosition);assert.strictEqual(byName.cameraDiag_stamp.text,frozenStamp);
+        const frozenRows = DIAGNOSTIC_KEYS.map((key) => byName[`cameraDiag_${key}`].text);
+        cameraState.observedAtMs+=5000;cameraState.gpsFix.lat=54.518;
+        Object.assign(cameraState.gpsInput.nmeaTiming, {rmcTime:'160305.250',ggaTime:'160305.350',gstTime:'160305.400',
+            rmcGgaDeltaMs:100,ggaGstDeltaMs:50,pairReason:'RMC_GGA_OFFSET',lastRmcAgeMs:15,lastGgaAgeMs:10,lastGstAgeMs:5});
+        cameraReply();await sleep(60);
+        assert.deepStrictEqual(DIAGNOSTIC_KEYS.map((key) => byName[`cameraDiag_${key}`].text), frozenRows,
+            'the whole snapshot keeps its coordinates, NMEA times, signed offsets, reason and ages');
         byName.cameraDiagLive.emit('action');
         await until('live diagnostics resumes',()=>byName.cameraDiag_position.text.includes('54.518000'));
+        assert(byName.cameraDiag_nmeaRmc.text.includes('160305.250') && byName.cameraDiag_nmeaRmc.text.includes('0.01 с'));
+        assert(byName.cameraDiag_nmeaGga.text.includes('160305.350') && byName.cameraDiag_nmeaGst.text.includes('160305.400'));
+        assert(byName.cameraDiag_nmeaRmcGga.text.includes('100 мс') && byName.cameraDiag_nmeaGgaGst.text.includes('50 мс'));
+        assert(byName.cameraDiag_nmeaPair.text.includes('RMC_GGA_OFFSET'));
         byName.cameraDiagTest.emit('action');
         await until('parked display test sent',()=>cameraCommands.some(m=>m.cmd==='display-test'));
         byName.ST_OnlineApps_WazeStrelkaDiagnostics.emit('visible',{visible:false});

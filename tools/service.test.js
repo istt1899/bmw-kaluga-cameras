@@ -69,7 +69,9 @@ async function integration() {
     client.on('data', function (chunk) { buf += chunk; var nl; while ((nl = buf.indexOf('\n')) >= 0) { lines.push(JSON.parse(buf.slice(0, nl))); buf = buf.slice(nl + 1); } });
     await until(function () { return peer && lines.length > 0; });
     var health = await probe({ socket: socket, checkPermissions: false, version: VERSION });
-    assert.strictEqual(health.database.count, 150);
+    assert.strictEqual(health.database.count, 151);
+    assert.strictEqual(health.database.osmCount, 150);
+    assert.strictEqual(health.database.reportedCount, 1);
     assert.strictEqual(lines[0].state.outputs.cluster, false); assert.strictEqual(lines[0].state.outputs.hud, false);
     assert.strictEqual(app.state().hudOpacityPct, 100); assert.strictEqual(opacity, 100);
     client.write('{"cmd":"hud-opacity","percent":40}\n');
@@ -124,7 +126,9 @@ async function storageFailure() {
         display: { update: function () {}, status: function () { return 'off'; }, close: function () {} } });
     });
     var health = await probe({ socket: socket, checkPermissions: false, version: VERSION });
-    assert.strictEqual(health.database.count, 150);
+    assert.strictEqual(health.database.count, 151);
+    assert.strictEqual(health.database.osmCount, 150);
+    assert.strictEqual(health.database.reportedCount, 1);
     assert.strictEqual(health.storage.persistent, false);
     app.command({ cmd: 'disable' });
     assert.strictEqual(app.state().enabled, false);

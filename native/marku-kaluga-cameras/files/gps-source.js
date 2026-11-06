@@ -41,27 +41,30 @@ function sentence(line) {
   return { kind: m[2], checksum: sum === parseInt(m[4], 16), fields: body.split(',') };
 }
 function todDelta(a, b) { return (a - b + DAY * 1.5) % DAY - DAY / 2; }
-var EPOCH_TOLERANCE = 100; // Not a neighbouring half-second NMEA epoch.
+var MOTION_PAIR_MS = 500, ACCURACY_PAIR_MS = 100;
 function GpsDecoder(now, nmeaSource) {
   EventEmitter.call(this); this.now = now || Date.now; this.nmeaSource = nmeaSource === 'bmw-nmea' ? nmeaSource : 'nmea';
   this.last = {}; this.complete = {}; this.parts = {}; this.rmc = null; this.gga = null; this.gst = null;
   this.lastParsedUtc = null; this.lastRejectReason = null;
+  this.lastRmcUtc = null;
+  this.timing = { RMC: null, GGA: null, GST: null, pairReason: 'MISSING_RMC' };
 }
 GpsDecoder.prototype = Object.create(EventEmitter.prototype);
 GpsDecoder.prototype.constructor = GpsDecoder;
 GpsDecoder.prototype.invalidate = function (source, reason) { this.last[source] = null; this.complete[source] = null; if (source === this.nmeaSource) this.lastRejectReason = reason; this.emit('quality', source + ': ' + reason); };
 GpsDecoder.prototype.accept = function (fix) {
   var now = this.now();
-  if (!fresh(fix.timeMs, now)) { this.invalidate(fix.source, 'stale or future source UTC'); return; }
-  if (!number(fix.lat) || !number(fix.lon) || Math.abs(fix.lat) > 90 || Math.abs(fix.lon) > 180) return;
+  if (!fresh(fix.timeMs, now)) { this.invalidate(fix.source, 'stale or future source UTC'); return false; }
+  if (!number(fix.lat) || !number(fix.lon) || Math.abs(fix.lat) > 90 || Math.abs(fix.lon) > 180) return false;
   var previous = this.last[fix.source];
-  if (previous && fix.timeMs < previous.timeMs) { this.emit('quality', fix.source + ': out-of-order source UTC'); return; }
+  if (previous && fix.timeMs < previous.timeMs) { this.lastRejectReason = 'out-of-order source UTC'; this.emit('quality', fix.source + ': out-of-order source UTC'); return false; }
   this.last[fix.source] = fix;
   // NMEA sentences arrive separately and at different rates. Retain the last
   // complete measurement, with ITS original UTC, while the next epoch is being
   // assembled. Never attach an old GST's accuracy to newer coordinates.
   if (fix.source === this.nmeaSource && number(fix.accuracyM) && fix.accuracyM > 0) this.complete[fix.source] = fix;
   if (fix.source === this.nmeaSource) this.lastRejectReason = null; this.emit('fix', fix);
+  return true;
 };
 GpsDecoder.prototype.json = function (obj) {
   if (!obj || obj.class !== 'TPV') return;
@@ -79,47 +82,95 @@ GpsDecoder.prototype.json = function (obj) {
 };
 GpsDecoder.prototype.line = function (line) {
   var parsed = sentence(line);
-  if (parsed.malformed || !parsed.checksum) { if (parsed.checksum === false) { this.lastRejectReason = 'checksum failed'; this.emit('quality', this.nmeaSource + ': checksum failed'); } return parsed; }
+  if (parsed.malformed || !parsed.checksum) {
+    if (parsed.checksum === false) { this.lastRejectReason = 'checksum failed'; this.emit('quality', this.nmeaSource + ': checksum failed'); }
+    return parsed;
+  }
   var p = parsed.fields, kind = parsed.kind, now = this.now(), t = tod(p[1]), source = this.nmeaSource;
-  if (['RMC', 'GGA', 'GST'].indexOf(kind) < 0 || t === null) return parsed;
-  // Each part keeps its own receive time and, once paired, its source UTC.
-  // A new GGA must never refresh an old RMC/GST record's age.
+  if (['RMC', 'GGA', 'GST'].indexOf(kind) < 0) return parsed;
+  this.timing[kind] = { text: typeof p[1] === 'string' ? p[1].slice(0, 24) : null, tod: t, received: now };
+  if (t === null) { this.timing.pairReason = 'INVALID_' + kind; return parsed; }
   if (this.rmc && (!fresh(this.rmc.timeMs, now) || !fresh(this.rmc.received, now))) this.rmc = null;
   if (this.gga && !fresh(this.gga.received, now)) this.gga = null;
   if (this.gst && !fresh(this.gst.received, now)) this.gst = null;
   if (kind === 'RMC') {
-    var time = utc(p[9], p[1]), latest = this.last[source];
+    var time = utc(p[9], p[1]);
     if (number(time)) this.lastParsedUtc = time;
-    if ((this.rmc && number(time) && time < this.rmc.timeMs) || (latest && number(time) && time < latest.timeMs)) {
-      this.lastRejectReason = 'replayed RMC UTC'; this.emit('quality', source + ': replayed RMC UTC'); return parsed;
+    // The position epoch is GGA's. Compare RMC only with prior RMC, never
+    // with a later, valid GGA epoch (e.g. RMC .000 / GGA .200).
+    if (this.lastRmcUtc !== null && number(time) && time < this.lastRmcUtc) {
+      this.lastRejectReason = 'replayed RMC UTC'; this.timing.pairReason = 'INVALID_RMC';
+      this.emit('quality', source + ': replayed RMC UTC'); return parsed;
     }
-    if (p[2] !== 'A' || (p[12] && ['A', 'D', 'P', 'R', 'F'].indexOf(p[12]) < 0)) { this.rmc = null; this.invalidate(source, 'RMC invalid or simulated'); return parsed; }
-    if (!fresh(time, now)) { this.rmc = null; this.invalidate(source, 'stale RMC UTC'); return parsed; }
+    if (p[2] !== 'A' || (p[12] && ['A', 'D', 'P', 'R', 'F'].indexOf(p[12]) < 0)) {
+      this.rmc = null; this.timing.pairReason = 'INVALID_RMC'; this.invalidate(source, 'RMC invalid or simulated'); return parsed;
+    }
+    if (!fresh(time, now)) {
+      this.rmc = null; this.timing.pairReason = 'INVALID_RMC'; this.invalidate(source, 'stale RMC UTC'); return parsed;
+    }
     var lat = coordinate(p[3], p[4], false), lon = coordinate(p[5], p[6], true);
-    if (!number(lat) || !number(lon)) { this.rmc = null; this.invalidate(source, 'RMC invalid coordinates'); return parsed; }
+    if (!number(lat) || !number(lon)) {
+      this.rmc = null; this.timing.pairReason = 'INVALID_RMC'; this.invalidate(source, 'RMC invalid coordinates'); return parsed;
+    }
+    this.lastRmcUtc = time;
     this.rmc = { tod: t, received: now, timeMs: time, lat: lat, lon: lon,
       speedKmh: numeric(p[7]) !== null && numeric(p[7]) >= 0 ? numeric(p[7]) * 1.852 : null, headingDeg: numeric(p[8]) };
   } else if (kind === 'GGA') {
     var quality = numeric(p[6]);
-    if ([1, 2, 3, 4, 5].indexOf(quality) < 0) { this.gga = null; this.invalidate(source, 'GGA no satellite-quality fix'); return parsed; }
+    if ([1, 2, 3, 4, 5].indexOf(quality) < 0) {
+      this.gga = null; this.timing.pairReason = 'INVALID_GGA'; this.invalidate(source, 'GGA no satellite-quality fix'); return parsed;
+    }
     var satellites = numeric(p[7]);
     this.gga = { tod: t, received: now, timeMs: null, quality: quality, hdop: numeric(p[8]),
       satellites: Number.isInteger(satellites) && satellites >= 0 && satellites <= 128 ? satellites : null,
       lat: coordinate(p[2], p[3], false), lon: coordinate(p[4], p[5], true) };
-  } else this.gst = { tod: t, received: now, timeMs: null, latSigma: numeric(p[6]), lonSigma: numeric(p[7]) };
+  } else {
+    this.gst = { tod: t, received: now, timeMs: null, latSigma: numeric(p[6]), lonSigma: numeric(p[7]) };
+  }
   var r = this.rmc, g = this.gga, gst = this.gst;
-  function bind(part) { if (part && part.timeMs === null && fresh(part.received, now) && Math.abs(todDelta(part.tod, r.tod)) <= EPOCH_TOLERANCE) part.timeMs = r.timeMs + todDelta(part.tod, r.tod); }
-  if (!r || !g || !fresh(r.timeMs, now) || !fresh(r.received, now)) return parsed;
-  bind(g); bind(gst);
-  if (!fresh(g.received, now) || !fresh(g.timeMs, now) || Math.abs(g.timeMs - r.timeMs) > EPOCH_TOLERANCE ||
-      !number(g.lat) || !number(g.lon) || distance(r, g) > 50) return parsed;
-  var accuracy = null;
-  if (gst && fresh(gst.received, now) && fresh(gst.timeMs, now) && Math.abs(gst.timeMs - r.timeMs) <= EPOCH_TOLERANCE && gst.latSigma > 0 && gst.lonSigma > 0)
-    accuracy = 2 * Math.sqrt(gst.latSigma * gst.latSigma + gst.lonSigma * gst.lonSigma);
-  this.accept({ lat: r.lat, lon: r.lon, speedKmh: r.speedKmh,
+  if (!r) {
+    this.timing.pairReason = this.timing.RMC && now - this.timing.RMC.received > MAX_AGE ? 'STALE_RMC' :
+      this.lastRejectReason && /RMC/.test(this.lastRejectReason) ? 'INVALID_RMC' : 'MISSING_RMC'; return parsed;
+  }
+  if (!g) {
+    this.timing.pairReason = this.timing.GGA && now - this.timing.GGA.received > MAX_AGE ? 'STALE_GGA' :
+      this.lastRejectReason && /GGA/.test(this.lastRejectReason) ? 'INVALID_GGA' : 'MISSING_GGA'; return parsed;
+  }
+  var motionDelta = todDelta(g.tod, r.tod);
+  if (Math.abs(motionDelta) > MOTION_PAIR_MS) { this.timing.pairReason = 'RMC_GGA_OFFSET'; return parsed; }
+  // RMC supplies the date and nearby motion sample, GGA supplies the actual
+  // position and its UTC. A GST is usable only at that GGA position epoch.
+  if (g.timeMs === null) g.timeMs = r.timeMs + motionDelta;
+  if (!fresh(r.timeMs, now) || !fresh(r.received, now)) { this.timing.pairReason = 'STALE_RMC'; return parsed; }
+  if (!fresh(g.timeMs, now) || !fresh(g.received, now)) { this.timing.pairReason = 'STALE_GGA'; return parsed; }
+  if (!number(g.lat) || !number(g.lon) || distance(r, g) > 50) {
+    this.timing.pairReason = 'POSITION_MISMATCH'; return parsed;
+  }
+  var accuracy = null, accuracyDelta = gst ? todDelta(gst.tod, g.tod) : null;
+  this.timing.pairReason = gst ? 'GGA_GST_OFFSET' : 'MISSING_GST';
+  if (gst && Math.abs(accuracyDelta) <= ACCURACY_PAIR_MS) {
+    if (gst.timeMs === null) gst.timeMs = g.timeMs + accuracyDelta;
+    if (fresh(gst.received, now) && fresh(gst.timeMs, now) && Math.abs(gst.timeMs - g.timeMs) <= ACCURACY_PAIR_MS) {
+      if (gst.latSigma > 0 && gst.lonSigma > 0) {
+        accuracy = 2 * Math.sqrt(gst.latSigma * gst.latSigma + gst.lonSigma * gst.lonSigma);
+        this.timing.pairReason = 'READY';
+      } else this.timing.pairReason = 'INVALID_GST';
+    } else this.timing.pairReason = 'MISSING_GST';
+  }
+  if (!this.accept({ lat: g.lat, lon: g.lon, speedKmh: r.speedKmh,
     headingDeg: number(r.headingDeg) && r.headingDeg >= 0 && r.headingDeg <= 360 ? r.headingDeg % 360 : null,
-    accuracyM: accuracy, timeMs: r.timeMs, source: source, quality: g.quality, hdop: g.hdop, satellites: g.satellites });
+    accuracyM: accuracy, timeMs: g.timeMs, motionTimeMs: r.timeMs,
+    accuracyTimeMs: accuracy === null ? null : gst.timeMs,
+    source: source, quality: g.quality, hdop: g.hdop, satellites: g.satellites })) this.timing.pairReason = 'INVALID_GGA';
   return parsed;
+};
+GpsDecoder.prototype.timingSnapshot = function (now) {
+  var t = this.timing;
+  function age(part) { return part ? Math.max(0, now - part.received) : null; }
+  return { rmcTime: t.RMC && t.RMC.text, ggaTime: t.GGA && t.GGA.text, gstTime: t.GST && t.GST.text,
+    rmcGgaDeltaMs: t.RMC && t.GGA && t.RMC.tod !== null && t.GGA.tod !== null ? todDelta(t.GGA.tod, t.RMC.tod) : null,
+    ggaGstDeltaMs: t.GGA && t.GST && t.GGA.tod !== null && t.GST.tod !== null ? todDelta(t.GST.tod, t.GGA.tod) : null,
+    pairReason: t.pairReason, lastRmcAgeMs: age(t.RMC), lastGgaAgeMs: age(t.GGA), lastGstAgeMs: age(t.GST) };
 };
 GpsDecoder.prototype.current = function (now) {
   var self = this, best = null;
@@ -153,6 +204,8 @@ GpsProvider.prototype.setBridgeStatus = function (state, errorCode) {
     this.bmwDecoder.rmc = this.bmwDecoder.gga = this.bmwDecoder.gst = null;
     this.bmwDecoder.last['bmw-nmea'] = null;
     this.bmwDecoder.complete['bmw-nmea'] = null;
+    this.bmwDecoder.lastRmcUtc = null;
+    this.bmwDecoder.timing = { RMC: null, GGA: null, GST: null, pairReason: 'MISSING_RMC' };
   }
 };
 GpsProvider.prototype.inputNmea = function (data) {
@@ -183,14 +236,17 @@ GpsProvider.prototype.diagnostics = function (now) {
     gpsInput: { source: 'bmw-nmea', packets: this.input.packets, badPackets: this.input.badPackets, checksumErrors: this.input.checksumErrors,
       sentences: Object.assign({}, this.input.sentences), lastPacketAgeMs: age(this.input.lastPacketAt), fixUtcAgeMs: age(this.input.fixUtc),
       sourceUtcAgeMs: this.bmwDecoder.lastParsedUtc === null ? null : now - this.bmwDecoder.lastParsedUtc,
-      rejectReason: this.bmwDecoder.lastRejectReason }
+      rejectReason: this.bmwDecoder.lastRejectReason, nmeaTiming: this.bmwDecoder.timingSnapshot(now) }
   };
 };
 GpsProvider.prototype.description = function (fix, now) {
-  var d = this.diagnostics(now), kinds = d.gpsInput.sentences, bridge = d.gpsBridge;
+  var d = this.diagnostics(now), kinds = d.gpsInput.sentences, bridge = d.gpsBridge, timing = d.gpsInput.nmeaTiming;
   if (fix) {
     var label = fix.source === 'bmw-nmea' ? 'BMW' : fix.source === 'gpsd' ? 'GPSD' : 'Внешний NMEA';
-    if (!number(fix.accuracyM) || fix.accuracyM <= 0) return label + ': координаты есть; ' + (fix.source === 'bmw-nmea' && !kinds.GST ? 'нет GST с точностью в метрах' : 'точность в метрах не подтверждена');
+    if (!number(fix.accuracyM) || fix.accuracyM <= 0) {
+      if (fix.source === 'bmw-nmea' && timing.pairReason === 'GGA_GST_OFFSET') return label + ': координаты есть; UTC GST/GGA не совпадает (' + Math.round(timing.ggaGstDeltaMs) + ' мс)';
+      return label + ': координаты есть; ' + (fix.source === 'bmw-nmea' && !kinds.GST ? 'нет GST с точностью в метрах' : 'точность в метрах не подтверждена');
+    }
     if (fix.accuracyM > 15) return label + ': точность хуже 15 м, предупреждения недоступны';
     if (!number(fix.speedKmh) || !number(fix.headingDeg)) return label + ': координаты есть; скорость или курс не подтверждены';
     return label + ': свежие координаты, скорость, курс и точность получены';
@@ -206,6 +262,11 @@ GpsProvider.prototype.description = function (fix, now) {
   if (d.gpsInput.rejectReason === 'RMC invalid or simulated') return 'BMW: NMEA без достоверной фиксации или в режиме симуляции';
   if (d.gpsInput.sourceUtcAgeMs !== null && (d.gpsInput.sourceUtcAgeMs > MAX_AGE || d.gpsInput.sourceUtcAgeMs < -500))
     return 'BMW: UTC NMEA устарело или отличается от часов машины';
+  if (timing.pairReason === 'RMC_GGA_OFFSET') return 'BMW: UTC RMC/GGA не совпадает (' + Math.round(timing.rmcGgaDeltaMs) + ' мс; максимум 500 мс)';
+  if (timing.pairReason === 'POSITION_MISMATCH') return 'BMW: координаты RMC/GGA расходятся больше чем на 50 м';
+  if (timing.pairReason === 'STALE_GGA') return 'BMW: UTC позиции GGA устарело или отличается от часов машины';
+  if (timing.lastRmcAgeMs !== null && timing.lastRmcAgeMs > MAX_AGE) return 'BMW: сообщения RMC не обновляются';
+  if (timing.lastGgaAgeMs !== null && timing.lastGgaAgeMs > MAX_AGE) return 'BMW: сообщения GGA не обновляются';
   return 'BMW: нет свежей достоверной фиксации UTC (максимум 3 с)';
 };
 GpsProvider.prototype.start = function () {

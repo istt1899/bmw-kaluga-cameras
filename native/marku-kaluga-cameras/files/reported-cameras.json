@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "source": "owner-report",
+  "region": "RU-KLU",
+  "basePbfMd5": "bd360458900c604d889f78d73ef66f64",
+  "note": "Наличие камеры сообщено владельцем. Тип контроля, модель и точное положение устройства не подтверждены. Координаты обозначают перекрёсток из OpenStreetMap, а не точку установки камеры.",
+  "positionAttribution": "OpenStreetMap contributors, ODbL-1.0",
+  "records": [
+    {
+      "id": "reported:kaluga:boldina-nikitina",
+      "type": "camera",
+      "controls": [],
+      "limitKmh": null,
+      "description": "Болдина — Никитина (сообщение владельца)",
+      "provenance": "owner-report",
+      "positionKind": "intersection",
+      "position": {
+        "lat": 54.5083662,
+        "lon": 36.2864984
+      },
+      "positionSourceUrl": "https://www.openstreetmap.org/node/277492125",
+      "inKalugaCity": true,
+      "reportStatus": "unverified"
+    }
+  ]
+}

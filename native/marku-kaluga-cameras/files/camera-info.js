@@ -9,6 +9,7 @@ function controls(camera) {
     return source.filter((c, i) => LABELS[c] && source.indexOf(c) === i);
 }
 function title(camera) {
+    if (camera && camera.provenance === 'owner-report') return 'Камера: тип не подтверждён';
     const c = controls(camera);
     if (c.indexOf('redlight') >= 0 && c.indexOf('speed') >= 0) return 'Светофор и скорость';
     return c.map(k => LABELS[k]).join(' / ') || 'Камера';
@@ -16,7 +17,10 @@ function title(camera) {
 function describe(camera) {
     return { type: controls(camera).indexOf('redlight') >= 0 ? 'redlight' : camera.type || 'speed', controls: controls(camera), title: title(camera),
         cameraLimitKmh: camera.limitKmh === undefined ? null : camera.limitKmh,
-        description: camera.description || null, sourceUrl: camera.sourceUrl || null };
+        description: camera.description || null, sourceUrl: camera.sourceUrl || null,
+        provenance: camera.provenance || 'OpenStreetMap', positionKind: camera.positionKind || 'camera-node',
+        positionSourceUrl: camera.positionSourceUrl || camera.sourceUrl || null,
+        reportStatus: camera.reportStatus || null };
 }
 function enrich(database, file) {
     const meta = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -32,4 +36,37 @@ function enrich(database, file) {
     database.metadataRetrievedAt = meta.retrievedAt;
     return database;
 }
-module.exports = { controls, title, describe, enrich };
+function supplement(database, file) {
+    const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+    if (!database || database.source !== 'OpenStreetMap' || !Array.isArray(database.records) ||
+        data.schema !== 1 || data.source !== 'owner-report' || data.region !== database.region ||
+        data.basePbfMd5 !== database.pbfMd5 || !Array.isArray(data.records) || data.records.length > 100)
+        throw new Error('Reported cameras do not match the regional snapshot');
+    const ids = Object.create(null);
+    database.records.forEach(r => { ids[r.id] = true; });
+    // Validate and canonicalize the entire supplement before touching the DB.
+    // An intersection is a reference location, never the measured device point.
+    const added = data.records.map(r => {
+        if (!r || typeof r.id !== 'string' || !/^reported:[a-z0-9][a-z0-9:-]{0,90}$/.test(r.id) || ids[r.id] ||
+            r.type !== 'camera' || !Array.isArray(r.controls) || r.controls.length !== 0 || r.limitKmh !== null ||
+            r.provenance !== 'owner-report' || r.positionKind !== 'intersection' || r.reportStatus !== 'unverified' ||
+            !r.position || !Number.isFinite(r.position.lat) || !Number.isFinite(r.position.lon) ||
+            r.position.lat < 53 || r.position.lat > 56 || r.position.lon < 33 || r.position.lon > 38 ||
+            typeof r.description !== 'string' || !r.description.trim() || r.description.length > 100 || /[\x00-\x1f]/.test(r.description) ||
+            typeof r.inKalugaCity !== 'boolean' || typeof r.positionSourceUrl !== 'string' ||
+            !/^https:\/\/www\.openstreetmap\.org\/node\/\d+$/.test(r.positionSourceUrl) ||
+            (r.sourceUrl !== undefined && r.sourceUrl !== null)) throw new Error('Invalid reported intersection camera');
+        ids[r.id] = true;
+        return { id: r.id, type: 'camera', controls: [], limitKmh: null,
+            description: r.description.trim(), provenance: 'owner-report', positionKind: 'intersection',
+            position: { lat: r.position.lat, lon: r.position.lon }, positionSourceUrl: r.positionSourceUrl,
+            inKalugaCity: r.inKalugaCity, reportStatus: 'unverified', sourceUrl: null };
+    });
+    const osmCount = database.records.filter(r => r.provenance !== 'owner-report').length;
+    database.records = database.records.concat(added);
+    database.osmCount = osmCount;
+    database.reportedCount = database.records.length - osmCount;
+    database.displaySource = database.reportedCount ? 'OpenStreetMap + сообщения владельца' : 'OpenStreetMap';
+    return database;
+}
+module.exports = { controls, title, describe, enrich, supplement };

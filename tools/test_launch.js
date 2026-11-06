@@ -39,7 +39,7 @@ class FakeApp extends EventEmitter {
     registerActive() { events.push('active'); return Promise.resolve(); }
     initialized() { events.push('initialized'); this._initialized = true; return Promise.resolve(); }
 }
-class FakeControl extends EventEmitter { open() {} close() {} send() { return false; } }
+class FakeControl extends EventEmitter { open() {} close() {} send() { return false; } diagnostic() { return 'not connected'; } }
 const realLoad = Module._load;
 Module._load = function (name, parent, isMain) {
     if (name === 'oap-sdk/src/core/OnlineApp.js') return FakeApp;

@@ -4,6 +4,7 @@ var base = path.join(__dirname, '../native/marku-kaluga-cameras/files');
 var GpsDecoder = require(path.join(base, 'gps-source')).GpsDecoder;
 var GpsProvider = require(path.join(base, 'gps-source')).GpsProvider;
 var service = require(path.join(base, 'marku-kaluga-cameras'));
+var probe = require(path.join(base, 'check')).probe;
 var count = 0;
 function test(name, fn) { fn(); count++; process.stdout.write('PASS ' + name + '\n'); }
 function sentence(body) { var c = 0; for (var i = 0; i < body.length; i++) c ^= body.charCodeAt(i); return '$' + body + '*' + ('0' + c.toString(16)).slice(-2); }
@@ -65,6 +66,8 @@ async function integration() {
     client = net.connect(socket); client.setEncoding('utf8'); client.on('error', function () {});
     client.on('data', function (chunk) { buf += chunk; var nl; while ((nl = buf.indexOf('\n')) >= 0) { lines.push(JSON.parse(buf.slice(0, nl))); buf = buf.slice(nl + 1); } });
     await until(function () { return peer && lines.length > 0; });
+    var health = await probe({ socket: socket, checkPermissions: false, version: '0.1.2' });
+    assert.strictEqual(health.database.count, 150);
     assert.strictEqual(lines[0].state.outputs.cluster, false); assert.strictEqual(lines[0].state.outputs.hud, false);
     peer.write(JSON.stringify(tpv({ time: new Date().toISOString() })) + '\n');
     await until(function () { return app.state().gpsFix !== null; });
@@ -100,4 +103,29 @@ function until(predicate) {
     }, 10);
   });
 }
-integration().then(function () { process.stdout.write(count + ' decoder/database tests plus transport integration passed.\n'); }, function (e) { process.stderr.write(e.stack + '\n'); process.exitCode = 1; });
+async function storageFailure() {
+  var dir = fs.mkdtempSync(path.join(os.tmpdir(), 'kaluga-unwritable-'));
+  var obstacle = path.join(dir, 'data'); fs.writeFileSync(obstacle, 'not a directory');
+  var socket = process.platform === 'win32' ? '\\\\.\\pipe\\kaluga-unwritable-' + process.pid : path.join(dir, 'ctl.sock');
+  var app, EventEmitter = require('events'), gps = new EventEmitter();
+  gps.start = gps.close = function () {}; gps.current = function () { return null; };
+  try {
+    await new Promise(function (resolve, reject) {
+      app = service.start({ dataDir: obstacle, socket: socket, gps: gps, onListening: resolve, onError: reject,
+        display: { update: function () {}, status: function () { return 'off'; }, close: function () {} } });
+    });
+    var health = await probe({ socket: socket, checkPermissions: false, version: '0.1.2' });
+    assert.strictEqual(health.database.count, 150);
+    assert.strictEqual(health.storage.persistent, false);
+    app.command({ cmd: 'disable' });
+    assert.strictEqual(app.state().enabled, false);
+    assert.strictEqual(app.state().storage.persistent, false);
+    await probe({ socket: socket, checkPermissions: false, version: 'wrong' }).then(function () { throw new Error('wrong version accepted'); }, function (err) {
+      assert(/Wrong running service version/.test(err.message));
+    });
+    console.log('PASS unavailable storage: database and app socket stay available; settings explicitly temporary; old service rejected');
+  } finally {
+    if (app) app.close(); fs.unlinkSync(obstacle); fs.rmdirSync(dir);
+  }
+}
+integration().then(storageFailure).then(function () { process.stdout.write(count + ' decoder/database tests plus transport/storage/check integration passed.\n'); }, function (e) { process.stderr.write(e.stack + '\n'); process.exitCode = 1; });

@@ -1,6 +1,6 @@
 {
   "name": "marku_kaluga_cameras",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Стендовый кандидат предупреждений камер Калужской области для BMW ID7",
   "private": false,
   "main": "javascript/runner.js",

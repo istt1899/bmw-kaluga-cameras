@@ -8,9 +8,9 @@ class CameraControl extends EventEmitter {
     constructor(options) {
         super();
         const o = options || {};
-        this.path = o.path || '/run/marku-kaluga-cameras/ctl.sock';
+        this.path = o.path || '/dev/shm/marku-kaluga-cameras/ctl.sock';
         this.retryMs = o.retryMs || 1000;
-        this.state = null; this.link = 'down'; this.sock = null;
+        this.state = null; this.link = 'down'; this.sock = null; this.lastError = null;
         this.opened = false; this.buffer = ''; this.timer = null;
     }
     open() {
@@ -33,12 +33,13 @@ class CameraControl extends EventEmitter {
         sock.setEncoding('utf8');
         sock.on('error', (err) => {
             if (this.sock !== sock) return;
+            this.lastError = err.code || 'UNKNOWN';
             this.link = err.code === 'ENOENT' ? 'absent' : 'failed';
             this.state = null; this.emit('change');
         });
         sock.on('connect', () => {
             if (this.sock !== sock) return;
-            this.link = 'up'; this.emit('change'); this.send({ cmd: 'status' });
+            this.lastError = null; this.link = 'up'; this.emit('change'); this.send({ cmd: 'status' });
         });
         sock.on('data', (chunk) => {
             if (this.sock !== sock) return;
@@ -65,6 +66,12 @@ class CameraControl extends EventEmitter {
         if (!this.sock || this.link !== 'up') return false;
         this.sock.write(JSON.stringify(message) + '\n');
         return true;
+    }
+    diagnostic() {
+        const reasons = { ENOENT: 'Сокет сервиса отсутствует', EACCES: 'Нет доступа к сокету сервиса',
+            ECONNREFUSED: 'Сервис не принимает соединение', ECONNRESET: 'Сервис разорвал соединение' };
+        return this.lastError ? (reasons[this.lastError] || 'Ошибка соединения') + ' (' + this.lastError + ')' :
+            this.link === 'up' ? 'Соединение есть; ожидание ответа сервиса' : 'Ожидание соединения с сервисом';
     }
 }
 

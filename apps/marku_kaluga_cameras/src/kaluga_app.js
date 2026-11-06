@@ -120,7 +120,8 @@ class KalugaCamerasApp extends OnlineApp {
         if (!this.state || this.shutdownPromise) return;
         const view = model(this.control.state);
         if (this.infoMode === 'update') view.text.cameraInfo = 'База обновляется на ПК и устанавливается через Store новым пакетом';
-        if (this.infoMode === 'diagnostics') view.text.cameraInfo = diagnostics(this.control.state);
+        if (this.infoMode === 'diagnostics') view.text.cameraInfo = this.control.state ? diagnostics(this.control.state) : this.control.diagnostic();
+        if (!this.control.state) view.text.cameraStatus = this.control.diagnostic();
         Object.keys(view.text).forEach((name) => this.write(name, view.text[name]));
         Object.keys(view.enabled).forEach((name) => this.enabled(name, view.enabled[name]));
     }

@@ -20,9 +20,27 @@ const server = net.createServer((sock) => {
             assert(received.indexOf('"cluster":true') >= 0 && received.indexOf('"hud":false') >= 0);
             clearTimeout(timer); client.close(); sock.destroy(); server.close();
             console.log('PASS: real socket fragmented status and explicit output command');
+            missingService().catch((err) => { console.error(err); process.exitCode = 1; });
         }
     });
 });
+function missingService() {
+    return new Promise((resolve, reject) => {
+        const offline = new CameraControl({ path: socket + '-missing' });
+        const timeout = setTimeout(() => { offline.close(); reject(new Error('missing service timeout')); }, 3000);
+        offline.on('change', () => {
+            if (!offline.lastError) return;
+            try {
+                assert(['ENOENT', 'ECONNREFUSED'].includes(offline.lastError));
+                assert(offline.diagnostic().includes(offline.lastError));
+                assert.strictEqual(offline.state, null);
+                clearTimeout(timeout); offline.removeAllListeners('change'); offline.close();
+                console.log('PASS missing service: exact socket error remains available for diagnostics'); resolve();
+            } catch (err) { clearTimeout(timeout); offline.removeAllListeners('change'); offline.close(); reject(err); }
+        });
+        offline.open();
+    });
+}
 let sent = false;
 client.on('change', () => {
     if (!client.state || sent) return;

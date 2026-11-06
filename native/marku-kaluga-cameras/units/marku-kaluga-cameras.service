@@ -1,7 +1,8 @@
 [Unit]
 Description=Kaluga camera database, GNSS diagnostics and optional camera display
 RequiresMountsFor=/var/opt
-After=network.target cluster-render.socket
+Requires=marku-kaluga-cameras.socket
+After=local-fs.target marku-kaluga-cameras.socket cluster-render.socket
 Wants=cluster-render.socket
 
 [Service]
@@ -9,11 +10,11 @@ Type=simple
 User=3921
 Group=tm_oap_app
 UMask=0007
-RuntimeDirectory=marku-kaluga-cameras
-RuntimeDirectoryMode=0750
 WorkingDirectory=/var/opt/marku-kaluga-cameras/current
-ExecStartPre=+/bin/mkdir -p /var/opt/marku-kaluga-cameras/data
-ExecStartPre=+/bin/chown 3921:tm_oap_app /var/opt/marku-kaluga-cameras/data
+# Storage can be read-only during boot. Status and the bundled database
+# must still be available; the daemon reports temporary settings explicitly.
+ExecStartPre=-+/bin/mkdir -p /var/opt/marku-kaluga-cameras/data
+ExecStartPre=-+/bin/chown 3921:tm_oap_app /var/opt/marku-kaluga-cameras/data
 ExecStart=/usr/bin/node /var/opt/marku-kaluga-cameras/current/marku-kaluga-cameras.js
 Restart=on-failure
 RestartSec=5
@@ -21,7 +22,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/var/opt/marku-kaluga-cameras /run/marku-kaluga-cameras /dev/shm
+ReadWritePaths=/var/opt/marku-kaluga-cameras /dev/shm
 
 [Install]
 WantedBy=multi-user.target

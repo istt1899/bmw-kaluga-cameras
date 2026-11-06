@@ -39,12 +39,18 @@ function nearest(records, fix) {
 function start(options) {
   options = options || {};
   var dataDir = options.dataDir || process.env.KALUGA_DATA_DIR || '/var/opt/marku-kaluga-cameras/data';
-  var socketPath = options.socket || process.env.KALUGA_CONTROL_SOCKET || '/run/marku-kaluga-cameras/ctl.sock';
-  mkdirp(dataDir); if (socketPath.indexOf('\\\\.\\pipe\\') !== 0) mkdirp(path.dirname(socketPath));
-  var settingsPath = path.join(dataDir, 'settings.json'), settings = readSettings(settingsPath);
-  var state = { enabled: settings.enabled, outputs: settings.outputs, capabilities: { outputs: false, update: false },
+  var socketPath = options.socket || process.env.KALUGA_CONTROL_SOCKET || '/dev/shm/marku-kaluga-cameras/ctl.sock';
+  var storageError = null;
+  try { mkdirp(dataDir); } catch (e) { storageError = e.code || e.message; }
+  var inherited = Number(process.env.LISTEN_PID) === process.pid && Number(process.env.LISTEN_FDS) === 1;
+  if (!inherited && socketPath.indexOf('\\\\.\\pipe\\') !== 0) mkdirp(path.dirname(socketPath));
+  var settingsPath = path.join(dataDir, 'settings.json'), settings;
+  try { settings = readSettings(settingsPath); }
+  catch (e) { storageError = e.message; settings = { enabled: true, outputs: { cluster: false, hud: false } }; }
+  var state = { serviceVersion: '0.1.2', enabled: settings.enabled, outputs: settings.outputs, capabilities: { outputs: false, update: false },
     gps: 'Waiting for GPSD/NMEA', gpsFix: null, database: { state: 'error', source: 'OpenStreetMap', count: 0, error: null },
-    renderer: 'off', alert: null, nearest: null, error: null, diagnostic: 'No confirmed road; nearby points are diagnostic only' };
+    renderer: 'off', alert: null, nearest: null, error: null, diagnostic: 'No confirmed road; nearby points are diagnostic only',
+    storage: { persistent: !storageError, error: storageError } };
   var database = null, guidance = null, display = null, clients = [], lastStatus = '', closed = false, server;
   try {
     database = loadDatabase(options.database || path.join(__dirname, 'kaluga-speed.json'));
@@ -76,8 +82,14 @@ function start(options) {
   }
   function save(next) {
     var tmp = settingsPath + '.tmp';
-    fs.writeFileSync(tmp, JSON.stringify(next), { mode: 0o600 });
-    fs.renameSync(tmp, settingsPath); settings = next; state.enabled = settings.enabled; state.outputs = settings.outputs;
+    try {
+      fs.writeFileSync(tmp, JSON.stringify(next), { mode: 0o600 });
+      fs.renameSync(tmp, settingsPath); state.storage = { persistent: true, error: null };
+    } catch (e) {
+      state.storage = { persistent: false, error: e.code || e.message };
+      try { fs.unlinkSync(tmp); } catch (ignored) {}
+    }
+    settings = next; state.enabled = settings.enabled; state.outputs = settings.outputs;
   }
   function tick() {
     var now = Date.now(), fix = gps.current(now), valid = fix && typeof fix.accuracyM === 'number' && fix.accuracyM > 0 && fix.accuracyM <= 50 &&
@@ -109,8 +121,10 @@ function start(options) {
     else throw new Error('Unsupported command');
     save(next); state.error = null; tick();
   }
-  try { if (fs.lstatSync(socketPath).isSocket()) fs.unlinkSync(socketPath); else throw new Error('Control path is not a socket'); }
-  catch (e) { if (e.code !== 'ENOENT') throw e; }
+  if (!inherited) {
+    try { if (fs.lstatSync(socketPath).isSocket()) fs.unlinkSync(socketPath); else throw new Error('Control path is not a socket'); }
+    catch (e) { if (e.code !== 'ENOENT') throw e; }
+  }
   server = net.createServer(function (sock) {
     if (clients.length >= 16) { sock.destroy(); return; }
     clients.push(sock); sock.setEncoding('utf8');
@@ -128,14 +142,17 @@ function start(options) {
     });
   });
   server.on('error', function (e) { state.error = 'Control: ' + e.message; broadcast(true); if (options.onError) options.onError(e); });
-  server.listen(socketPath, function () { try { fs.chmodSync(socketPath, 0o660); } catch (e) {} if (options.onListening) options.onListening(); });
+  server.listen(inherited ? { fd: 3 } : socketPath, function () {
+    if (!inherited) { try { fs.chmodSync(socketPath, 0o660); } catch (e) {} }
+    if (options.onListening) options.onListening();
+  });
   gps.on('status', function (text) { state.diagnostic = text; });
   gps.on('fix', tick); gps.start();
   var timer = setInterval(tick, 500); tick();
   function close() {
     if (closed) return; closed = true; clearInterval(timer); gps.close(); if (display) display.close();
     clients.forEach(function (c) { c.destroy(); }); try { server.close(); } catch (e) {}
-    try { fs.unlinkSync(socketPath); } catch (e) {}
+    if (!inherited) { try { fs.unlinkSync(socketPath); } catch (e) {} }
   }
   return { close: close, tick: tick, state: publicState, command: command };
 }

@@ -30,12 +30,12 @@ function model(state) {
         cameraStatus: connected ? (s.enabled ? 'Предупреждения включены' : 'Предупреждения выключены') : 'Сервис недоступен',
         cameraAlert: a ? clean(a.title || TYPES[a.type] || a.type, 'Камера') + ' • ' + distance(a.distance) + (a.limit ? ' • лимит ' + a.limit : '') :
             s.nearest ? 'Объект рядом: ' + distance(s.nearest.distanceM) + ' • дорога не подтверждена' : 'Активных предупреждений нет',
-        cameraDatabase: 'База: ' + clean(db.source, 'нет источника') + ' • ' + count + ' объектов',
-        cameraDate: 'Дата базы: ' + date(db.updated || db.generatedAt || db.sourceUpdated),
+        cameraDatabase: connected ? 'База: ' + clean(db.source, 'нет источника') + ' • ' + count + ' объектов' : 'База: ожидание ответа сервиса',
+        cameraDate: connected ? 'Дата базы: ' + date(db.updated || db.generatedAt || db.sourceUpdated) : 'Дата базы: ожидание ответа сервиса',
         cameraGps: 'Положение: ' + clean(s.gps, 'нет подтверждённых координат'),
         cameraCluster: 'Приборная панель: ' + (outputs.cluster === true ? 'вкл' : 'выкл'),
         cameraHud: 'Проекция HUD: ' + (outputs.hud === true ? 'вкл' : 'выкл'),
-        cameraInfo: 'Стендовый кандидат • Калужская область',
+        cameraInfo: s.storage && s.storage.persistent === false ? 'Настройки временные: хранилище недоступно' : 'Калужская область',
         cameraDiagnostics: 'Диагностика'
     };
     if (db.error) text.cameraDate += ' • ошибка базы';
@@ -44,7 +44,7 @@ function model(state) {
         cameraDisable: connected && !!s.enabled,
         cameraCluster: connected && !!(s.capabilities && s.capabilities.outputs),
         cameraHud: connected && !!(s.capabilities && s.capabilities.outputs),
-        cameraDiagnostics: connected
+        cameraDiagnostics: true
     } };
 }
 function outputCommand(state, target) {

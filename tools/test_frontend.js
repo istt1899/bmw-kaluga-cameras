@@ -13,6 +13,9 @@ check('offline service cannot issue control commands', () => {
     assert.strictEqual(view.enabled.cameraEnable, false);
     assert.strictEqual(view.enabled.cameraCluster, false);
     assert.strictEqual(outputCommand(null, 'hud'), null);
+    assert(view.text.cameraDatabase.includes('ожидание ответа'));
+    assert(!view.text.cameraDatabase.includes('0 объектов'));
+    assert.strictEqual(view.enabled.cameraDiagnostics, true);
 });
 check('outputs default off and require explicit capability', () => {
     const s = { enabled: false };

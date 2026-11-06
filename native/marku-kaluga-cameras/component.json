@@ -1,7 +1,7 @@
 {
   "id": "marku-kaluga-cameras",
   "kind": "tool",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "title": "Kaluga Cameras service",
   "description": "Local Kaluga OSM camera snapshot, strict GPS diagnostics and optional verified-road camera alerts",
   "optional": true,
@@ -52,17 +52,28 @@
     {
       "path": "LICENSE.MPL-2.0",
       "mode": "0644"
+    },
+    {
+      "path": "check.js",
+      "mode": "0644"
     }
   ],
   "units": [
     {
       "name": "marku-kaluga-cameras.service"
+    },
+    {
+      "name": "marku-kaluga-cameras.socket"
     }
   ],
   "enable": [
     {
       "unit": "marku-kaluga-cameras.service",
       "target": "multi-user.target"
+    },
+    {
+      "unit": "marku-kaluga-cameras.socket",
+      "target": "sockets.target"
     }
   ],
   "recmgr": [
@@ -70,5 +81,8 @@
   ],
   "restart": [
     "marku-kaluga-cameras.service"
+  ],
+  "check": [
+    "check.js"
   ]
 }

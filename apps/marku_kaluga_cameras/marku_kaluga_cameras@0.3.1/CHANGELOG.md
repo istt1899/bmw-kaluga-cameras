@@ -1,3 +1,7 @@
+# Waze Стрелка 0.3.1
+
+Preserve complete GNSS measurements across staggered RMC/GGA/GST epochs, keep stopped-approach notices, display typed/model camera cards and explicit proximity notices. Dedicated detailed diagnostics with frozen snapshots and parked-only five-second display test. Alert layers contend for their enabled targets without being exclusive. Camera metadata retains original OSM enforcement/description tags.
+
 # Waze Стрелка 0.3.0
 
 Read-only BMW SatellitePositioning NMEA bridge, background GPS activity after the first manual launch, separate native decoder and visible reception counters. No guessed CAN units or HDOP-to-metres conversion. GPS stream availability on the target car still needs verification.

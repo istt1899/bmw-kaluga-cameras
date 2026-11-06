@@ -63,6 +63,9 @@ class CameraControl extends EventEmitter {
                     clearTimeout(this.statusTimer); this.statusTimer = null;
                     this.state = msg.state; this.emit('change');
                 }
+                if (msg.ev === 'error' && typeof msg.error === 'string') {
+                    this.commandError = msg.error.replace(/[\r\n\t]/g, ' ').slice(0,180); this.emit('change');
+                }
             }
         });
         sock.on('close', () => {
@@ -74,6 +77,7 @@ class CameraControl extends EventEmitter {
     }
     send(message) {
         if (!this.sock || this.link !== 'up') return false;
+        if (message.cmd !== 'status') this.commandError = null;
         this.sock.write(JSON.stringify(message) + '\n');
         return true;
     }

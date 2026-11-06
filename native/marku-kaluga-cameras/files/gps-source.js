@@ -41,21 +41,27 @@ function sentence(line) {
   return { kind: m[2], checksum: sum === parseInt(m[4], 16), fields: body.split(',') };
 }
 function todDelta(a, b) { return (a - b + DAY * 1.5) % DAY - DAY / 2; }
+var EPOCH_TOLERANCE = 100; // Not a neighbouring half-second NMEA epoch.
 function GpsDecoder(now, nmeaSource) {
   EventEmitter.call(this); this.now = now || Date.now; this.nmeaSource = nmeaSource === 'bmw-nmea' ? nmeaSource : 'nmea';
-  this.last = {}; this.parts = {}; this.rmc = null; this.gga = null; this.gst = null;
+  this.last = {}; this.complete = {}; this.parts = {}; this.rmc = null; this.gga = null; this.gst = null;
   this.lastParsedUtc = null; this.lastRejectReason = null;
 }
 GpsDecoder.prototype = Object.create(EventEmitter.prototype);
 GpsDecoder.prototype.constructor = GpsDecoder;
-GpsDecoder.prototype.invalidate = function (source, reason) { this.last[source] = null; if (source === this.nmeaSource) this.lastRejectReason = reason; this.emit('quality', source + ': ' + reason); };
+GpsDecoder.prototype.invalidate = function (source, reason) { this.last[source] = null; this.complete[source] = null; if (source === this.nmeaSource) this.lastRejectReason = reason; this.emit('quality', source + ': ' + reason); };
 GpsDecoder.prototype.accept = function (fix) {
   var now = this.now();
   if (!fresh(fix.timeMs, now)) { this.invalidate(fix.source, 'stale or future source UTC'); return; }
   if (!number(fix.lat) || !number(fix.lon) || Math.abs(fix.lat) > 90 || Math.abs(fix.lon) > 180) return;
   var previous = this.last[fix.source];
   if (previous && fix.timeMs < previous.timeMs) { this.emit('quality', fix.source + ': out-of-order source UTC'); return; }
-  this.last[fix.source] = fix; if (fix.source === this.nmeaSource) this.lastRejectReason = null; this.emit('fix', fix);
+  this.last[fix.source] = fix;
+  // NMEA sentences arrive separately and at different rates. Retain the last
+  // complete measurement, with ITS original UTC, while the next epoch is being
+  // assembled. Never attach an old GST's accuracy to newer coordinates.
+  if (fix.source === this.nmeaSource && number(fix.accuracyM) && fix.accuracyM > 0) this.complete[fix.source] = fix;
+  if (fix.source === this.nmeaSource) this.lastRejectReason = null; this.emit('fix', fix);
 };
 GpsDecoder.prototype.json = function (obj) {
   if (!obj || obj.class !== 'TPV') return;
@@ -102,13 +108,13 @@ GpsDecoder.prototype.line = function (line) {
       lat: coordinate(p[2], p[3], false), lon: coordinate(p[4], p[5], true) };
   } else this.gst = { tod: t, received: now, timeMs: null, latSigma: numeric(p[6]), lonSigma: numeric(p[7]) };
   var r = this.rmc, g = this.gga, gst = this.gst;
-  function bind(part) { if (part && part.timeMs === null && fresh(part.received, now) && Math.abs(todDelta(part.tod, r.tod)) <= 500) part.timeMs = r.timeMs + todDelta(part.tod, r.tod); }
+  function bind(part) { if (part && part.timeMs === null && fresh(part.received, now) && Math.abs(todDelta(part.tod, r.tod)) <= EPOCH_TOLERANCE) part.timeMs = r.timeMs + todDelta(part.tod, r.tod); }
   if (!r || !g || !fresh(r.timeMs, now) || !fresh(r.received, now)) return parsed;
   bind(g); bind(gst);
-  if (!fresh(g.received, now) || !fresh(g.timeMs, now) || Math.abs(g.timeMs - r.timeMs) > 500 ||
+  if (!fresh(g.received, now) || !fresh(g.timeMs, now) || Math.abs(g.timeMs - r.timeMs) > EPOCH_TOLERANCE ||
       !number(g.lat) || !number(g.lon) || distance(r, g) > 50) return parsed;
   var accuracy = null;
-  if (gst && fresh(gst.received, now) && fresh(gst.timeMs, now) && Math.abs(gst.timeMs - r.timeMs) <= 500 && gst.latSigma > 0 && gst.lonSigma > 0)
+  if (gst && fresh(gst.received, now) && fresh(gst.timeMs, now) && Math.abs(gst.timeMs - r.timeMs) <= EPOCH_TOLERANCE && gst.latSigma > 0 && gst.lonSigma > 0)
     accuracy = 2 * Math.sqrt(gst.latSigma * gst.latSigma + gst.lonSigma * gst.lonSigma);
   this.accept({ lat: r.lat, lon: r.lon, speedKmh: r.speedKmh,
     headingDeg: number(r.headingDeg) && r.headingDeg >= 0 && r.headingDeg <= 360 ? r.headingDeg % 360 : null,
@@ -119,6 +125,8 @@ GpsDecoder.prototype.current = function (now) {
   var self = this, best = null;
   ['gpsd', this.nmeaSource].forEach(function (source) {
     var fix = self.last[source];
+    var complete = self.complete[source];
+    if (fix && !number(fix.accuracyM) && complete && fresh(complete.timeMs, now)) fix = complete;
     if (fix && fresh(fix.timeMs, now) && (!best || fix.timeMs > best.timeMs || (fix.timeMs === best.timeMs && number(fix.accuracyM) && !number(best.accuracyM)))) best = fix;
   });
   return best;
@@ -144,6 +152,7 @@ GpsProvider.prototype.setBridgeStatus = function (state, errorCode) {
   if (state !== 'subscribed') {
     this.bmwDecoder.rmc = this.bmwDecoder.gga = this.bmwDecoder.gst = null;
     this.bmwDecoder.last['bmw-nmea'] = null;
+    this.bmwDecoder.complete['bmw-nmea'] = null;
   }
 };
 GpsProvider.prototype.inputNmea = function (data) {

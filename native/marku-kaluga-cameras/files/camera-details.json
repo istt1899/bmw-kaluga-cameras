@@ -1,0 +1,2427 @@
+{
+  "schema": 1,
+  "source": "OpenStreetMap",
+  "licence": "ODbL-1.0",
+  "retrievedAt": "2026-11-06T13:14:38.143247Z",
+  "region": "RU-KLU",
+  "basePbfMd5": "bd360458900c604d889f78d73ef66f64",
+  "sources": [
+    {
+      "url": "https://api.openstreetmap.org/api/0.6/nodes.json?nodes=1012784497,10701120297,10701120669,10701882541,10702051097,10702087782,10703715408,10703730416,10703750305,10703759469,11075733660,11075733662,11075733663,11844942961,11980400006,12157150894,12157150895,12533688403,12533688404,12533688405,12558840835,12728621919,12960088574,13188427618,13340703428,13947831811,1719934165,1839817421,3672969290,3833498200,429173295,4330543556,4404141896,4705938932,471823413,4859646573,4859646574,4859646575,4859646576,4894998571,4936539514,4936539927,5226354522,5226354525,5576652656,6218550482,6256518234,6618635447,6631386746,6653023362",
+      "sha256": "90c2b6c37f8ef2a1446dcd531e81d9727d42f847ed58258cd7d17c29267f39bc"
+    },
+    {
+      "url": "https://api.openstreetmap.org/api/0.6/nodes.json?nodes=6790661770,6795168747,6795168748,6925414141,7041621292,7041621293,7043820053,7043823140,7043825245,7043832492,7043840320,7043840329,7043841293,7043841294,7043843796,7043843810,7043844223,7043846606,7043852108,7043853592,7043854388,7043854389,7043857456,7043870487,7044943461,7044945984,7044951869,7044954248,7044958024,7044965830,7044965884,7044970608,7044970609,7044972642,7044972643,7044972797,7044972798,7044973016,7044973350,7044976322,7044979963,7044979964,7044981767,7044981768,7044983768,7044984863,7044986016,7044986914,7044986915,7044990370",
+      "sha256": "214ea4c1fd22fd4d780919703e98a2e489639c244fdcd4c3db269e70c07a2cfc"
+    },
+    {
+      "url": "https://api.openstreetmap.org/api/0.6/nodes.json?nodes=7044990371,7044990582,7045018369,7045019057,7045019626,7045020396,7045025141,7045027073,7045029810,7045031623,7045038100,7045038509,7045039084,7045045899,7045045900,7045050406,7045058543,7045058616,7045086922,7045096141,7045098159,7045103016,7045104751,7045107263,7045107340,7082388046,7096532783,7096537786,7096896991,7133061392,7355029629,7355037497,7355040397,7355042500,7430929084,7430944610,85248954,85249051,85249087,8818053938,8836910086,8836910087,90045447,90128838,9122793925,9197861273,9197929340,9199164920,9205201197,9205201207",
+      "sha256": "836aceef6232c704149a22affa0e3e6c64bd8722d15787bc2f3056e80f8f9e9c"
+    }
+  ],
+  "records": {
+    "osm:node:429173295": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/429173295",
+      "osmVersion": 5,
+      "osmTimestamp": "2019-12-24T13:14:38Z",
+      "position": {
+        "lat": 54.482394,
+        "lon": 35.0595509
+      }
+    },
+    "osm:node:471823413": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/471823413",
+      "osmVersion": 5,
+      "osmTimestamp": "2022-05-12T18:34:03Z",
+      "position": {
+        "lat": 54.5139529,
+        "lon": 36.2085319
+      }
+    },
+    "osm:node:1012784497": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/1012784497",
+      "osmVersion": 5,
+      "osmTimestamp": "2022-05-12T18:34:03Z",
+      "position": {
+        "lat": 54.5138529,
+        "lon": 36.2083904
+      }
+    },
+    "osm:node:1719934165": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/1719934165",
+      "osmVersion": 3,
+      "osmTimestamp": "2019-12-24T13:13:32Z",
+      "position": {
+        "lat": 54.400617,
+        "lon": 35.727934
+      }
+    },
+    "osm:node:1839817421": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/1839817421",
+      "osmVersion": 2,
+      "osmTimestamp": "2019-12-09T21:21:30Z",
+      "position": {
+        "lat": 54.5506474,
+        "lon": 36.2795341
+      }
+    },
+    "osm:node:3672969290": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/3672969290",
+      "osmVersion": 4,
+      "osmTimestamp": "2023-11-03T17:59:01Z",
+      "position": {
+        "lat": 55.2082268,
+        "lon": 36.945437
+      }
+    },
+    "osm:node:3833498200": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/3833498200",
+      "osmVersion": 1,
+      "osmTimestamp": "2015-11-12T22:27:41Z",
+      "position": {
+        "lat": 53.8092561,
+        "lon": 34.3455667
+      }
+    },
+    "osm:node:4330543556": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/4330543556",
+      "osmVersion": 4,
+      "osmTimestamp": "2022-05-12T18:44:52Z",
+      "position": {
+        "lat": 54.5223743,
+        "lon": 36.1920173
+      }
+    },
+    "osm:node:4404141896": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/4404141896",
+      "osmVersion": 2,
+      "osmTimestamp": "2025-05-26T18:11:41Z",
+      "position": {
+        "lat": 54.3672834,
+        "lon": 36.7064741
+      }
+    },
+    "osm:node:4705938932": {
+      "controls": [
+        "speed"
+      ],
+      "description": "Антивандальный ящик",
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/4705938932",
+      "osmVersion": 4,
+      "osmTimestamp": "2020-04-01T16:34:35Z",
+      "position": {
+        "lat": 54.0814465,
+        "lon": 34.3208529
+      }
+    },
+    "osm:node:4859646573": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/4859646573",
+      "osmVersion": 8,
+      "osmTimestamp": "2023-08-25T09:00:57Z",
+      "position": {
+        "lat": 55.1223648,
+        "lon": 36.6363124
+      }
+    },
+    "osm:node:4859646574": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/4859646574",
+      "osmVersion": 8,
+      "osmTimestamp": "2023-08-25T09:00:57Z",
+      "position": {
+        "lat": 55.1222534,
+        "lon": 36.636266
+      }
+    },
+    "osm:node:4859646575": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/4859646575",
+      "osmVersion": 4,
+      "osmTimestamp": "2022-11-09T06:54:25Z",
+      "position": {
+        "lat": 55.1228629,
+        "lon": 36.6091277
+      }
+    },
+    "osm:node:4859646576": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/4859646576",
+      "osmVersion": 5,
+      "osmTimestamp": "2026-09-28T21:04:46Z",
+      "position": {
+        "lat": 55.1183014,
+        "lon": 36.6472881
+      }
+    },
+    "osm:node:4894998571": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/4894998571",
+      "osmVersion": 2,
+      "osmTimestamp": "2019-01-18T12:22:29Z",
+      "position": {
+        "lat": 55.2603606,
+        "lon": 36.5245577
+      }
+    },
+    "osm:node:4936539514": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/4936539514",
+      "osmVersion": 3,
+      "osmTimestamp": "2022-11-09T06:54:25Z",
+      "position": {
+        "lat": 55.1229564,
+        "lon": 36.6089911
+      }
+    },
+    "osm:node:4936539927": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/4936539927",
+      "osmVersion": 3,
+      "osmTimestamp": "2024-05-29T12:21:44Z",
+      "position": {
+        "lat": 55.1311287,
+        "lon": 36.6169537
+      }
+    },
+    "osm:node:5226354522": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5226354522",
+      "osmVersion": 2,
+      "osmTimestamp": "2019-12-09T12:24:16Z",
+      "position": {
+        "lat": 54.9071159,
+        "lon": 36.3775818
+      }
+    },
+    "osm:node:5226354525": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5226354525",
+      "osmVersion": 3,
+      "osmTimestamp": "2019-12-09T12:23:26Z",
+      "position": {
+        "lat": 54.911847,
+        "lon": 36.3847598
+      }
+    },
+    "osm:node:5576652656": {
+      "controls": [
+        "speed"
+      ],
+      "description": "Антивандальный ящик",
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/5576652656",
+      "osmVersion": 4,
+      "osmTimestamp": "2021-07-21T09:59:12Z",
+      "position": {
+        "lat": 54.0554763,
+        "lon": 34.3076117
+      }
+    },
+    "osm:node:6218550482": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/6218550482",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-01-18T12:22:23Z",
+      "position": {
+        "lat": 55.2603702,
+        "lon": 36.5245457
+      }
+    },
+    "osm:node:6256518234": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/6256518234",
+      "osmVersion": 3,
+      "osmTimestamp": "2022-05-12T19:20:56Z",
+      "position": {
+        "lat": 54.5191496,
+        "lon": 35.6703633
+      }
+    },
+    "osm:node:6618635447": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/6618635447",
+      "osmVersion": 3,
+      "osmTimestamp": "2026-03-12T06:46:22Z",
+      "position": {
+        "lat": 54.5411719,
+        "lon": 36.5575517
+      }
+    },
+    "osm:node:6631386746": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/6631386746",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-07-19T13:04:56Z",
+      "position": {
+        "lat": 54.907227,
+        "lon": 35.6910477
+      }
+    },
+    "osm:node:6653023362": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/6653023362",
+      "osmVersion": 2,
+      "osmTimestamp": "2023-10-18T12:07:09Z",
+      "position": {
+        "lat": 55.0724724,
+        "lon": 36.6152557
+      }
+    },
+    "osm:node:10701120297": {
+      "controls": [
+        "speed"
+      ],
+      "description": "Адрес установки\nа/д \"Людиново-Жиздра - а/д М-3 \"Украина\" 1 км плюс 991 м, Людиновский р-н, Калужская обл.",
+      "ref": "Кордон.ПроМ PM0367",
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/10701120297",
+      "osmVersion": 3,
+      "osmTimestamp": "2023-03-02T06:42:04Z",
+      "position": {
+        "lat": 53.8170072,
+        "lon": 34.5255679
+      }
+    },
+    "osm:node:10701120669": {
+      "controls": [
+        "speed"
+      ],
+      "description": "Адрес установки\nа/д \"А101 Брянск-Людиново-Киров\" 75км плюс 730м, Людиновский р-н, Калужская обл.",
+      "ref": "DKS02270-DKL02272",
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/10701120669",
+      "osmVersion": 4,
+      "osmTimestamp": "2023-03-14T06:31:52Z",
+      "position": {
+        "lat": 53.9215374,
+        "lon": 34.3937554
+      }
+    },
+    "osm:node:10701882541": {
+      "controls": [
+        "speed"
+      ],
+      "description": "Адрес установки\nа/д \"А101 Брянск-Людиново-Киров\" 71км плюс 600м, Людиновский р-н, Калужская обл.",
+      "ref": "DKS02270-DKL02271",
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/10701882541",
+      "osmVersion": 2,
+      "osmTimestamp": "2023-03-02T06:44:45Z",
+      "position": {
+        "lat": 53.8878381,
+        "lon": 34.4210744
+      }
+    },
+    "osm:node:10702051097": {
+      "controls": [
+        "speed"
+      ],
+      "description": "ул.Ленина, д. 10, г. Киров, Кировский р-н, Калужская обл",
+      "ref": "MD1279",
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/10702051097",
+      "osmVersion": 2,
+      "osmTimestamp": "2023-03-02T06:51:09Z",
+      "position": {
+        "lat": 54.0704561,
+        "lon": 34.2977756
+      }
+    },
+    "osm:node:10702087782": {
+      "controls": [
+        "speed"
+      ],
+      "description": "а/д \"Брянск-Людиново-Киров - А-101\" 110км плюс 085м, Кировский р-н, Калужская обл.",
+      "ref": "MD1281",
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/10702087782",
+      "osmVersion": 3,
+      "osmTimestamp": "2023-03-14T06:37:34Z",
+      "position": {
+        "lat": 54.1929051,
+        "lon": 34.3445416
+      }
+    },
+    "osm:node:10703715408": {
+      "controls": [
+        "speed"
+      ],
+      "description": "а/д \"Людиново-Жиздра - а/д М-3 \"Украина\" 19 км плюс 048 м, Жиздринский р-н, Калужская обл.",
+      "ref": "Кордон.ПроМ PM0371",
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/10703715408",
+      "osmVersion": 1,
+      "osmTimestamp": "2023-03-02T07:00:08Z",
+      "position": {
+        "lat": 53.7562576,
+        "lon": 34.741201
+      }
+    },
+    "osm:node:10703730416": {
+      "controls": [
+        "speed"
+      ],
+      "description": "а/д \"А-130 Москва-Малоярославец-Рославль-граница с Республикой Белоруссия\" 208км плюс 349м, г. Юхнов, Юхновский р-н, Калужская обл.",
+      "ref": "ДЕКАРТ DSBF004",
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/10703730416",
+      "osmVersion": 1,
+      "osmTimestamp": "2023-03-02T07:11:25Z",
+      "position": {
+        "lat": 54.744036,
+        "lon": 35.2338824
+      }
+    },
+    "osm:node:10703750305": {
+      "controls": [
+        "speed"
+      ],
+      "description": "ул. Кирова, д. 62, г. Медынь, Медынский р-н, Калужская обл.",
+      "ref": "1611003",
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/10703750305",
+      "osmVersion": 2,
+      "osmTimestamp": "2023-05-30T19:25:26Z",
+      "position": {
+        "lat": 54.9723495,
+        "lon": 35.8591926
+      }
+    },
+    "osm:node:10703759469": {
+      "controls": [
+        "speed"
+      ],
+      "description": "а/д \"Калуга-Медынь\" 59 км плюс 584 м (вблизи н.п. Медынь), Медынский р-н, Калужская обл.",
+      "ref": "АПВГК 0450100021119",
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/10703759469",
+      "osmVersion": 1,
+      "osmTimestamp": "2023-03-02T07:26:53Z",
+      "position": {
+        "lat": 54.9512524,
+        "lon": 35.8824024
+      }
+    },
+    "osm:node:11075733660": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/11075733660",
+      "osmVersion": 1,
+      "osmTimestamp": "2023-07-29T19:42:45Z",
+      "position": {
+        "lat": 54.3955252,
+        "lon": 34.190028
+      }
+    },
+    "osm:node:11075733662": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/11075733662",
+      "osmVersion": 1,
+      "osmTimestamp": "2023-07-29T19:42:45Z",
+      "position": {
+        "lat": 54.4834006,
+        "lon": 34.4170421
+      }
+    },
+    "osm:node:11075733663": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/11075733663",
+      "osmVersion": 1,
+      "osmTimestamp": "2023-07-29T19:42:45Z",
+      "position": {
+        "lat": 54.5877888,
+        "lon": 34.6739768
+      }
+    },
+    "osm:node:11844942961": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/11844942961",
+      "osmVersion": 1,
+      "osmTimestamp": "2024-04-24T17:08:44Z",
+      "position": {
+        "lat": 55.0053444,
+        "lon": 36.4395736
+      }
+    },
+    "osm:node:11980400006": {
+      "controls": [
+        "speed",
+        "redlight"
+      ],
+      "description": "«Кордон-Кросс» CCR0047",
+      "ref": null,
+      "operator": null,
+      "enforcement": "traffic_signals",
+      "sourceUrl": "https://www.openstreetmap.org/node/11980400006",
+      "osmVersion": 4,
+      "osmTimestamp": "2025-12-07T07:05:27Z",
+      "position": {
+        "lat": 54.5175906,
+        "lon": 36.2486282
+      }
+    },
+    "osm:node:12157150894": {
+      "controls": [
+        "speed",
+        "redlight"
+      ],
+      "description": "«Кордон-Кросс» CCR0047",
+      "ref": null,
+      "operator": null,
+      "enforcement": "traffic_signals",
+      "sourceUrl": "https://www.openstreetmap.org/node/12157150894",
+      "osmVersion": 3,
+      "osmTimestamp": "2025-12-07T07:05:27Z",
+      "position": {
+        "lat": 54.5175794,
+        "lon": 36.2487196
+      }
+    },
+    "osm:node:12157150895": {
+      "controls": [
+        "speed",
+        "redlight"
+      ],
+      "description": "«Кордон-Кросс» CCR0047",
+      "ref": null,
+      "operator": null,
+      "enforcement": "traffic_signals",
+      "sourceUrl": "https://www.openstreetmap.org/node/12157150895",
+      "osmVersion": 3,
+      "osmTimestamp": "2025-12-07T07:05:27Z",
+      "position": {
+        "lat": 54.5175625,
+        "lon": 36.2486655
+      }
+    },
+    "osm:node:12533688403": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/12533688403",
+      "osmVersion": 1,
+      "osmTimestamp": "2025-01-26T10:02:38Z",
+      "position": {
+        "lat": 54.4928399,
+        "lon": 34.4439829
+      }
+    },
+    "osm:node:12533688404": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/12533688404",
+      "osmVersion": 1,
+      "osmTimestamp": "2025-01-26T10:02:38Z",
+      "position": {
+        "lat": 54.5119005,
+        "lon": 34.4873672
+      }
+    },
+    "osm:node:12533688405": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/12533688405",
+      "osmVersion": 1,
+      "osmTimestamp": "2025-01-26T10:02:38Z",
+      "position": {
+        "lat": 54.6422637,
+        "lon": 34.8716125
+      }
+    },
+    "osm:node:12558840835": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/12558840835",
+      "osmVersion": 1,
+      "osmTimestamp": "2025-02-05T12:55:47Z",
+      "position": {
+        "lat": 54.5500892,
+        "lon": 36.2884774
+      }
+    },
+    "osm:node:12728621919": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/12728621919",
+      "osmVersion": 1,
+      "osmTimestamp": "2025-04-04T11:30:59Z",
+      "position": {
+        "lat": 55.103714,
+        "lon": 35.9507816
+      }
+    },
+    "osm:node:12960088574": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/12960088574",
+      "osmVersion": 1,
+      "osmTimestamp": "2025-06-28T21:20:23Z",
+      "position": {
+        "lat": 54.6197786,
+        "lon": 36.2844134
+      }
+    },
+    "osm:node:13188427618": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/13188427618",
+      "osmVersion": 1,
+      "osmTimestamp": "2025-10-02T09:19:55Z",
+      "position": {
+        "lat": 55.0263322,
+        "lon": 36.7272577
+      }
+    },
+    "osm:node:13340703428": {
+      "controls": [
+        "speed"
+      ],
+      "description": "«Кордон-Кросс» CCR0047",
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/13340703428",
+      "osmVersion": 2,
+      "osmTimestamp": "2025-12-07T07:05:27Z",
+      "position": {
+        "lat": 54.5176062,
+        "lon": 36.248689
+      }
+    },
+    "osm:node:13947831811": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/13947831811",
+      "osmVersion": 1,
+      "osmTimestamp": "2026-06-17T14:10:48Z",
+      "position": {
+        "lat": 54.7610308,
+        "lon": 35.2835233
+      }
+    },
+    "osm:node:6790661770": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/6790661770",
+      "osmVersion": 3,
+      "osmTimestamp": "2021-04-25T18:07:33Z",
+      "position": {
+        "lat": 54.5719784,
+        "lon": 36.1153261
+      }
+    },
+    "osm:node:6795168747": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/6795168747",
+      "osmVersion": 2,
+      "osmTimestamp": "2019-12-09T12:21:38Z",
+      "position": {
+        "lat": 54.9829647,
+        "lon": 36.4993423
+      }
+    },
+    "osm:node:6795168748": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/6795168748",
+      "osmVersion": 2,
+      "osmTimestamp": "2019-12-09T12:21:38Z",
+      "position": {
+        "lat": 54.982892,
+        "lon": 36.4994694
+      }
+    },
+    "osm:node:6925414141": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/6925414141",
+      "osmVersion": 2,
+      "osmTimestamp": "2019-12-09T21:29:23Z",
+      "position": {
+        "lat": 54.5174687,
+        "lon": 35.8624866
+      }
+    },
+    "osm:node:7041621292": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7041621292",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-08T11:37:43Z",
+      "position": {
+        "lat": 55.2222485,
+        "lon": 36.5651399
+      }
+    },
+    "osm:node:7041621293": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7041621293",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-08T11:37:43Z",
+      "position": {
+        "lat": 55.2222501,
+        "lon": 36.5651017
+      }
+    },
+    "osm:node:7043820053": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": "1804047",
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7043820053",
+      "osmVersion": 4,
+      "osmTimestamp": "2023-12-02T19:56:59Z",
+      "position": {
+        "lat": 54.9542091,
+        "lon": 35.8789566
+      }
+    },
+    "osm:node:7043823140": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7043823140",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T12:20:22Z",
+      "position": {
+        "lat": 54.9859797,
+        "lon": 36.2575199
+      }
+    },
+    "osm:node:7043825245": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": "ДЕКАРТ DSBF003",
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7043825245",
+      "osmVersion": 4,
+      "osmTimestamp": "2025-05-15T07:16:43Z",
+      "position": {
+        "lat": 54.6020843,
+        "lon": 34.725745
+      }
+    },
+    "osm:node:7043832492": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7043832492",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T12:19:23Z",
+      "position": {
+        "lat": 54.9294963,
+        "lon": 35.7504361
+      }
+    },
+    "osm:node:7043840320": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7043840320",
+      "osmVersion": 2,
+      "osmTimestamp": "2023-11-17T15:15:32Z",
+      "position": {
+        "lat": 54.6031139,
+        "lon": 36.0495994
+      }
+    },
+    "osm:node:7043840329": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7043840329",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T12:31:57Z",
+      "position": {
+        "lat": 55.0589936,
+        "lon": 35.9076896
+      }
+    },
+    "osm:node:7043841293": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7043841293",
+      "osmVersion": 2,
+      "osmTimestamp": "2020-09-14T17:13:40Z",
+      "position": {
+        "lat": 54.907045,
+        "lon": 36.3772185
+      }
+    },
+    "osm:node:7043841294": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7043841294",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T12:29:43Z",
+      "position": {
+        "lat": 54.7949677,
+        "lon": 35.9537147
+      }
+    },
+    "osm:node:7043843796": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7043843796",
+      "osmVersion": 2,
+      "osmTimestamp": "2020-01-15T09:53:53Z",
+      "position": {
+        "lat": 54.9656974,
+        "lon": 35.8954055
+      }
+    },
+    "osm:node:7043843810": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7043843810",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T12:27:17Z",
+      "position": {
+        "lat": 54.6136691,
+        "lon": 36.0383611
+      }
+    },
+    "osm:node:7043844223": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7043844223",
+      "osmVersion": 2,
+      "osmTimestamp": "2023-02-06T07:23:41Z",
+      "position": {
+        "lat": 55.0524229,
+        "lon": 36.5673375
+      }
+    },
+    "osm:node:7043846606": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7043846606",
+      "osmVersion": 2,
+      "osmTimestamp": "2020-01-18T20:04:19Z",
+      "position": {
+        "lat": 54.7481481,
+        "lon": 35.9884067
+      }
+    },
+    "osm:node:7043852108": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7043852108",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T12:28:21Z",
+      "position": {
+        "lat": 54.7314863,
+        "lon": 35.9872855
+      }
+    },
+    "osm:node:7043853592": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7043853592",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T12:25:28Z",
+      "position": {
+        "lat": 54.8181859,
+        "lon": 36.317232
+      }
+    },
+    "osm:node:7043854388": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7043854388",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T12:26:09Z",
+      "position": {
+        "lat": 54.7975437,
+        "lon": 36.295615
+      }
+    },
+    "osm:node:7043854389": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7043854389",
+      "osmVersion": 2,
+      "osmTimestamp": "2020-12-21T13:41:55Z",
+      "position": {
+        "lat": 54.801776,
+        "lon": 36.2955055
+      }
+    },
+    "osm:node:7043857456": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7043857456",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T12:27:45Z",
+      "position": {
+        "lat": 54.6573172,
+        "lon": 36.0313563
+      }
+    },
+    "osm:node:7043870487": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7043870487",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T12:31:22Z",
+      "position": {
+        "lat": 55.0185338,
+        "lon": 35.8807683
+      }
+    },
+    "osm:node:7044943461": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044943461",
+      "osmVersion": 2,
+      "osmTimestamp": "2025-03-12T12:27:49Z",
+      "position": {
+        "lat": 54.3304145,
+        "lon": 36.1806659
+      }
+    },
+    "osm:node:7044945984": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044945984",
+      "osmVersion": 2,
+      "osmTimestamp": "2023-03-09T07:02:23Z",
+      "position": {
+        "lat": 54.4858833,
+        "lon": 36.200548
+      }
+    },
+    "osm:node:7044951869": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044951869",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T20:33:18Z",
+      "position": {
+        "lat": 54.3225268,
+        "lon": 36.1793877
+      }
+    },
+    "osm:node:7044954248": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044954248",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T20:34:53Z",
+      "position": {
+        "lat": 54.4639291,
+        "lon": 36.2362123
+      }
+    },
+    "osm:node:7044958024": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044958024",
+      "osmVersion": 2,
+      "osmTimestamp": "2020-09-07T08:23:16Z",
+      "position": {
+        "lat": 54.4900224,
+        "lon": 36.1883621
+      }
+    },
+    "osm:node:7044965830": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044965830",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T20:46:11Z",
+      "position": {
+        "lat": 54.5079753,
+        "lon": 36.2364175
+      }
+    },
+    "osm:node:7044965884": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044965884",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T21:04:39Z",
+      "position": {
+        "lat": 54.5598836,
+        "lon": 36.2622238
+      }
+    },
+    "osm:node:7044970608": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044970608",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T20:38:50Z",
+      "position": {
+        "lat": 54.4751828,
+        "lon": 36.2362604
+      }
+    },
+    "osm:node:7044970609": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044970609",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T20:38:50Z",
+      "position": {
+        "lat": 54.4751877,
+        "lon": 36.2363996
+      }
+    },
+    "osm:node:7044972642": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044972642",
+      "osmVersion": 2,
+      "osmTimestamp": "2020-02-13T20:13:07Z",
+      "position": {
+        "lat": 54.5297212,
+        "lon": 36.1729806
+      }
+    },
+    "osm:node:7044972643": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044972643",
+      "osmVersion": 2,
+      "osmTimestamp": "2020-02-13T20:13:07Z",
+      "position": {
+        "lat": 54.52976,
+        "lon": 36.1730671
+      }
+    },
+    "osm:node:7044972797": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044972797",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T20:45:28Z",
+      "position": {
+        "lat": 54.4976401,
+        "lon": 36.2286171
+      }
+    },
+    "osm:node:7044972798": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044972798",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T20:45:28Z",
+      "position": {
+        "lat": 54.4977372,
+        "lon": 36.2288065
+      }
+    },
+    "osm:node:7044973016": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044973016",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T20:56:43Z",
+      "position": {
+        "lat": 54.5143167,
+        "lon": 36.2821894
+      }
+    },
+    "osm:node:7044973350": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044973350",
+      "osmVersion": 2,
+      "osmTimestamp": "2025-04-30T08:06:17Z",
+      "position": {
+        "lat": 54.4893769,
+        "lon": 36.1907613
+      }
+    },
+    "osm:node:7044976322": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044976322",
+      "osmVersion": 2,
+      "osmTimestamp": "2024-08-01T11:30:25Z",
+      "position": {
+        "lat": 54.5380319,
+        "lon": 36.7489418
+      }
+    },
+    "osm:node:7044979963": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044979963",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T20:46:59Z",
+      "position": {
+        "lat": 54.5111197,
+        "lon": 36.2344213
+      }
+    },
+    "osm:node:7044979964": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044979964",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T20:46:59Z",
+      "position": {
+        "lat": 54.511034,
+        "lon": 36.2345384
+      }
+    },
+    "osm:node:7044981767": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044981767",
+      "osmVersion": 2,
+      "osmTimestamp": "2021-01-19T09:19:58Z",
+      "position": {
+        "lat": 54.5467285,
+        "lon": 36.147198
+      }
+    },
+    "osm:node:7044981768": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044981768",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T20:51:12Z",
+      "position": {
+        "lat": 54.5466715,
+        "lon": 36.1471033
+      }
+    },
+    "osm:node:7044983768": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044983768",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T20:59:55Z",
+      "position": {
+        "lat": 54.5283347,
+        "lon": 36.2950835
+      }
+    },
+    "osm:node:7044984863": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044984863",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T20:55:47Z",
+      "position": {
+        "lat": 54.5155433,
+        "lon": 36.3224598
+      }
+    },
+    "osm:node:7044986016": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044986016",
+      "osmVersion": 2,
+      "osmTimestamp": "2020-04-21T17:06:19Z",
+      "position": {
+        "lat": 54.5699801,
+        "lon": 36.116973
+      }
+    },
+    "osm:node:7044986914": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044986914",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T20:55:09Z",
+      "position": {
+        "lat": 54.4865761,
+        "lon": 36.3092715
+      }
+    },
+    "osm:node:7044986915": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044986915",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T20:55:09Z",
+      "position": {
+        "lat": 54.4866198,
+        "lon": 36.3091684
+      }
+    },
+    "osm:node:7044990370": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044990370",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T21:01:08Z",
+      "position": {
+        "lat": 54.5437425,
+        "lon": 36.1513557
+      }
+    },
+    "osm:node:85248954": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/85248954",
+      "osmVersion": 5,
+      "osmTimestamp": "2020-04-01T16:29:51Z",
+      "position": {
+        "lat": 53.7573046,
+        "lon": 34.8073876
+      }
+    },
+    "osm:node:85249051": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/85249051",
+      "osmVersion": 7,
+      "osmTimestamp": "2025-09-04T12:25:31Z",
+      "position": {
+        "lat": 54.2527792,
+        "lon": 35.4436306
+      }
+    },
+    "osm:node:85249087": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/85249087",
+      "osmVersion": 5,
+      "osmTimestamp": "2019-12-09T21:32:24Z",
+      "position": {
+        "lat": 54.4543946,
+        "lon": 35.8341132
+      }
+    },
+    "osm:node:90045447": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/90045447",
+      "osmVersion": 3,
+      "osmTimestamp": "2019-12-09T12:18:52Z",
+      "position": {
+        "lat": 54.7633591,
+        "lon": 35.2883627
+      }
+    },
+    "osm:node:90128838": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/90128838",
+      "osmVersion": 6,
+      "osmTimestamp": "2025-03-12T12:27:49Z",
+      "position": {
+        "lat": 54.3397438,
+        "lon": 36.1840662
+      }
+    },
+    "osm:node:7044990371": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044990371",
+      "osmVersion": 2,
+      "osmTimestamp": "2025-06-17T19:43:36Z",
+      "position": {
+        "lat": 54.5437619,
+        "lon": 36.151541
+      }
+    },
+    "osm:node:7044990582": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7044990582",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T21:02:54Z",
+      "position": {
+        "lat": 54.5567251,
+        "lon": 36.2590665
+      }
+    },
+    "osm:node:7045018369": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045018369",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T21:22:14Z",
+      "position": {
+        "lat": 54.5518768,
+        "lon": 36.2762689
+      }
+    },
+    "osm:node:7045019057": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045019057",
+      "osmVersion": 3,
+      "osmTimestamp": "2025-06-28T21:20:23Z",
+      "position": {
+        "lat": 54.6198014,
+        "lon": 36.2842585
+      }
+    },
+    "osm:node:7045019626": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045019626",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T21:15:04Z",
+      "position": {
+        "lat": 54.5389916,
+        "lon": 36.3120276
+      }
+    },
+    "osm:node:7045020396": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045020396",
+      "osmVersion": 2,
+      "osmTimestamp": "2025-02-05T12:55:47Z",
+      "position": {
+        "lat": 54.5633673,
+        "lon": 36.2986724
+      }
+    },
+    "osm:node:7045025141": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045025141",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T21:17:03Z",
+      "position": {
+        "lat": 54.5866317,
+        "lon": 36.2536076
+      }
+    },
+    "osm:node:7045027073": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045027073",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T21:15:38Z",
+      "position": {
+        "lat": 54.5404692,
+        "lon": 36.3040573
+      }
+    },
+    "osm:node:7045029810": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045029810",
+      "osmVersion": 2,
+      "osmTimestamp": "2025-06-29T11:12:48Z",
+      "position": {
+        "lat": 54.5943824,
+        "lon": 36.2581041
+      }
+    },
+    "osm:node:7045031623": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045031623",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T21:18:12Z",
+      "position": {
+        "lat": 54.6007627,
+        "lon": 36.2628551
+      }
+    },
+    "osm:node:7045038100": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045038100",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T21:39:25Z",
+      "position": {
+        "lat": 54.2145061,
+        "lon": 36.0094634
+      }
+    },
+    "osm:node:7045038509": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045038509",
+      "osmVersion": 2,
+      "osmTimestamp": "2021-10-24T16:25:10Z",
+      "position": {
+        "lat": 54.1147752,
+        "lon": 35.2549178
+      }
+    },
+    "osm:node:7045039084": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045039084",
+      "osmVersion": 4,
+      "osmTimestamp": "2023-12-12T14:19:12Z",
+      "position": {
+        "lat": 54.5221401,
+        "lon": 35.695433
+      }
+    },
+    "osm:node:7045045899": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045045899",
+      "osmVersion": 2,
+      "osmTimestamp": "2023-11-15T11:07:29Z",
+      "position": {
+        "lat": 54.6023425,
+        "lon": 36.3175345
+      }
+    },
+    "osm:node:7045045900": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045045900",
+      "osmVersion": 2,
+      "osmTimestamp": "2023-11-15T11:07:29Z",
+      "position": {
+        "lat": 54.6024026,
+        "lon": 36.3176552
+      }
+    },
+    "osm:node:7045050406": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045050406",
+      "osmVersion": 2,
+      "osmTimestamp": "2022-08-30T13:23:58Z",
+      "position": {
+        "lat": 54.0973951,
+        "lon": 35.3709911
+      }
+    },
+    "osm:node:7045058543": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045058543",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T21:32:49Z",
+      "position": {
+        "lat": 54.4227955,
+        "lon": 35.7681908
+      }
+    },
+    "osm:node:7045058616": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045058616",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T21:33:15Z",
+      "position": {
+        "lat": 54.3788213,
+        "lon": 35.6646347
+      }
+    },
+    "osm:node:7045086922": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045086922",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T21:41:21Z",
+      "position": {
+        "lat": 54.1317662,
+        "lon": 35.8742649
+      }
+    },
+    "osm:node:7045096141": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045096141",
+      "osmVersion": 2,
+      "osmTimestamp": "2022-08-26T15:40:15Z",
+      "position": {
+        "lat": 54.1041198,
+        "lon": 35.3230083
+      }
+    },
+    "osm:node:7045098159": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045098159",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T21:40:39Z",
+      "position": {
+        "lat": 54.1403621,
+        "lon": 35.8882759
+      }
+    },
+    "osm:node:7045103016": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045103016",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T21:34:34Z",
+      "position": {
+        "lat": 54.1733032,
+        "lon": 35.3235474
+      }
+    },
+    "osm:node:7045104751": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045104751",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T21:39:54Z",
+      "position": {
+        "lat": 54.1785722,
+        "lon": 35.9291263
+      }
+    },
+    "osm:node:7045107263": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045107263",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-09T21:33:39Z",
+      "position": {
+        "lat": 54.3383139,
+        "lon": 35.5503505
+      }
+    },
+    "osm:node:7045107340": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7045107340",
+      "osmVersion": 2,
+      "osmTimestamp": "2022-08-30T13:23:58Z",
+      "position": {
+        "lat": 54.0835896,
+        "lon": 35.3426103
+      }
+    },
+    "osm:node:7082388046": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7082388046",
+      "osmVersion": 3,
+      "osmTimestamp": "2025-09-09T08:18:15Z",
+      "position": {
+        "lat": 54.4028193,
+        "lon": 35.7327747
+      }
+    },
+    "osm:node:7096532783": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7096532783",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-30T20:51:17Z",
+      "position": {
+        "lat": 55.0127371,
+        "lon": 35.8779434
+      }
+    },
+    "osm:node:7096537786": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7096537786",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-30T20:51:17Z",
+      "position": {
+        "lat": 55.01272,
+        "lon": 35.877935
+      }
+    },
+    "osm:node:7096896991": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7096896991",
+      "osmVersion": 1,
+      "osmTimestamp": "2019-12-30T23:39:12Z",
+      "position": {
+        "lat": 55.118126,
+        "lon": 35.9596155
+      }
+    },
+    "osm:node:7133061392": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7133061392",
+      "osmVersion": 1,
+      "osmTimestamp": "2020-01-15T12:41:32Z",
+      "position": {
+        "lat": 54.840385,
+        "lon": 34.9041015
+      }
+    },
+    "osm:node:7355029629": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7355029629",
+      "osmVersion": 2,
+      "osmTimestamp": "2023-12-12T13:57:53Z",
+      "position": {
+        "lat": 54.5203701,
+        "lon": 35.6795863
+      }
+    },
+    "osm:node:7355037497": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7355037497",
+      "osmVersion": 1,
+      "osmTimestamp": "2020-04-01T16:28:50Z",
+      "position": {
+        "lat": 54.7112269,
+        "lon": 35.2498406
+      }
+    },
+    "osm:node:7355040397": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7355040397",
+      "osmVersion": 2,
+      "osmTimestamp": "2023-12-15T07:20:15Z",
+      "position": {
+        "lat": 53.8478076,
+        "lon": 34.4104879
+      }
+    },
+    "osm:node:7355042500": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7355042500",
+      "osmVersion": 1,
+      "osmTimestamp": "2020-04-01T16:30:31Z",
+      "position": {
+        "lat": 53.8288071,
+        "lon": 34.8715109
+      }
+    },
+    "osm:node:7430929084": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7430929084",
+      "osmVersion": 1,
+      "osmTimestamp": "2020-04-21T17:06:18Z",
+      "position": {
+        "lat": 54.5699402,
+        "lon": 36.1168645
+      }
+    },
+    "osm:node:7430944610": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/7430944610",
+      "osmVersion": 2,
+      "osmTimestamp": "2021-04-25T18:07:33Z",
+      "position": {
+        "lat": 54.571944,
+        "lon": 36.1151948
+      }
+    },
+    "osm:node:8818053938": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/8818053938",
+      "osmVersion": 3,
+      "osmTimestamp": "2026-09-30T10:36:23Z",
+      "position": {
+        "lat": 55.1653915,
+        "lon": 36.6687307
+      }
+    },
+    "osm:node:8836910086": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/8836910086",
+      "osmVersion": 3,
+      "osmTimestamp": "2026-10-01T09:09:19Z",
+      "position": {
+        "lat": 55.0885785,
+        "lon": 36.6335009
+      }
+    },
+    "osm:node:8836910087": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/8836910087",
+      "osmVersion": 3,
+      "osmTimestamp": "2026-10-01T09:09:20Z",
+      "position": {
+        "lat": 55.0933192,
+        "lon": 36.6356518
+      }
+    },
+    "osm:node:9122793925": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9122793925",
+      "osmVersion": 2,
+      "osmTimestamp": "2025-05-02T17:13:23Z",
+      "position": {
+        "lat": 54.9998575,
+        "lon": 36.4394066
+      }
+    },
+    "osm:node:9197861273": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9197861273",
+      "osmVersion": 2,
+      "osmTimestamp": "2026-06-15T22:21:57Z",
+      "position": {
+        "lat": 54.1192761,
+        "lon": 35.2610629
+      }
+    },
+    "osm:node:9197929340": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9197929340",
+      "osmVersion": 2,
+      "osmTimestamp": "2025-09-16T11:30:44Z",
+      "position": {
+        "lat": 53.9089388,
+        "lon": 34.9601898
+      }
+    },
+    "osm:node:9199164920": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9199164920",
+      "osmVersion": 1,
+      "osmTimestamp": "2021-10-25T08:10:19Z",
+      "position": {
+        "lat": 53.5674011,
+        "lon": 34.7166206
+      }
+    },
+    "osm:node:9205201197": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9205201197",
+      "osmVersion": 2,
+      "osmTimestamp": "2024-01-23T07:49:25Z",
+      "position": {
+        "lat": 54.0341881,
+        "lon": 35.8385177
+      }
+    },
+    "osm:node:9205201207": {
+      "controls": [
+        "speed"
+      ],
+      "description": null,
+      "ref": null,
+      "operator": null,
+      "enforcement": null,
+      "sourceUrl": "https://www.openstreetmap.org/node/9205201207",
+      "osmVersion": 1,
+      "osmTimestamp": "2021-10-27T16:02:23Z",
+      "position": {
+        "lat": 54.0477678,
+        "lon": 35.9372023
+      }
+    }
+  }
+}

@@ -1,6 +1,11 @@
 'use strict';
 var fs = require('fs'), net = require('net'), path = require('path');
 var GpsProvider = require('./gps-source').GpsProvider;
+var cameraInfo = require('./camera-info');
+function validPosition(f, now) {
+  return f && [f.timeMs, f.lat, f.lon, f.accuracyM, now].every(Number.isFinite) && Math.abs(f.lat) <= 90 &&
+    Math.abs(f.lon) <= 180 && f.accuracyM > 0 && f.accuracyM <= 15 && now - f.timeMs <= 3000 && f.timeMs <= now + 500;
+}
 function mkdirp(dir) {
   try { if (fs.statSync(dir).isDirectory()) return; } catch (e) { if (e.code !== 'ENOENT') throw e; }
   var parent = path.dirname(dir); if (parent !== dir) mkdirp(parent);
@@ -33,7 +38,7 @@ function nearest(records, fix) {
   records.forEach(function (r) {
     var x = (r.position.lon - fix.lon) * Math.cos((r.position.lat + fix.lat) * rad / 2), y = r.position.lat - fix.lat;
     var d = Math.sqrt(x * x + y * y) * rad * 6371008.8;
-    if (d <= 2000 && (!best || d < best.distanceM)) best = { id: r.id, type: r.type, distanceM: Math.round(d), limitKmh: r.limitKmh, confidence: 'unconfirmed' };
+    if (d <= 2000 && (!best || d < best.distanceM)) best = Object.assign({}, cameraInfo.describe(r), { id: r.id, distanceM: Math.round(d), limitKmh: r.limitKmh, confidence: 'unconfirmed' });
   });
   return best;
 }
@@ -48,8 +53,9 @@ function start(options) {
   var settingsPath = path.join(dataDir, 'settings.json'), settings;
   try { settings = readSettings(settingsPath); }
   catch (e) { storageError = e.message; settings = { enabled: true, outputs: { cluster: false, hud: false }, hudOpacityPct: 100 }; }
-  var state = { serviceVersion: '0.3.0', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
-    hudDimming: 'unavailable', capabilities: { outputs: false, update: false, hudOpacity: false },
+  var state = { serviceVersion: '0.3.1', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
+    hudDimming: 'unavailable', capabilities: { outputs: false, update: false, hudOpacity: false, displayTest: false },
+    rendererDetails: {}, displayTest: { active: false, untilMs: 0 },
     gps: 'Ожидание моста GPS BMW', gpsFix: null,
     gpsBridge: { state: 'stopped', errorCode: null, ageMs: null },
     gpsInput: { source: 'bmw-nmea', packets: 0, badPackets: 0, checksumErrors: 0, sentences: { RMC: 0, GGA: 0, GST: 0 }, lastPacketAgeMs: null, fixUtcAgeMs: null },
@@ -59,18 +65,19 @@ function start(options) {
   var database = null, guidance = null, display = null, dimmer = null, clients = [], lastStatus = '', closed = false, ownsSocket = false, server;
   try {
     database = loadDatabase(options.database || path.join(__dirname, 'kaluga-speed.json'));
+    cameraInfo.enrich(database, options.cameraDetails || path.join(__dirname, 'camera-details.json'));
     state.database = { state: 'ready', source: database.source, updated: database.sourceTimestamp, count: database.records.length,
-      version: database.version, error: null, licence: database.licence };
+      version: database.version, error: null, licence: database.licence, metadataRetrievedAt: database.metadataRetrievedAt };
   } catch (e) { state.database.error = e.message; }
   try {
     if (!options.guidance) {
       var zones = JSON.parse(fs.readFileSync(path.join(__dirname, 'road-zones.json'), 'utf8'));
       if (!database || zones.sourceTimestamp !== database.sourceTimestamp || zones.pbfMd5 !== database.pbfMd5 || zones.region !== database.region) throw new Error('Road zones and camera snapshot do not match');
     }
-    guidance = options.guidance || require('./vehicle-guidance').createGuidance();
+    guidance = options.guidance || require('./vehicle-guidance').createGuidance({ zones: zones.zones, records: database.records });
   }
   catch (e) { state.error = 'Guidance unavailable: ' + e.message; }
-  try { display = options.display || require('./camera-layers').createDisplay(); state.capabilities.outputs = true; }
+  try { display = options.display || require('./camera-layers').createDisplay(); state.capabilities.outputs = true; state.capabilities.displayTest = true; }
   catch (e) { state.renderer = 'unavailable'; state.error = state.error || 'Display unavailable: ' + e.message; }
   try { dimmer = options.dimmer || require('./hud-dimmer').createDimmer(); state.capabilities.hudOpacity = true; }
   catch (e) { state.hudDimming = 'unavailable'; }
@@ -112,12 +119,19 @@ function start(options) {
       !valid ? 'Координаты есть; точность, скорость или курс не подтверждены' : 'Свежие координаты, скорость, курс и точность получены';
     state.nearest = database && fix ? nearest(database.records, fix) : null;
     var alert = null;
-    try { if (guidance) alert = guidance.evaluate(database && valid ? fix : null, now, settings.enabled); }
+    try { if (guidance) alert = guidance.evaluate(database && validPosition(fix, now) ? fix : null, now, settings.enabled); }
     catch (e) { state.error = 'Guidance: ' + e.message; }
-    if (!settings.enabled || !valid || !database) alert = null;
-    state.alert = alert ? Object.assign({}, alert, { limit: alert.limitKmh, distance: Math.round(alert.distanceM), stage: alert.stage || 'approach' }) : null;
+    if (!settings.enabled || !validPosition(fix, now) || !database) alert = null;
+    state.guidance = guidance && typeof guidance.diagnostic === 'function' ? guidance.diagnostic() : null;
+    state.observedAtMs = now;
+    state.alert = alert ? Object.assign({}, alert, { limit: alert.limitKmh, distance: Math.round(alert.distanceM), stage: alert.stage || (alert.roadConfirmed ? 'approach' : 'nearby') }) : null;
+    state.displayTest.active = state.displayTest.untilMs > now && validPosition(fix, now) && Number.isFinite(fix.speedKmh) && fix.speedKmh <= 1;
+    if (!state.displayTest.active) state.displayTest.untilMs = 0;
+    var displayAlert = state.displayTest.active ? { id: '__display_test__', test: true, title: 'ТЕСТ УВЕДОМЛЕНИЯ',
+      description: 'Проверка приборов и HUD', controls: ['redlight','speed'], distanceM: 150, roadConfirmed: false, confidence: 'test' } : alert;
     if (display) {
-      try { display.update(alert, settings.outputs); state.renderer = display.status(); }
+      try { display.update(displayAlert, settings.outputs); state.renderer = display.status();
+        state.rendererDetails = typeof display.diagnostics === 'function' ? display.diagnostics() : {}; }
       catch (e) { state.renderer = 'error: ' + e.message; state.error = 'Display: ' + e.message; }
     }
     if (dimmer) {
@@ -129,6 +143,13 @@ function start(options) {
   function command(msg) {
     if (!msg || typeof msg.cmd !== 'string') throw new Error('Invalid command');
     if (msg.cmd === 'status') return;
+    if (msg.cmd === 'display-test') {
+      var testFix = gps.current(Date.now());
+      if (!state.capabilities.displayTest) throw new Error('Вывод уведомлений недоступен');
+      if (!validPosition(testFix, Date.now()) || !Number.isFinite(testFix.speedKmh) || testFix.speedKmh > 1) throw new Error('Для теста остановитесь и дождитесь свежего GPS');
+      if (!settings.outputs.cluster && !settings.outputs.hud) throw new Error('Для теста включите приборы или HUD');
+      state.displayTest.untilMs = Date.now() + 5000; tick(); return;
+    }
     if (msg.cmd === 'vehicle-nmea') {
       if (typeof msg.data !== 'string' || !msg.data.length || Buffer.byteLength(msg.data, 'utf8') > 4096) throw new Error('GPS_PACKET_INVALID');
       if (typeof gps.inputNmea !== 'function') throw new Error('GPS_BRIDGE_UNAVAILABLE');

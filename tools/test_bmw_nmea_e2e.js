@@ -78,9 +78,9 @@ async function main() {
         const fixes = approach(), now = Date.now();
         client.send({ cmd: 'vehicle-nmea', data: packet(fixes[0], now - 1200) });
         await until(() => app.state().gpsFix && app.state().gpsFix.source === 'bmw-nmea');
-        assert.strictEqual(app.state().alert, null, 'One fix must not create an approach alert');
+        assert(!app.state().alert || !app.state().alert.roadConfirmed, 'One fix must not create a road-verified approach alert');
         client.send({ cmd: 'vehicle-nmea', data: packet(fixes[1], now - 700) });
-        await until(() => app.state().alert && shown);
+        await until(() => app.state().alert && app.state().alert.roadConfirmed && shown);
         assert.strictEqual(app.state().gpsFix.accuracyM, 10);
         assert.strictEqual(app.state().gpsFix.timeMs, now - 700, 'Source UTC must survive IPC');
         assert.strictEqual(app.state().gpsInput.sentences.RMC, 2);

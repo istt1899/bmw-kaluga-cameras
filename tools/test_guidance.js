@@ -13,7 +13,7 @@ function fix(x,t,y,heading){
         headingDeg:heading===undefined?90:heading,accuracyM:5,timeMs:t};
 }
 function replay(zone){
-    const g=mod.createGuidance({zones:[zone]});
+    const g=mod.createGuidance({zones:[zone],nearby:false});
     assert.strictEqual(g.evaluate(fix(-150,1000),1000,true),null);
     return g;
 }

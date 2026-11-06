@@ -36,8 +36,10 @@ function model(state) {
     const count = Number.isFinite(db.count) ? db.count : 0;
     const text = {
         cameraStatus: connected ? (s.enabled ? 'Предупреждения включены' : 'Предупреждения выключены') : 'Сервис недоступен',
-        cameraAlert: a ? clean(a.title || TYPES[a.type] || a.type, 'Камера') + ' • ' + distance(a.distance) + (a.limit ? ' • лимит ' + a.limit : '') :
-            s.nearest ? 'Объект рядом: ' + distance(s.nearest.distanceM) + ' • дорога не подтверждена' : 'Активных предупреждений нет',
+        cameraAlert: a ? clean(a.title || TYPES[a.type] || a.type, 'Камера') + ' • ' + distance(a.distance) +
+            (a.confidence === 'nearby' ? ' • рядом' : ' • по дороге') + (a.limit ? ' • лимит ' + a.limit : '') :
+            s.nearest ? clean(s.nearest.title || TYPES[s.nearest.type], 'Камера') + ' • ' + distance(s.nearest.distanceM) + ' • рядом' : 'Активных предупреждений нет',
+        cameraDescription: 'Описание камеры: ' + clean((a || s.nearest || {}).description, 'не указано в базе'),
         cameraDatabase: connected ? 'База: ' + clean(db.source, 'нет источника') + ' • ' + count + ' объектов' : 'База: ожидание ответа сервиса',
         cameraDate: connected ? 'Дата базы: ' + date(db.updated || db.generatedAt || db.sourceUpdated) : 'Дата базы: ожидание ответа сервиса',
         cameraGps: 'Положение: ' + clean(s.gps, 'нет подтверждённых координат'),

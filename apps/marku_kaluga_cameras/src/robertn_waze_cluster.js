@@ -61,6 +61,7 @@ const { LogsControl, ROWS: LOGS_ROWS } = require('./logs_control.js');
 const { qrPng } = require('./qr.js');
 const { CameraControl } = require('./control.js');
 const cameraView = require('./view_model.js');
+const cameraDiagnostics = require('./diagnostics_view.js');
 const { BmwGpsBridge } = require('./bmw_gps_bridge.js');
 
 const logger = logging.getSDKLogger();
@@ -101,8 +102,10 @@ const LOGS_QR = 'wocLogsQr';
 const LOGS_URL = 'wocLogsUrl';
 const CAMERA_LINK = 'wocCameras';
 const CAMERA_STATE = 'ST_OnlineApps_WazeStrelkaCameras';
+const DIAG_STATE = 'ST_OnlineApps_WazeStrelkaDiagnostics';
+const DIAG_NAMES = cameraDiagnostics.KEYS.map(k => 'cameraDiag_' + k).concat(['cameraDiagFreeze','cameraDiagLive','cameraDiagTest']);
 const CAMERA_NAMES = ['cameraStatus', 'cameraAlert', 'cameraDatabase', 'cameraDate', 'cameraGps',
-    'cameraEnable', 'cameraDisable', 'cameraCluster', 'cameraHud', 'cameraUpdate', 'cameraDiagnostics', 'cameraInfo'];
+    'cameraEnable', 'cameraDisable', 'cameraCluster', 'cameraHud', 'cameraUpdate', 'cameraDiagnostics', 'cameraInfo', 'cameraDescription'];
 const LOGS_ROW_NAMES = Array.from({ length: LOGS_ROWS }, (_, i) => `wocLogsRow${i + 1}`);
 const ROW_CHARS = 90;
 const PRESS_DEDUPE_MS = 400;
@@ -132,7 +135,8 @@ class WazeClusterApp extends OnlineApp {
         this._lastPress = {};
         this._written = {};
         this._visible = false;
-        this._pages = { main: false, logs: false, cameras: false };
+        this._pages = { main: false, logs: false, cameras: false, diagnostics: false };
+        this._diagFrozen = null;
         this._shownPage = 'main';   /* the page last shown, which shows again when the app does */
         this._hideTimer = null;
         this._qr = { url: undefined, file: null, chain: Promise.resolve() };
@@ -214,14 +218,15 @@ class WazeClusterApp extends OnlineApp {
         this._state = rhmi.getByName(STATE_NAME);
         this._logsState = rhmi.getByName(LOGS_STATE);
         this._cameraState = rhmi.getByName(CAMERA_STATE);
-        if (!this._state || !this._logsState || !this._cameraState) {
+        this._diagState = rhmi.getByName(DIAG_STATE);
+        if (!this._state || !this._logsState || !this._cameraState || !this._diagState) {
             return Promise.reject(new Error(`uiDescription has no ${STATE_NAME} or ${LOGS_STATE}`));
         }
         const names = [STATUS_NAME, MAP_NAME, RESTART_STATUS_NAME, ENABLE_NAME, DISABLE_NAME, WIFI_NAME, WIFI_HINT_NAME, AA_STATUS_NAME,
             AA_ENABLE_NAME, AA_DISABLE_NAME, AA_ZOOM_NAME, AA_ZOOM_OUT_NAME, AA_ZOOM_IN_NAME, AA_CARD_NAME, RESTART_NAME, GUIDE_NAME,
             HEAD_GENERAL_NAME, HEAD_HUD_NAME, SHOW_ON_NAME, HUD_NAME, HUD_SIZE_NAME, HUD_OPACITY_NAME, HUD_POS_NAME]
             .concat(Object.values(HUD_MOVE_NAMES), [HUD_CENTRE_NAME, CAPTURE_NAME, CAPTURE_STATUS,
-                LOGS_NAME, LOGS_SAVE, LOGS_STATUS, LOGS_QR, LOGS_URL, CAMERA_LINK], LOGS_ROW_NAMES, CAMERA_NAMES);
+                LOGS_NAME, LOGS_SAVE, LOGS_STATUS, LOGS_QR, LOGS_URL, CAMERA_LINK], LOGS_ROW_NAMES, CAMERA_NAMES, DIAG_NAMES);
         names.forEach((name) => { this._components[name] = rhmi.getByName(name); });
         const missing = names.filter((name) => !this._components[name]);
         if (missing.length) {
@@ -285,7 +290,16 @@ class WazeClusterApp extends OnlineApp {
         this._bind('cameraCluster', () => this._cameraCommand(cameraView.outputCommand(this._cameras.state, 'cluster')));
         this._bind('cameraHud', () => this._cameraCommand(cameraView.outputCommand(this._cameras.state, 'hud')));
         this._bind('cameraDiagnostics', () => {
-            this._cameraInfoMode = 'diagnostics'; this._cameras.send({ cmd: 'status' }); this._renderCameras();
+            this._cameras.send({ cmd: 'status' }); this._renderDiagnostics();
+            return Promise.resolve(rhmi.openState(DIAG_STATE)).catch(() => logger.warn('camera diagnostics page unavailable'));
+        });
+        this._bind('cameraDiagFreeze', () => {
+            if (this._cameras.state) this._diagFrozen = JSON.parse(JSON.stringify(Object.assign({},this._cameras.state,{controlError:this._cameras.commandError})));
+            this._renderDiagnostics();
+        });
+        this._bind('cameraDiagLive', () => { this._diagFrozen = null; this._renderDiagnostics(); });
+        this._bind('cameraDiagTest', () => {
+            this._diagFrozen = null; this._cameras.send({ cmd: 'display-test' }); this._renderDiagnostics();
         });
         this._bind('cameraUpdate', () => { this._cameraInfoMode = 'update'; this._renderCameras(); });
         // Presses also arrive as the application's raw 'userEvent'; both paths
@@ -321,8 +335,9 @@ class WazeClusterApp extends OnlineApp {
         this._state.on('visible', (event) => this._pageVisible('main', isTrue(event && event.visible)));
         this._logsState.on('visible', (event) => this._pageVisible('logs', isTrue(event && event.visible)));
         this._cameraState.on('visible', (event) => this._pageVisible('cameras', isTrue(event && event.visible)));
+        this._diagState.on('visible', (event) => this._pageVisible('diagnostics', isTrue(event && event.visible)));
         this._removeStaleQr();
-        return Promise.all([this._state.updateResources(), this._logsState.updateResources(), this._cameraState.updateResources()]).then(() => {
+        return Promise.all([this._state.updateResources(), this._logsState.updateResources(), this._cameraState.updateResources(), this._diagState.updateResources()]).then(() => {
             logger.info(`page ready: ${names.length} components found`);
             this._render();
             this._renderLogs();
@@ -417,6 +432,8 @@ class WazeClusterApp extends OnlineApp {
         this._pages.logs = false;
         this._logs.close();
         this._pages.cameras = false;
+        this._pages.diagnostics = false;
+        this._diagFrozen = null;
         this._setVisible(true);
         return Promise.resolve(this.rhmiApplication.openEntryState(uuid))
             .catch((err) => logger.warn(`openEntryState failed: ${err && err.message}`));
@@ -440,7 +457,7 @@ class WazeClusterApp extends OnlineApp {
                 this._logs.close();
             }
         }
-        if (page === 'cameras') {
+        if (page === 'cameras' || page === 'diagnostics') {
             if (visible) this._cameras.open();
         }
         clearTimeout(this._hideTimer);
@@ -448,7 +465,7 @@ class WazeClusterApp extends OnlineApp {
         if (visible) {
             this._sawForeground = true;
             this._setVisible(true);
-        } else if (!this._pages.main && !this._pages.logs && !this._pages.cameras) {
+        } else if (!this._pages.main && !this._pages.logs && !this._pages.cameras && !this._pages.diagnostics) {
             this._hideTimer = setTimeout(() => {
                 this._hideTimer = null;
                 this._setVisible(false);
@@ -458,7 +475,7 @@ class WazeClusterApp extends OnlineApp {
 
     _setVisible(visible) {
         if (!visible) {
-            this._pages = { main: false, logs: false, cameras: false };
+            this._pages = { main: false, logs: false, cameras: false, diagnostics: false };
             this._logs.close();
             this._cameras.close();
         }
@@ -647,6 +664,19 @@ class WazeClusterApp extends OnlineApp {
         if (this._cameraInfoMode === 'update') view.text.cameraInfo = 'База обновляется через Store вместе с сервисом камер';
         Object.keys(view.text).forEach((name) => this._write(name, view.text[name]));
         Object.keys(view.enabled).forEach((name) => this._setEnabled(name, view.enabled[name]));
+        this._renderDiagnostics();
+    }
+
+    _renderDiagnostics() {
+        if (!this._diagState || this._shutdownPromise) return;
+        const s = this._diagFrozen || (this._cameras.state && Object.assign({},this._cameras.state,{controlError:this._cameras.commandError}));
+        const rows = cameraDiagnostics.values(s, this._packageJson.version, !!this._diagFrozen);
+        cameraDiagnostics.KEYS.forEach(key => this._write('cameraDiag_' + key, rows[key]));
+        this._setEnabled('cameraDiagFreeze', !!this._cameras.state);
+        this._setEnabled('cameraDiagLive', !!this._diagFrozen);
+        const live = this._cameras.state, fix = live && live.gpsFix;
+        this._setEnabled('cameraDiagTest', !!(live && live.capabilities && live.capabilities.displayTest && fix &&
+            Number.isFinite(fix.speedKmh) && fix.speedKmh <= 1 && (live.outputs.cluster || live.outputs.hud)));
     }
 
     _renderLogs() {

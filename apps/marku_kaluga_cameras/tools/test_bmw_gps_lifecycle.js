@@ -43,7 +43,8 @@ function create(hasRhmi) {
         './waze_cluster_control.js': { WazeClusterControl: Control },
         './logs_control.js': { LogsControl: Control, ROWS: 5 },
         './qr.js': {}, './control.js': { CameraControl: Control }, './view_model.js': {},
-        './bmw_gps_bridge.js': { BmwGpsBridge: GpsBridge }
+        './bmw_gps_bridge.js': { BmwGpsBridge: GpsBridge },
+        './diagnostics_view.js': require('../src/diagnostics_view.js')
     };
     vm.runInNewContext(source, {
         require: (name) => Object.prototype.hasOwnProperty.call(modules, name) ? modules[name] : require(name),

@@ -287,8 +287,9 @@ function runSource() {
 
 async function main() {
     const components = UI.containers['1'].components;
-    const xmlIds = (cid) => [...XML.split('<container id="').find((c) => c.startsWith(`${cid}"`))
-        .matchAll(/<component id="(\d+)" type="(\w+)"(?: widget="(\w+)")?/g)].map((m) => [m[1], m[2], m[3]]);
+    const matches = (text, pattern) => { const found=[];let match;while((match=pattern.exec(text)))found.push(match);return found; };
+    const xmlIds = (cid) => matches(XML.split('<container id="').find((c) => c.startsWith(`${cid}"`)),
+        /<component id="(\d+)" type="(\w+)"(?: widget="(\w+)")?/g).map((m) => [m[1], m[2], m[3]]);
     /* application.xml orders the rows; uiDescription holds them by id */
     const shipped = (d) => (d.type === 'dropDownMenu' ? `${d.cells.HeaderText.value}: ${d.rows[d.cells.SelectedItem.value].ItemText.value}`
         : d.type === 'slider' ? d.rows[0].TextDescription.value : d.rows[0].Text.value);
@@ -310,9 +311,9 @@ async function main() {
     assert.deepStrictEqual(['wocHeadGeneral', 'wocHeadHud', 'wocHeadCarPlay', 'wocHeadAa'].map((n) => widgets[n]), Array(4).fill('LT_Label_Header_1Row'),
         'the section headers are header rows');
     /* application.xml's property 3: 0 a row the controller passes over, 3 one it stops on */
-    const focus = Object.fromEntries([...XML.split('<container id="2"')[0]
-        .matchAll(/<component id="(\d+)"[^>]*>\s*<property id="2" value="\d"\/>\s*<property id="3" value="(\d)"\/>/g)]
-        .map((m) => [components[m[1]].name, m[2]]));
+    const focus = {};
+    matches(XML.split('<container id="2"')[0], /<component id="(\d+)"[^>]*>\s*<property id="2" value="\d"\/>\s*<property id="3" value="(\d)"\/>/g)
+        .forEach((m) => { focus[components[m[1]].name] = m[2]; });
     assert.deepStrictEqual(['wocHeadGeneral', 'wocHeadHud', 'wocHeadCarPlay', 'wocHeadAa'].map((n) => [focus[n], components[Object.keys(components)
         .find((id) => components[id].name === n)].properties.Focusable.value]), Array(4).fill(['0', 0]), 'the section headers take no focus');
     assert.strictEqual(main.find(([, , name]) => focus[name] === '3')[2], 'wocShowOn', 'the first row the controller stops on: Show on');
@@ -400,6 +401,29 @@ async function main() {
         await until('camera database shown', () => byName.cameraDatabase.text.includes('150'));
         byName.cameraDisable.emit('action');
         await until('camera disable command', () => cameraCommands.some((m) => m.cmd === 'disable'));
+        cameraState.observedAtMs = Date.UTC(2026,10,6,13,3,0);
+        cameraState.serviceVersion = '0.3.1';
+        cameraState.capabilities.displayTest = true;
+        cameraState.outputs = {cluster:true,hud:true};
+        cameraState.gpsFix = {lat:54.51758,lon:36.24867,timeMs:cameraState.observedAtMs,speedKmh:0,headingDeg:15,accuracyM:5,source:'bmw-nmea'};
+        cameraState.nearest = {id:'osm:node:11980400006',title:'Светофор и скорость',description:'Спектр-Поток CCR0047',distanceM:30};
+        cameraReply();
+        byName.cameraDiagnostics.emit('action');
+        await until('dedicated diagnostics opens', () => rhmi.opened.includes('ST_OnlineApps_WazeStrelkaDiagnostics'));
+        byName.ST_OnlineApps_WazeStrelkaCameras.emit('visible',{visible:false});
+        byName.ST_OnlineApps_WazeStrelkaDiagnostics.emit('visible',{visible:true});
+        await until('exact GPS coordinates in own diagnostic row', () => byName.cameraDiag_position.text.includes('54.517580') && byName.cameraDiagTest.enabled);
+        byName.cameraDiagFreeze.emit('action');
+        await until('snapshot frozen',()=>byName.cameraDiag_stamp.text.startsWith('Снимок зафиксирован'));
+        const frozenPosition=byName.cameraDiag_position.text, frozenStamp=byName.cameraDiag_stamp.text;
+        cameraState.observedAtMs+=5000;cameraState.gpsFix.lat=54.518;cameraReply();await sleep(60);
+        assert.strictEqual(byName.cameraDiag_position.text,frozenPosition);assert.strictEqual(byName.cameraDiag_stamp.text,frozenStamp);
+        byName.cameraDiagLive.emit('action');
+        await until('live diagnostics resumes',()=>byName.cameraDiag_position.text.includes('54.518000'));
+        byName.cameraDiagTest.emit('action');
+        await until('parked display test sent',()=>cameraCommands.some(m=>m.cmd==='display-test'));
+        byName.ST_OnlineApps_WazeStrelkaDiagnostics.emit('visible',{visible:false});
+        console.log('ok   detailed diagnostics: own child page, exact coordinates, model/type, frozen time-consistent snapshot, live resume and parked display-test command');
         byName.ST_OnlineApps_WazeStrelkaCameras.emit('visible', { visible: false });
         byName.ST_OnlineApps_WazeCluster.emit('visible', { visible: true });
         cameraPeers.forEach((s) => s.destroy());

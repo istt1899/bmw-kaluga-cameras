@@ -124,9 +124,9 @@ function collectSource() {
   ['NOTICE', 'THIRD_PARTY_NOTICES.md', 'package.json', 'package-lock.json', '.gitignore', 'catalog-providers.json'].forEach(name => {
     if (fs.existsSync(path.join(ROOT, name))) add(name);
   });
-  ['apps', 'native', 'data'].forEach(tree);
+  ['apps', 'native', 'data', 'tools/fixtures'].forEach(tree);
   fs.readdirSync(path.join(ROOT, 'tools')).sort().forEach(name => {
-    if (/^(?:build\.js|build-road-zones\.mjs|prepare-github-release\.js|test[-_][A-Za-z0-9_-]+\.js|[A-Za-z0-9_-]+\.test\.js)$/.test(name)) add('tools/' + name);
+    if (/^(?:build\.js|build-road-zones\.mjs|build-camera-font\.py|prepare-github-release\.js|test[-_][A-Za-z0-9_-]+\.js|[A-Za-z0-9_-]+\.test\.js)$/.test(name)) add('tools/' + name);
   });
   ['oap_link.js', 'oap_pack.js', 'mgu-install.js', 'mgu-deploy.js', 'LICENSE'].forEach(name => add('tools/upstream/' + name));
   if (fs.existsSync(path.join(ROOT, 'tools', 'upstream', 'UPSTREAM.json'))) add('tools/upstream/UPSTREAM.json');
@@ -199,10 +199,10 @@ function main() {
   fs.writeFileSync(path.join(assets, 'catalog.json'), JSON.stringify(catalog, null, 2) + '\n');
   fs.writeFileSync(path.join(exported, '.gitignore'), 'dist/\nnode_modules/\n*.pbf\n*.osm.pbf\n.env\n.env.*\n');
   const notes = '# Waze Стрелка ' + version + '\n\n' +
-    'Передача штатных NMEA BMW в сервис камер, независимая от видимости настроек, и отдельная диагностика GPS-пакетов. Проекция и прозрачность подтверждены пользователем в предыдущей версии. Новая GPS-интеграция проверена локально; получение событий и состав NMEA на конкретной машине ещё не подтверждены.\n\n' +
-    'Обновить приложение и сервис камер. После каждой загрузки головного устройства один раз открыть Waze Стрелка. Открыть Камеры и проверить счётчики RMC/GGA/GST. UTC источника не подменяется временем получения; HDOP не выдаётся за метры. При отсутствии метрической оценки предупреждения остаются заблокированы с указанием причины.\n\n' +
+    'Исправлено подтверждение подъезда при разной частоте RMC/GGA и GST; полное измерение сохраняет свой исходный UTC. Тип и описание камеры отображаются на приборах/HUD. Уведомление «Рядом» явно отделено от подтверждённого подъезда по дороге. Добавлены исходные OSM-теги светофора и описания камер. GPS, карта и прозрачность подтверждены пользователем; вывод новых карточек требует проверки на машине.\n\n' +
+    'Обновить приложение и сервис камер. Камеры → Диагностика: 33 отдельные строки, GPS/камера/вывод, «Зафиксировать снимок» и «Живые данные». На стоянке со свежим GPS — тест уведомления на 5 секунд, явно помеченный ТЕСТ. Новые карточки не являются exclusive, запрашивают только включённые цели renderer и освобождают их после предупреждения.\n\n' +
     'Офлайн-снимок OSM Калужской области: ' + dataCounts.total + ' точек, ' + dataCounts.city + ' в Калуге, ' + dataCounts.withLimit + ' с числовым лимитом. ' +
-    dataCounts.zones + ' дорожных зон допускают условные предупреждения при достоверном GPS и однозначном сопоставлении. ' +
+    dataCounts.zones + ' дорожных зон допускают предупреждения по дороге; для остальных точек доступно отдельно обозначенное уведомление о близком объекте. ' +
     'Это не полная база камер. Оба выхода изначально выключены.\n\n' +
     '© OpenStreetMap contributors, ODbL 1.0. Полные ограничения и атрибуция — в README исходников.\n';
   fs.writeFileSync(path.join(output, 'release-notes.md'), notes);

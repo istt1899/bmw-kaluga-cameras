@@ -390,7 +390,10 @@ async function main() {
 
         await until('patched: CarPlay\'s Remove patch button enabled, CarPlay\'s Patch button greyed', () => byName.wocDisable.enabled === true &&
             byName.wocEnable.enabled === false);
-        byName.wocDisable.emit('action');
+        // Real RHMI raw actions carry only a component id, independent of page.
+        assert.strictEqual(OnlineApp.instance._actionById[32].name, 'wocEnable');
+        assert.strictEqual(OnlineApp.instance._actionById[35].name, 'wocGuide');
+        rhmi.emit('userEvent', { eventType: 'ACTION', sourceId: byName.wocDisable.getId() });
         await until('reverted', () => patch.count('revert') === 1 && !patch.busy && patch.state === 'original');
         await until('original: CarPlay\'s Patch button enabled, CarPlay\'s Remove patch button greyed', () => byName.wocEnable.enabled === true &&
             byName.wocDisable.enabled === false);

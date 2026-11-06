@@ -22,9 +22,17 @@ function main() {
     const m = readManifest(APP);
     const release = JSON.parse(fs.readFileSync(path.join(APP, 'release.json'), 'utf8'));
     const component = JSON.parse(fs.readFileSync(path.join(TOOL, 'component.json'), 'utf8'));
-    if (m.id !== 'marku_kaluga_cameras' || component.id !== 'marku-kaluga-cameras' || m.version !== component.version) {
-        throw new Error('unexpected identity or mismatched component versions');
+    if (m.id !== 'marku_kaluga_cameras' || component.id !== 'marku-kaluga-cameras') {
+        throw new Error('unexpected component identity');
     }
+    const minimum = release.requires[component.id];
+    if (!/^\d+\.\d+\.\d+$/.test(minimum) || !/^\d+\.\d+\.\d+$/.test(component.version)) throw new Error('invalid service dependency');
+    const parts = component.version.split('.').map(Number), needed = minimum.split('.').map(Number);
+    const different = parts.findIndex((value, i) => value !== needed[i]);
+    if (different >= 0 && parts[different] < needed[different]) throw new Error('packaged service is older than the app requires');
+    const uiDir = path.join(APP, m.tree, 'rhmiData', 'uiDescriptions', 'ID7');
+    require('./test_rhmi_graph').checkGraph(fs.readFileSync(path.join(uiDir, 'application.xml'), 'utf8'),
+        JSON.parse(fs.readFileSync(path.join(uiDir, 'uiDescription.json'), 'utf8')));
     fs.mkdirSync(PUBLISH, { recursive: true });
     fs.mkdirSync(USB, { recursive: true });
     const appName = m.id + '@' + m.version + '.tgz';

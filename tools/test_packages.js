@@ -58,9 +58,15 @@ published.components.forEach((c) => {
         assert.strictEqual(result.prepare, 'build');
         assert.strictEqual(c.build, 'unit');
         assert(!members.some((m) => /node_modules\/oap-sdk|javascript\/app\.js/.test(m.name)));
+        const manifest = JSON.parse(fs.readFileSync(path.join(dir, 'mgu-app.json'), 'utf8'));
+        const uiDir = path.join(dir, manifest.tree, 'rhmiData', 'uiDescriptions', 'ID7');
+        require('./test_rhmi_graph').checkGraph(fs.readFileSync(path.join(uiDir, 'application.xml'), 'utf8'),
+            JSON.parse(fs.readFileSync(path.join(uiDir, 'uiDescription.json'), 'utf8')));
     }
     assert.strictEqual(result.id, c.id);
-    assert.strictEqual(result.version, JSON.parse(fs.readFileSync(path.join(ROOT, 'apps', 'marku_kaluga_cameras', 'mgu-app.json'), 'utf8')).version);
+    const expectedVersion = c.kind === 'app' ? JSON.parse(fs.readFileSync(path.join(ROOT, 'apps', 'marku_kaluga_cameras', 'mgu-app.json'), 'utf8')).version :
+        JSON.parse(fs.readFileSync(path.join(ROOT, 'native', 'marku-kaluga-cameras', 'component.json'), 'utf8')).version;
+    assert.strictEqual(result.version, expectedVersion);
     console.log('PASS: upstream ' + c.kind + ' validator + catalog SHA/size/requires/USB: ' + c.id);
 });
 console.log('PASS: upstream validators only; SDK link, systemd and RHMI on head unit remain untested');

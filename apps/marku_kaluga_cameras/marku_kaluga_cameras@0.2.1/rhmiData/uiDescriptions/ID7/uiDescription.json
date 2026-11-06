@@ -1074,7 +1074,7 @@
       "type": "state",
       "name": "ST_OnlineApps_WazeStrelkaCameras",
       "components": {
-        "10": {
+        "310": {
           "type": "title",
           "name": "cameraTitle",
           "properties": {
@@ -1092,7 +1092,7 @@
             }
           ]
         },
-        "20": {
+        "320": {
           "type": "label",
           "name": "cameraStatus",
           "properties": {
@@ -1114,7 +1114,7 @@
             }
           ]
         },
-        "21": {
+        "321": {
           "type": "label",
           "name": "cameraAlert",
           "properties": {
@@ -1136,7 +1136,7 @@
             }
           ]
         },
-        "22": {
+        "322": {
           "type": "label",
           "name": "cameraDatabase",
           "properties": {
@@ -1158,7 +1158,7 @@
             }
           ]
         },
-        "23": {
+        "323": {
           "type": "label",
           "name": "cameraDate",
           "properties": {
@@ -1180,7 +1180,7 @@
             }
           ]
         },
-        "24": {
+        "324": {
           "type": "label",
           "name": "cameraGps",
           "properties": {
@@ -1202,7 +1202,7 @@
             }
           ]
         },
-        "30": {
+        "330": {
           "type": "button",
           "name": "cameraEnable",
           "properties": {
@@ -1224,7 +1224,7 @@
             }
           ]
         },
-        "31": {
+        "331": {
           "type": "button",
           "name": "cameraDisable",
           "properties": {
@@ -1246,7 +1246,7 @@
             }
           ]
         },
-        "32": {
+        "332": {
           "type": "button",
           "name": "cameraCluster",
           "properties": {
@@ -1268,7 +1268,7 @@
             }
           ]
         },
-        "33": {
+        "333": {
           "type": "button",
           "name": "cameraHud",
           "properties": {
@@ -1290,7 +1290,7 @@
             }
           ]
         },
-        "34": {
+        "334": {
           "type": "button",
           "name": "cameraUpdate",
           "properties": {
@@ -1312,7 +1312,7 @@
             }
           ]
         },
-        "35": {
+        "335": {
           "type": "button",
           "name": "cameraDiagnostics",
           "properties": {
@@ -1334,7 +1334,7 @@
             }
           ]
         },
-        "40": {
+        "340": {
           "type": "label",
           "name": "cameraInfo",
           "properties": {
@@ -1356,7 +1356,7 @@
             }
           ]
         },
-        "90": {
+        "390": {
           "type": "label",
           "name": "cameraHeaderGeneral",
           "properties": {
@@ -1378,7 +1378,7 @@
             }
           ]
         },
-        "91": {
+        "391": {
           "type": "label",
           "name": "cameraHeaderDisplay",
           "properties": {
@@ -1400,7 +1400,7 @@
             }
           ]
         },
-        "92": {
+        "392": {
           "type": "label",
           "name": "cameraHeaderData",
           "properties": {

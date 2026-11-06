@@ -147,18 +147,18 @@ function main() {
   const version = catalog.components[0].version;
   catalog.components.forEach(component => {
     assert(expected[component.id] === component.kind && !names.has(component.id), 'Unexpected or duplicate component');
-    assert(/^\d+\.\d+\.\d+$/.test(component.version) && component.version === version, 'Version mismatch');
+    assert(/^\d+\.\d+\.\d+$/.test(component.version), 'Invalid component version');
     assert(JSON.stringify(component.mguHmi) === '["ID7"]', 'Expected explicit ID7 target');
     if (component.kind === 'app') assert(component.build === 'unit', 'App must be SDK-free source package');
     const artifact = component.artifact;
-    assert(artifact && artifact.name === component.id + '@' + version + '.tgz', 'Wrong artifact name');
+    assert(artifact && artifact.name === component.id + '@' + component.version + '.tgz', 'Wrong artifact name');
     const target = path.join(INPUT, artifact.name);
     const info = fs.lstatSync(target);
     assert(info.isFile() && !info.isSymbolicLink() && info.size <= MAX_FILE, 'Unsafe artifact file');
     const bytes = fs.readFileSync(target);
     assert(bytes.length === artifact.size && sha256(bytes) === artifact.sha256, 'Artifact checksum/size mismatch: ' + artifact.name);
     compareSource(tarMembers(target, component.kind), component); archives.set(artifact.name, bytes); names.add(component.id);
-    artifact.url = 'https://github.com/' + REPOSITORY + '/releases/download/' + component.id + '@' + version + '/' + artifact.name;
+    artifact.url = 'https://github.com/' + REPOSITORY + '/releases/download/' + component.id + '@' + component.version + '/' + artifact.name;
   });
   const ownComponents = catalog.components.slice();
   const appComponent = ownComponents.find(component => component.kind === 'app');
@@ -221,10 +221,10 @@ function main() {
     ''
   ];
   ownComponents.forEach(component => {
-    commands.push('gh release create ' + quotePowerShell(component.id + '@' + version) +
+    commands.push('gh release create ' + quotePowerShell(component.id + '@' + component.version) +
       ' (Join-Path $assets ' + quotePowerShell(component.artifact.name) + ')' +
       (component.kind === 'app' ? ' (Join-Path $assets ' + quotePowerShell(iconName) + ')' : '') + ' --repo ' + quotePowerShell(REPOSITORY) +
-      ' --target main --title ' + quotePowerShell(component.id + ' ' + version) + ' --notes-file $notes');
+      ' --target main --title ' + quotePowerShell(component.id + ' ' + component.version) + ' --notes-file $notes');
   });
   commands.push('', '# Publish catalog LAST, after both version assets exist.',
     'gh release create catalog (Join-Path $assets \'catalog.json\') --repo ' + quotePowerShell(REPOSITORY) +

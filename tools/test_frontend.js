@@ -53,7 +53,7 @@ check('settings use non-focusable iDrive section headers', () => {
     const m = JSON.parse(fs.readFileSync(path.join(APP, 'mgu-app.json'), 'utf8'));
     const ui = JSON.parse(fs.readFileSync(path.join(APP, m.tree, 'rhmiData', 'uiDescriptions', 'ID7', 'uiDescription.json'), 'utf8'));
     const xml = fs.readFileSync(path.join(APP, m.tree, 'rhmiData', 'uiDescriptions', 'ID7', 'application.xml'), 'utf8');
-    ['90', '91', '92'].forEach((id) => {
+    ['390', '391', '392'].forEach((id) => {
         assert.strictEqual(ui.containers['3'].components[id].properties.Focusable.value, 0);
         assert(xml.includes('<component id="' + id + '" type="label" widget="LT_Label_Header_1Row">'));
     });

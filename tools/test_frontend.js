@@ -8,6 +8,16 @@ const { model, outputCommand, date, diagnostics } = require('../apps/marku_kalug
 const APP = path.join(__dirname, '..', 'apps', 'marku_kaluga_cameras');
 let count = 0;
 function check(name, fn) { fn(); count++; console.log('ok ' + count + ' - ' + name); }
+check('GPS diagnostic distinguishes no packets from valid sentence counters without exposing position', () => {
+    const s = { enabled: true, gpsInput: { sentences: { RMC: 2, GGA: 3 }, lastPacketAgeMs: 1800, checksumErrors: 1 },
+        gpsBridge: { state: 'subscribed' }, gpsFix: { lat: 55.987654, lon: 37.123456 } };
+    const text = model(s).text.cameraInfo;
+    assert(text.includes('RMC 2') && text.includes('GGA 3') && text.includes('GST 0') && text.includes('1 с назад'));
+    assert(!text.includes('55.987654') && !diagnostics(s).includes('37.123456'));
+    s.gpsInput.lastPacketAgeMs = null;
+    assert(model(s).text.cameraInfo.includes('ещё нет'));
+    assert(diagnostics(s).includes('subscribed') && diagnostics(s).includes('checksum: 1'));
+});
 check('offline service cannot issue control commands', () => {
     const view = model(null);
     assert.strictEqual(view.enabled.cameraEnable, false);

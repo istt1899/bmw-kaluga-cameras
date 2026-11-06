@@ -211,6 +211,8 @@ rhmi.getResourceBundle = () => ({
 
 const logs = [];
 let inactiveReports = 0;
+let activeReports = 0;
+const hmiVisibilityReports = [];
 const logger = {};
 ['error', 'warn', 'info', 'verbose', 'debug'].forEach((level) => {
     logger[level] = (msg) => logs.push(`${level}: ${msg}`);
@@ -239,18 +241,22 @@ class OnlineApp extends EventEmitter {
     getEntryPoints() { return this._entryPoints; }
     getLastExecutedEntryPointUuid() { return null; }
     initialized() { this._initialized = true; this._appStatusService = {}; return Promise.resolve(); }
-    registerActive() { return Promise.resolve(); }
+    registerActive() { activeReports++; return Promise.resolve(); }
     registerInactive() { inactiveReports++; return Promise.resolve(); }
-    registerHmiVisible() { return Promise.resolve(); }
-    unregisterHmiVisible() { return Promise.resolve(); }
+    registerHmiVisible() { hmiVisibilityReports.push(true); return Promise.resolve(); }
+    unregisterHmiVisible() { hmiVisibilityReports.push(false); return Promise.resolve(); }
     destroyBundles() { return Promise.resolve(); }
 }
 
 /* HMIContext: its display language, English at first; displayLanguage(v) is a change. */
 const hmiContexts = [];
 let displayLanguage = null;
+let gpsPositionEvent = null;
 const someipBuilders = {
-    buildTypedProxy: (iface, instance) => Promise.resolve({
+    buildTypedProxy: (iface, instance) => Promise.resolve(iface === 'de.bmw.infotainment.SatellitePositioning' ? {
+        init: () => Promise.resolve(), waitUntilAvailable: () => Promise.resolve(),
+        updatePosition: { subscribe: (cb) => { assert.strictEqual(instance, '1'); gpsPositionEvent = cb; return Promise.resolve(); } }
+    } : {
         init: () => Promise.resolve(),
         waitUntilAvailable: () => Promise.resolve(),
         currentDisplayLanguage: {
@@ -373,6 +379,21 @@ async function main() {
         cameraState.hudOpacityPct = 95; cameraReply();
         await until('service confirms opacity', () => byName.wocHudOpacity.cells['0:Value'] === 1);
         assert.strictEqual(cameraCommands.filter((m) => m.cmd === 'hud-opacity').length, 1);
+        await until('BMW GPS subscription ready', () => !!gpsPositionEvent && cameraPeers.size === 2);
+        const inactiveAtHide = inactiveReports;
+        OnlineApp.instance.emit('changeVisibility', { visible: false });
+        await until('hidden UI sockets closed, GPS client remains', () => cameraPeers.size === 1 && patch._clients.size === 0);
+        await until('HMI reports hidden', () => hmiVisibilityReports[hmiVisibilityReports.length - 1] === false);
+        assert.strictEqual(inactiveReports, inactiveAtHide, 'GPS work keeps activity while HMI is hidden');
+        assert(activeReports > 0);
+        gpsPositionEvent({ nmeaString: '$GNRMC,120000.00,A,5400.000,N,03600.000,E,1,90,061126,,,A*00\r\n' });
+        await until('GPS still forwards while using another screen', () => cameraCommands.some((m) => m.cmd === 'vehicle-nmea'));
+        cameraState.enabled = false; cameraReply();
+        await until('disabled warnings release hidden activity hold', () => inactiveReports === inactiveAtHide + 1);
+        OnlineApp.instance.emit('entryPointExecute', APP_JSON.application.entryPoints[0].uuid);
+        await until('reopened original map controls', () => patch._clients.size === 1 && cameraPeers.size === 2);
+        cameraState.enabled = true; cameraReply();
+        console.log('ok   GPS continues over separate IPC while UI hidden; HMI invisible but activity held; disabling warnings releases hold; tile reopens');
         byName.wocCameras.emit('action');
         await until('camera child page opens', () => rhmi.opened.includes('ST_OnlineApps_WazeStrelkaCameras'));
         byName.ST_OnlineApps_WazeStrelkaCameras.emit('visible', { visible: true });

@@ -1,6 +1,7 @@
 'use strict';
 var assert = require('assert'), fs = require('fs'), path = require('path'), os = require('os'), net = require('net'), dgram = require('dgram');
 var base = path.join(__dirname, '../native/marku-kaluga-cameras/files');
+var VERSION = JSON.parse(fs.readFileSync(path.join(base, '../component.json'), 'utf8')).version;
 var GpsDecoder = require(path.join(base, 'gps-source')).GpsDecoder;
 var GpsProvider = require(path.join(base, 'gps-source')).GpsProvider;
 var service = require(path.join(base, 'marku-kaluga-cameras'));
@@ -67,7 +68,7 @@ async function integration() {
     client = net.connect(socket); client.setEncoding('utf8'); client.on('error', function () {});
     client.on('data', function (chunk) { buf += chunk; var nl; while ((nl = buf.indexOf('\n')) >= 0) { lines.push(JSON.parse(buf.slice(0, nl))); buf = buf.slice(nl + 1); } });
     await until(function () { return peer && lines.length > 0; });
-    var health = await probe({ socket: socket, checkPermissions: false, version: '0.2.0' });
+    var health = await probe({ socket: socket, checkPermissions: false, version: VERSION });
     assert.strictEqual(health.database.count, 150);
     assert.strictEqual(lines[0].state.outputs.cluster, false); assert.strictEqual(lines[0].state.outputs.hud, false);
     assert.strictEqual(app.state().hudOpacityPct, 100); assert.strictEqual(opacity, 100);
@@ -122,7 +123,7 @@ async function storageFailure() {
       app = service.start({ dataDir: obstacle, socket: socket, gps: gps, onListening: resolve, onError: reject,
         display: { update: function () {}, status: function () { return 'off'; }, close: function () {} } });
     });
-    var health = await probe({ socket: socket, checkPermissions: false, version: '0.2.0' });
+    var health = await probe({ socket: socket, checkPermissions: false, version: VERSION });
     assert.strictEqual(health.database.count, 150);
     assert.strictEqual(health.storage.persistent, false);
     app.command({ cmd: 'disable' });

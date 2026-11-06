@@ -48,9 +48,12 @@ function start(options) {
   var settingsPath = path.join(dataDir, 'settings.json'), settings;
   try { settings = readSettings(settingsPath); }
   catch (e) { storageError = e.message; settings = { enabled: true, outputs: { cluster: false, hud: false }, hudOpacityPct: 100 }; }
-  var state = { serviceVersion: '0.2.0', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
+  var state = { serviceVersion: '0.3.0', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
     hudDimming: 'unavailable', capabilities: { outputs: false, update: false, hudOpacity: false },
-    gps: 'Waiting for GPSD/NMEA', gpsFix: null, database: { state: 'error', source: 'OpenStreetMap', count: 0, error: null },
+    gps: 'Ожидание моста GPS BMW', gpsFix: null,
+    gpsBridge: { state: 'stopped', errorCode: null, ageMs: null },
+    gpsInput: { source: 'bmw-nmea', packets: 0, badPackets: 0, checksumErrors: 0, sentences: { RMC: 0, GGA: 0, GST: 0 }, lastPacketAgeMs: null, fixUtcAgeMs: null },
+    database: { state: 'error', source: 'OpenStreetMap', count: 0, error: null },
     renderer: 'off', alert: null, nearest: null, error: null, diagnostic: 'No confirmed road; nearby points are diagnostic only',
     storage: { persistent: !storageError, error: storageError } };
   var database = null, guidance = null, display = null, dimmer = null, clients = [], lastStatus = '', closed = false, ownsSocket = false, server;
@@ -99,10 +102,14 @@ function start(options) {
   function tick() {
     var now = Date.now(), fix = null;
     try { fix = gps.current(now); } catch (e) { state.error = 'GPS provider: ' + e.message; }
-    var valid = fix && typeof fix.accuracyM === 'number' && fix.accuracyM > 0 && fix.accuracyM <= 50 &&
+    var valid = fix && typeof fix.accuracyM === 'number' && fix.accuracyM > 0 && fix.accuracyM <= 15 &&
       typeof fix.speedKmh === 'number' && isFinite(fix.speedKmh) && fix.speedKmh >= 0 && typeof fix.headingDeg === 'number' && isFinite(fix.headingDeg);
     state.gpsFix = fix || null;
-    state.gps = !fix ? 'No fresh source UTC (max 3 s)' : !valid ? fix.source.toUpperCase() + ' fresh; metre accuracy/course unavailable' : fix.source.toUpperCase() + ' live';
+    if (typeof gps.diagnostics === 'function') {
+      var gpsDiagnostics = gps.diagnostics(now); state.gpsBridge = gpsDiagnostics.gpsBridge; state.gpsInput = gpsDiagnostics.gpsInput;
+    }
+    state.gps = typeof gps.description === 'function' ? gps.description(fix, now) : !fix ? 'Нет свежих подтверждённых координат UTC (максимум 3 с)' :
+      !valid ? 'Координаты есть; точность, скорость или курс не подтверждены' : 'Свежие координаты, скорость, курс и точность получены';
     state.nearest = database && fix ? nearest(database.records, fix) : null;
     var alert = null;
     try { if (guidance) alert = guidance.evaluate(database && valid ? fix : null, now, settings.enabled); }
@@ -122,6 +129,15 @@ function start(options) {
   function command(msg) {
     if (!msg || typeof msg.cmd !== 'string') throw new Error('Invalid command');
     if (msg.cmd === 'status') return;
+    if (msg.cmd === 'vehicle-nmea') {
+      if (typeof msg.data !== 'string' || !msg.data.length || Buffer.byteLength(msg.data, 'utf8') > 4096) throw new Error('GPS_PACKET_INVALID');
+      if (typeof gps.inputNmea !== 'function') throw new Error('GPS_BRIDGE_UNAVAILABLE');
+      gps.inputNmea(msg.data); tick(); return;
+    }
+    if (msg.cmd === 'gps-bridge') {
+      if (typeof gps.setBridgeStatus !== 'function') throw new Error('GPS_BRIDGE_UNAVAILABLE');
+      gps.setBridgeStatus(msg.state, msg.errorCode); tick(); return;
+    }
     var next = { enabled: settings.enabled, outputs: Object.assign({}, settings.outputs), hudOpacityPct: settings.hudOpacityPct };
     if (msg.cmd === 'enable' || msg.cmd === 'disable') next.enabled = msg.cmd === 'enable';
     else if (msg.cmd === 'outputs') {
@@ -143,13 +159,19 @@ function start(options) {
     sock.on('error', drop); sock.on('close', drop); send(sock);
     var buffer = '';
     sock.on('data', function (chunk) {
-      buffer += chunk; if (buffer.length > 8192) { sock.destroy(); return; }
+      buffer += chunk;
+      // One transport chunk can contain several legal JSONL commands.
+      // Limit each complete/partial line, not the chunk's aggregate length.
+      if (Buffer.byteLength(buffer, 'utf8') > 131072) { sock.destroy(); return; }
       var nl; while ((nl = buffer.indexOf('\n')) >= 0) {
-        var line = buffer.slice(0, nl); buffer = buffer.slice(nl + 1); if (!line.trim()) continue;
+        var line = buffer.slice(0, nl); buffer = buffer.slice(nl + 1);
+        if (Buffer.byteLength(line, 'utf8') > 8192) { sock.destroy(); return; }
+        if (!line.trim()) continue;
         try { command(JSON.parse(line)); }
         catch (e) { sock.write(JSON.stringify({ ev: 'error', error: e.message }) + '\n'); }
         send(sock);
       }
+      if (Buffer.byteLength(buffer, 'utf8') > 8192) sock.destroy();
     });
   });
   server.on('error', function (e) { state.error = 'Control: ' + e.message; broadcast(true); if (options.onError) options.onError(e); });

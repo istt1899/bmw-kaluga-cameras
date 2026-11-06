@@ -1,3 +1,9 @@
+# Waze Стрелка 0.3.0
+
+Read-only BMW SatellitePositioning NMEA bridge, background GPS activity after the first manual launch, separate native decoder and visible reception counters. No guessed CAN units or HDOP-to-metres conversion. GPS stream availability on the target car still needs verification.
+
+# Upstream Waze on Cluster changelog
+
 # Changelog
 
 ## 0.6.0

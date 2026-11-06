@@ -21,6 +21,14 @@ const TYPES = {
     'SPEED CAM': 'Контроль скорости', CAMERA: 'Камера', 'RED LIGHT': 'Контроль светофора',
     'AVG SPEED': 'Контроль средней скорости', 'BUS LANE': 'Контроль полосы'
 };
+function gpsSummary(state) {
+    const input = state && state.gpsInput;
+    if (!input) return null;
+    const kinds = input.sentences || {};
+    const count = (name) => Number.isFinite(kinds[name]) ? kinds[name] : 0;
+    const age = Number.isFinite(input.lastPacketAgeMs) ? Math.max(0, Math.floor(input.lastPacketAgeMs / 1000)) + ' с назад' : 'ещё нет';
+    return 'GPS BMW: RMC ' + count('RMC') + ' • GGA ' + count('GGA') + ' • GST ' + count('GST') + ' • пакет: ' + age;
+}
 function model(state) {
     const s = state || {}, db = s.database || {}, outputs = s.outputs || {};
     const connected = !!state;
@@ -35,7 +43,7 @@ function model(state) {
         cameraGps: 'Положение: ' + clean(s.gps, 'нет подтверждённых координат'),
         cameraCluster: 'Приборная панель: ' + (outputs.cluster === true ? 'вкл' : 'выкл'),
         cameraHud: 'Проекция HUD: ' + (outputs.hud === true ? 'вкл' : 'выкл'),
-        cameraInfo: s.storage && s.storage.persistent === false ? 'Настройки временные: хранилище недоступно' : 'Калужская область',
+        cameraInfo: s.storage && s.storage.persistent === false ? 'Настройки временные: хранилище недоступно' : (gpsSummary(s) || 'Калужская область'),
         cameraDiagnostics: 'Диагностика'
     };
     if (db.error) text.cameraDate += ' • ошибка базы';
@@ -55,6 +63,15 @@ function outputCommand(state, target) {
 }
 function diagnostics(state) {
     if (!state) return 'Сервис не отвечает';
+    if (state.gpsInput) {
+        const b = state.gpsBridge || {};
+        const input = state.gpsInput;
+        return gpsSummary(state) + ' • интерфейс: ' + clean(b.state, 'ожидание') +
+            (b.errorCode ? ' (' + clean(b.errorCode, '') + ')' : '') +
+            (Number.isFinite(input.sourceUtcAgeMs) ? ' • возраст UTC: ' + (input.sourceUtcAgeMs / 1000).toFixed(1) + ' с' : '') +
+            ' • ошибок checksum: ' + (Number.isFinite(input.checksumErrors) ? input.checksumErrors : 0) +
+            (state.error ? ' • ' + clean(state.error, '') : '');
+    }
     const r = state.renderer;
     const rendering = typeof r === 'string' ? r : r ? JSON.stringify(r) : 'состояние неизвестно';
     return 'Вывод: ' + clean(rendering, 'неизвестно') + (state.error ? ' • ' + clean(state.error, '') : '');

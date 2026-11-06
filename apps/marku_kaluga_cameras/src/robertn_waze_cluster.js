@@ -61,6 +61,7 @@ const { LogsControl, ROWS: LOGS_ROWS } = require('./logs_control.js');
 const { qrPng } = require('./qr.js');
 const { CameraControl } = require('./control.js');
 const cameraView = require('./view_model.js');
+const { BmwGpsBridge } = require('./bmw_gps_bridge.js');
 
 const logger = logging.getSDKLogger();
 
@@ -137,6 +138,8 @@ class WazeClusterApp extends OnlineApp {
         this._qr = { url: undefined, file: null, chain: Promise.resolve() };
         this._sawForeground = false;
         this._shutdownPromise = null;
+        this._shuttingDown = false;
+        this._activityReported = null;
         this._control = new WazeClusterControl({ log: logger });
         this._control.on('change', () => this._render());
         this._logs = new LogsControl({ log: logger });
@@ -145,6 +148,8 @@ class WazeClusterApp extends OnlineApp {
         this._cameraInfoMode = null;
         this._cameras = new CameraControl();
         this._cameras.on('change', () => { this._renderCameras(); this._renderHudOpacity(); });
+        this._gpsBridge = new BmwGpsBridge({ builders: someipBuilders });
+        this._gpsBridge.on('change', () => this._syncActivity());
 
         this.on('initialized', () => {
             this._appInitialized()
@@ -162,9 +167,12 @@ class WazeClusterApp extends OnlineApp {
 
     _appInitialized() {
         logger.info(`robertn_waze_cluster ${this.getAppId()} v${this._packageJson.version} starting`);
+        // Never await GPS for RHMI startup. Its separate local IPC client and
+        // background hold survive leaving this screen for CarPlay.
+        Promise.resolve().then(() => this._gpsBridge.start()).catch(() => logger.warn('BMW GPS bridge start failed'));
         if (!this.rhmiApplication) {
             logger.info('no RhmiApplication for this start reason; initializing without a screen');
-            return this.initialized();
+            return Promise.resolve(this.initialized()).then(() => this._syncActivity());
         }
         const foregroundStart = this._startedForeground();
         return this._setupRhmi()
@@ -186,7 +194,10 @@ class WazeClusterApp extends OnlineApp {
                 const lastUuid = this.getLastExecutedEntryPointUuid &&
                     this.getLastExecutedEntryPointUuid();
                 return lastUuid ? this._onEntryPointExecute(lastUuid) : undefined;
-            });
+            })
+            // A ready GPS subscription can emit before initialized() lets us
+            // report activity. Reconcile it also for a hidden RHMI start.
+            .then(() => this._syncActivity());
     }
 
     _startedForeground() {
@@ -480,11 +491,18 @@ class WazeClusterApp extends OnlineApp {
         if (!this._initialized || !this._appStatusService) {
             return;
         }
-        const reports = visible ?
-            [this.registerActive(), this.registerHmiVisible()] :
-            [this.unregisterHmiVisible(), this.registerInactive()];
-        reports.forEach((report) => Promise.resolve(report).catch((err) =>
-            logger.warn(`app status report failed: ${err && err.message}`)));
+        this._syncActivity();
+        Promise.resolve().then(() => visible ? this.registerHmiVisible() : this.unregisterHmiVisible())
+            .catch(() => logger.warn('app HMI visibility report failed'));
+    }
+
+    _syncActivity() {
+        if (!this._initialized || !this._appStatusService || this._shuttingDown) return;
+        const active = this._visible || this._gpsBridge.shouldHold();
+        if (this._activityReported === active) return;
+        this._activityReported = active;
+        Promise.resolve().then(() => active ? this.registerActive() : this.registerInactive())
+            .catch(() => { this._activityReported = null; logger.warn('app activity report failed'); });
     }
 
     /* ---- rendering ---- */
@@ -709,10 +727,12 @@ class WazeClusterApp extends OnlineApp {
             return this._shutdownPromise;
         }
         logger.info(`robertn_waze_cluster shutdown: ${JSON.stringify(reason)}`);
+        this._shuttingDown = true;
         clearTimeout(this._hideTimer);
         this._control.close();
         this._logs.close();
         this._cameras.close();
+        this._gpsBridge.stop();
         if (this._qr.file) {
             try {
                 fs.unlinkSync(this._qr.file);

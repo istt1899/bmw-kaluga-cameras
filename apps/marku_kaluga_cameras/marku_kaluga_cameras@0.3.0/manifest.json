@@ -63,7 +63,13 @@
     },
     "de.bmw.infotainment.vehicle.Vehicle": "*",
     "de.bmw.infrastructure.EnvironmentalInformation": "*",
-    "de.bmw.infotainment.certification.Certification": "*"
+    "de.bmw.infotainment.certification.Certification": "*",
+    "de.bmw.infotainment.SatellitePositioning": {
+      "instances": "1",
+      "broadcasts": [
+        "updatePosition"
+      ]
+    }
   },
   "services": {
     "de.bmw.infotainment.telematic.oap.AppStatus": {

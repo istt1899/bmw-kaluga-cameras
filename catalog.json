@@ -1,0 +1,48 @@
+{
+  "schema": 2,
+  "components": [
+    {
+      "id": "marku_kaluga_cameras",
+      "kind": "app",
+      "version": "0.1.2",
+      "title": "Камеры • Калуга",
+      "description": "Стендовый кандидат ID7: офлайн-база Калужской области и диагностика положения",
+      "build": "unit",
+      "requires": {
+        "marku-kaluga-cameras": "0.1.2",
+        "mgu-deploy": "0.7.11"
+      },
+      "uninstallable": true,
+      "mguHmi": [
+        "ID7"
+      ],
+      "artifact": {
+        "name": "marku_kaluga_cameras@0.1.2.tgz",
+        "size": 27267,
+        "sha256": "98fa11e42bec27c0761189abcd2a0b32ad413b89d8b82052844e4f2694832b36",
+        "url": "https://github.com/istt1899/bmw-kaluga-cameras/releases/download/marku_kaluga_cameras@0.1.2/marku_kaluga_cameras@0.1.2.tgz"
+      }
+    },
+    {
+      "id": "marku-kaluga-cameras",
+      "kind": "tool",
+      "version": "0.1.2",
+      "title": "Kaluga Cameras service",
+      "description": "Local Kaluga OSM camera snapshot, strict GPS diagnostics and optional verified-road camera alerts",
+      "optional": true,
+      "uninstallable": true,
+      "requires": {
+        "cluster-render": "0.4.0"
+      },
+      "mguHmi": [
+        "ID7"
+      ],
+      "artifact": {
+        "name": "marku-kaluga-cameras@0.1.2.tgz",
+        "size": 398743,
+        "sha256": "b3804dda1bd6a0775ebbc19643746d6eaf1e626a8ac9bc8b53009d70abd145cc",
+        "url": "https://github.com/istt1899/bmw-kaluga-cameras/releases/download/marku-kaluga-cameras@0.1.2/marku-kaluga-cameras@0.1.2.tgz"
+      }
+    }
+  ]
+}

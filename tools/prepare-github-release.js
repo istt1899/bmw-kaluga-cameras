@@ -161,6 +161,11 @@ function main() {
     artifact.url = 'https://github.com/' + REPOSITORY + '/releases/download/' + component.id + '@' + version + '/' + artifact.name;
   });
   const source = collectSource();
+  // A fresh HTTPS path can be used when a car cannot refresh its GitHub
+  // release source. Artifact URLs above already point at immutable releases.
+  const directCatalog = Buffer.from(JSON.stringify(catalog, null, 2) + '\n');
+  inspectContent('catalog.json', directCatalog);
+  source.set('catalog.json', directCatalog);
   const snapshot = JSON.parse(fs.readFileSync(path.join(ROOT, 'native', 'marku-kaluga-cameras', 'files', 'kaluga-speed.json'), 'utf8'));
   const roadZones = JSON.parse(fs.readFileSync(path.join(ROOT, 'native', 'marku-kaluga-cameras', 'files', 'road-zones.json'), 'utf8'));
   assert(snapshot.region === 'RU-KLU' && roadZones.region === snapshot.region && roadZones.sourceTimestamp === snapshot.sourceTimestamp &&

@@ -51,7 +51,27 @@ published.components.forEach((c) => {
     if (c.kind === 'tool') {
         const manifest = JSON.parse(fs.readFileSync(path.join(dir, 'component.json'), 'utf8'));
         result = sandbox.validateTool(c.artifact.name, dir, manifest);
-        assert.strictEqual(manifest.internet, undefined);
+        assert.strictEqual(manifest.internet, true);
+        assert.deepStrictEqual(manifest.uids, [5000]);
+        assert(/User=hmi_5000(?:\r?\n|$)/.test(fs.readFileSync(path.join(dir, 'units', 'marku-kaluga-cameras.service'), 'utf8')));
+        // Run the actual upstream deployment sync against an isolated /var/opt.
+        // No CLI main, unit start or head-unit connection is executed.
+        const varOpt = path.join(QA, 'var-opt');
+        const uplink = path.join(varOpt, 'mgu-uplink'); mkdirp(path.join(uplink, 'current'));
+        const oldVarOpt = sandbox.CFG.varOpt, oldTools = sandbox.installedTools, oldApps = sandbox.installedApps, oldFsyncDir = sandbox.fsyncDir;
+        try {
+            sandbox.CFG.varOpt = varOpt;
+            sandbox.installedTools = () => [{ id: c.id, component: manifest }];
+            sandbox.installedApps = () => [];
+            // Windows cannot fsync a directory handle. All upstream content,
+            // paths, atomic file writes and uninstall cleanup still run.
+            if (process.platform === 'win32') sandbox.fsyncDir = () => {};
+            sandbox.syncDropIns();
+            assert.strictEqual(fs.readFileSync(path.join(uplink, 'uids.d', c.id), 'utf8'), '5000\n');
+            sandbox.installedTools = () => [];
+            sandbox.syncDropIns();
+            assert(!fs.existsSync(path.join(uplink, 'uids.d', c.id)), 'uninstall removes stale network UID');
+        } finally { sandbox.CFG.varOpt = oldVarOpt; sandbox.installedTools = oldTools; sandbox.installedApps = oldApps; sandbox.fsyncDir = oldFsyncDir; }
         assert(members.some((m) => m.name === 'files/NOTICE-data.txt'));
     } else {
         result = sandbox.validateSource(c.artifact.name, dir);

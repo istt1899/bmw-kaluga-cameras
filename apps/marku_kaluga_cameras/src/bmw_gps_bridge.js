@@ -29,12 +29,18 @@ class BmwGpsBridge extends EventEmitter {
         this.builders = o.builders;
         this.control = o.control || new CameraControl(o.controlOptions);
         this.retryMs = o.retryMs || 10000;
+        this.retryMaxMs = Math.max(this.retryMs, o.retryMaxMs || 60000);
         this.timeoutMs = o.timeoutMs || 10000;
         this.staleMs = o.staleMs || 15000;
         this.heartbeatMs = o.heartbeatMs || 5000;
         this.now = o.now || Date.now;
         this.running = false; this.enabled = true; this.state = 'stopped'; this.errorCode = null;
         this.generation = 0; this.connecting = false; this.subscribed = false;
+        this.attemptId = 0; this.attempt = null; this.attempts = new Set(); this.failures = 0;
+        // The SDK exposes no verified cancellation for a pending builder or
+        // native subscription. Bound both unresolved work and retained native
+        // registrations across start/stop cycles; never retry indefinitely.
+        this.maxAttempts = 3;
         this.lastEventAt = null; this.eventsReceived = 0; this.invalidPayloads = 0;
         this.retry = null; this.deadline = null; this.heartbeat = null;
         this.sent = null; this.linkUp = false;
@@ -80,54 +86,89 @@ class BmwGpsBridge extends EventEmitter {
         this.connect(this.generation);
         this.heartbeat = setInterval(() => {
             if (!this.running) return;
-            if (this.subscribed && this.now() - this.lastEventAt > this.staleMs) this.setState('unavailable', 'GPS_EVENT_TIMEOUT');
+            if (this.subscribed && this.now() - this.lastEventAt > this.staleMs) {
+                this.retire(this.attempt);
+                this.setState('unavailable', 'GPS_EVENT_TIMEOUT');
+                this.scheduleRetry(this.generation);
+            }
             this.publishState(true);
         }, this.heartbeatMs);
         this.emit('change');
     }
     current(generation) { return this.running && this.generation === generation; }
+    active(attempt) { return !!attempt && this.current(attempt.generation) && this.attempt === attempt; }
+    retire(attempt) {
+        if (!attempt) return;
+        clearTimeout(attempt.deadline);
+        if (this.attempt !== attempt) return;
+        this.attempt = null; this.deadline = null; this.connecting = false; this.subscribed = false;
+    }
+    scheduleRetry(generation) {
+        if (!this.current(generation) || this.retry || this.connecting || this.subscribed) return;
+        const delay = Math.min(this.retryMaxMs, this.retryMs * Math.pow(2, Math.min(this.failures++, 10)));
+        this.retry = setTimeout(() => { this.retry = null; this.connect(generation); }, delay);
+    }
+    settled(attempt) {
+        attempt.pending = false;
+        // A timed-out builder cannot subscribe when it finally resolves.
+        // Invoked subscriptions keep a slot because rejecting/resolving the
+        // Promise does not prove that its native registration was removed.
+        if (!attempt.subscriptionStarted) this.attempts.delete(attempt);
+        if (!this.active(attempt) && this.running && this.attempts.size < this.maxAttempts) this.scheduleRetry(this.generation);
+    }
     connect(generation) {
         if (!this.current(generation) || this.connecting || this.subscribed) return;
+        if (this.attempts.size >= this.maxAttempts) {
+            this.setState('unavailable', 'GPS_RETRY_CAPACITY_LIMIT');
+            return; // A late pending builder settling can free a slot.
+        }
+        const attempt = { id: ++this.attemptId, generation, pending: true, subscriptionStarted: false, deadline: null };
+        this.attempt = attempt; this.attempts.add(attempt);
         this.connecting = true;
         this.setState('starting', null);
-        // Availability may resolve later. Its deadline updates diagnostics but
-        // does not spawn another unresolved proxy or duplicate subscription.
-        this.deadline = setTimeout(() => {
-            this.deadline = null;
-            if (this.current(generation) && this.connecting) this.setState('unavailable', 'GPS_PROXY_TIMEOUT');
+        attempt.deadline = this.deadline = setTimeout(() => {
+            if (!this.active(attempt)) return;
+            this.retire(attempt);
+            this.setState('unavailable', attempt.subscriptionStarted ? 'GPS_SUBSCRIPTION_TIMEOUT' : 'GPS_PROXY_TIMEOUT');
+            this.scheduleRetry(generation);
         }, this.timeoutMs);
         let proxy;
         Promise.resolve().then(() => {
+            if (!this.active(attempt)) return null;
             if (!this.builders) throw Object.assign(new Error('no builder'), { code: 'GPS_PROXY_UNAVAILABLE' });
             if (typeof this.builders.buildAndInitTypedProxy === 'function') {
                 return this.builders.buildAndInitTypedProxy(INTERFACE, INSTANCE, { timeoutMs: this.timeoutMs });
             }
             return Promise.resolve(this.builders.buildTypedProxy(INTERFACE, INSTANCE))
-                .then((p) => { proxy = p; return p.init(); })
-                .then(() => proxy.waitUntilAvailable()).then(() => proxy);
+                .then((p) => { if (!this.active(attempt)) return; proxy = p; return p.init(); })
+                .then(() => this.active(attempt) ? proxy.waitUntilAvailable() : null)
+                .then(() => this.active(attempt) ? proxy : null);
         }).then((p) => {
-            if (!this.current(generation)) return null;
+            if (!this.active(attempt)) return null;
             proxy = p;
             if (!proxy || !proxy.updatePosition || typeof proxy.updatePosition.subscribe !== 'function') {
                 throw Object.assign(new Error('no event'), { code: 'GPS_EVENT_UNAVAILABLE' });
             }
-            return Promise.resolve(proxy.updatePosition.subscribe((payload) => this.event(payload, generation))).then(() => proxy);
+            attempt.subscriptionStarted = true;
+            return Promise.resolve(proxy.updatePosition.subscribe((payload) => this.event(payload, generation, attempt))).then(() => proxy);
         }).then((p) => {
-            if (!this.current(generation)) return;
-            clearTimeout(this.deadline); this.deadline = null; this.connecting = false;
+            this.settled(attempt);
+            if (!this.active(attempt)) return;
+            clearTimeout(attempt.deadline); this.deadline = null; this.connecting = false;
             if (!p) return;
-            this.subscribed = true;
-            if (this.lastEventAt === null) this.lastEventAt = this.now();
+            this.subscribed = true; this.failures = 0;
+            this.lastEventAt = this.now();
             this.setState('subscribed', null);
         }).catch((error) => {
-            if (!this.current(generation)) return;
-            clearTimeout(this.deadline); this.deadline = null; this.connecting = false;
+            this.settled(attempt);
+            if (!this.active(attempt)) return;
+            this.retire(attempt);
             this.setState('error', codeOf(error, 'GPS_BRIDGE_ERROR'));
-            this.retry = setTimeout(() => { this.retry = null; this.connect(generation); }, this.retryMs);
+            this.scheduleRetry(generation);
         });
     }
-    event(payload, generation) {
-        if (!this.current(generation)) return;
+    event(payload, generation, attempt) {
+        if (!this.current(generation) || (attempt && !this.active(attempt))) return;
         if (!validPayload(payload)) {
             this.invalidPayloads++;
             this.setState('error', 'NMEA_PAYLOAD_INVALID');
@@ -144,14 +185,15 @@ class BmwGpsBridge extends EventEmitter {
     }
     stop() {
         if (!this.running) return;
+        this.retire(this.attempt);
         this.running = false; this.generation++;
         this.connecting = false; this.subscribed = false;
         clearTimeout(this.retry); clearTimeout(this.deadline); clearInterval(this.heartbeat);
         this.retry = this.deadline = this.heartbeat = null;
         this.setState('stopped', null);
         this.control.close();
-        // No unverified unsubscribe API is invoked. Late callbacks are inert;
-        // SDK/process shutdown releases the single successful subscription.
+        // No unverified unsubscribe API is invoked. Retained registrations
+        // stay bounded, and only the current attempt can deliver live data.
         this.emit('change');
     }
 }

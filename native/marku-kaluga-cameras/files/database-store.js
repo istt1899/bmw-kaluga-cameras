@@ -58,14 +58,27 @@ function validateRelation(r) {
 }
 function validateZones(zones, records) {
   if (!Array.isArray(zones) || zones.length > MAX_RECORDS) fail('DATA_ZONES');
-  var ids = Object.create(null), camera = Object.create(null); records.forEach(function (r) { camera[r.id] = true; });
+  var ids = Object.create(null), camera = Object.create(null); records.forEach(function (r) { camera[r.id] = r; });
   zones.forEach(function (z) {
     if (!object(z) || !camera[z.id] || ids[z.id] || !position(z) || !Array.isArray(z.roads) || z.roads.length > 5000 || !Array.isArray(z.travel) || !z.travel.length || z.travel.length > 32 || z.travel.some(function (d) { return !number(d) || d < 0 || d >= 360; })) fail('DATA_ZONE');
     ids[z.id] = true;
+    // Road points are metre offsets from this exact camera coordinate. A zone
+    // belonging to a different origin would move every road filter with it.
+    if (z.lat !== camera[z.id].position.lat || z.lon !== camera[z.id].position.lon) fail('DATA_ZONE_POSITION');
     if (z.limit != null && (!Number.isInteger(z.limit) || z.limit < 5 || z.limit > 180)) fail('DATA_ZONE_LIMIT');
+    if (z.limit != null && camera[z.id].limitKmh != null && z.limit !== camera[z.id].limitKmh) fail('DATA_ZONE_LIMIT_CONFLICT');
+    var anchored = false;
     z.roads.forEach(function (r) {
       if (!object(r) || !Number.isSafeInteger(r.id) || !Array.isArray(r.pts) || r.pts.length < 2 || r.pts.length > 20000 || [-1, 0, 1].indexOf(r.dir) < 0 || !Number.isInteger(r.cam) || r.cam < -1 || r.cam >= r.pts.length || r.pts.some(function (p) { return !Array.isArray(p) || p.length !== 2 || p.some(function (n) { return !number(n) || Math.abs(n) > 5000; }); })) fail('DATA_ROAD');
+      if (r.cam >= 0) {
+        var point = r.pts[r.cam];
+        // The exporter rounds local metre coordinates. Two metres allows that
+        // quantisation without accepting a camera index on another road point.
+        if (point[0] * point[0] + point[1] * point[1] > 4) fail('DATA_ROAD_CAMERA_ANCHOR');
+        anchored = true;
+      }
     });
+    if (!anchored) fail('DATA_ZONE_CAMERA_ANCHOR');
   });
 }
 function validateBundle(bundle) {
@@ -113,14 +126,31 @@ function mergeRelations(database, supplement) {
 function filesAt(dataDir) { return { active: path.join(dataDir, 'camera-database-active.json'), previous: path.join(dataDir, 'camera-database-previous.json') }; }
 function read(file) {
   var stat = fs.lstatSync(file); if (!stat.isFile() || stat.isSymbolicLink() || stat.size > MAX_BUNDLE) fail('LOCAL_DATA_FILE');
-  return validateBundle(JSON.parse(fs.readFileSync(file, 'utf8')));
+  var raw;
+  try { raw = JSON.parse(fs.readFileSync(file, 'utf8')); } catch (e) { if (e instanceof SyntaxError) e.code = 'LOCAL_DATA_JSON'; throw e; }
+  try { return validateBundle(raw); } catch (e) { e.originalVersion = object(raw) && version(raw.version) ? raw.version : null; throw e; }
 }
-function loadActive(options) {
+function loadActiveResult(options) {
   var initial = validateBundle(options.initial), names = filesAt(options.dataDir);
-  try { return read(names.active); } catch (e) {
-    try { return read(names.previous); } catch (ignored) { return initial; }
+  try { return { bundle: read(names.active), recovery: null }; } catch (activeError) {
+    var previous, previousError;
+    try { previous = read(names.previous); } catch (e) { previousError = e; }
+    // A fresh installation has no local files. This is normal startup rather
+    // than recovery, including a missing directory on a read-only install.
+    if (activeError.code === 'ENOENT' && previousError && previousError.code === 'ENOENT') return { bundle: initial, recovery: null };
+    var bundle = previous || initial, recovery = {
+      phase: previous ? 'recovered-from-previous' : 'recovered-from-packaged',
+      source: previous ? 'previous' : 'packaged',
+      reasonCode: activeError.code === 'ENOENT' ? 'LOCAL_ACTIVE_MISSING' : activeError.code || 'LOCAL_DATA_INVALID',
+      activeErrorCode: activeError.code || 'LOCAL_DATA_INVALID',
+      previousErrorCode: previousError ? previousError.code || 'LOCAL_DATA_INVALID' : null,
+      originalVersion: activeError.originalVersion || null, recoveredVersion: bundle.version
+    };
+    return { bundle: bundle, recovery: recovery };
   }
 }
+// Existing callers consume only the validated bundle.
+function loadActive(options) { return loadActiveResult(options).bundle; }
 function allowed(url, manifest) {
   var u; try { u = new URL(url); } catch (e) { fail('UPDATE_URL'); }
   if (u.protocol !== 'https:' || u.hostname !== 'raw.githubusercontent.com' || u.port || u.username || u.password || u.hash || u.search) fail('UPDATE_URL');
@@ -162,21 +192,39 @@ function manifest(m) {
   if (!object(m) || m.schema !== 1 || m.region !== 'RU-KLU' || !version(m.version) || !date(m.generatedAt) || !object(m.artifact) || !Number.isInteger(m.artifact.size) || m.artifact.size < 2 || m.artifact.size > MAX_BUNDLE || !/^[a-f0-9]{64}$/.test(m.artifact.sha256)) fail('UPDATE_MANIFEST');
   allowed(m.artifact.url, false); return m;
 }
+function syncDirectory(dir) {
+  if (process.platform === 'win32') return { mode: 'file-fsync-only', directorySynced: false, reasonCode: 'DIRECTORY_FSYNC_UNSUPPORTED_WINDOWS' };
+  var fd;
+  try {
+    fd = fs.openSync(dir, 'r'); fs.fsyncSync(fd);
+    return { mode: 'file-and-directory-fsync', directorySynced: true, reasonCode: null };
+  } catch (e) {
+    if (['EINVAL', 'ENOTSUP', 'ENOSYS', 'EOPNOTSUPP'].indexOf(e.code) >= 0) return { mode: 'file-fsync-only', directorySynced: false, reasonCode: 'DIRECTORY_FSYNC_UNSUPPORTED', filesystemErrorCode: e.code };
+    var failure = new Error('Database directory flush failed'); failure.code = 'UPDATE_DIRECTORY_SYNC'; failure.filesystemErrorCode = e.code || 'UNKNOWN'; throw failure;
+  } finally { if (fd !== undefined) fs.closeSync(fd); }
+}
 function writeAtomic(file, bytes) {
-  var temp = file + '.tmp-' + process.pid + '-' + crypto.randomBytes(6).toString('hex'), fd;
-  try { fd = fs.openSync(temp, 'wx', 384); fs.writeFileSync(fd, bytes); fs.fsyncSync(fd); fs.closeSync(fd); fd = null; fs.renameSync(temp, file); }
+  var temp = file + '.tmp-' + process.pid + '-' + crypto.randomBytes(6).toString('hex'), fd, renamed = false;
+  try {
+    fd = fs.openSync(temp, 'wx', 384); fs.writeFileSync(fd, bytes); fs.fsyncSync(fd); fs.closeSync(fd); fd = null;
+    fs.renameSync(temp, file); renamed = true;
+    return syncDirectory(path.dirname(file));
+  } catch (e) { e.renamedFile = renamed ? file : null; throw e; }
   finally { if (fd !== undefined && fd !== null) try { fs.closeSync(fd); } catch (e) {} try { fs.unlinkSync(temp); } catch (e) { if (e.code !== 'ENOENT') throw e; } }
 }
 function createStore(options) {
   options = options || {}; if (!text(options.dataDir, 1024) || !options.dataDir) fail('STORE_DIRECTORY');
   if (options.sourceUrl !== undefined) allowed(options.sourceUrl, true);
-  var initial = validateBundle(options.initial), active = loadActive({ dataDir: options.dataDir, initial: initial });
+  var initial = validateBundle(options.initial), loaded = loadActiveResult({ dataDir: options.dataDir, initial: initial }), active = loaded.bundle;
   var names = filesAt(options.dataDir), closed = false, pending = null, requests = [];
   var test = options._test && options._test.explicit === true ? options._test : null;
   var transport = test && test.transport || function (url, limit) { return fetchBounded(url, limit, requests); };
   var now = test && test.now || Date.now;
   var writable = true; try { fs.accessSync(options.dataDir, fs.constants.W_OK); } catch (e) { writable = false; }
-  var state = { phase: 'idle', currentVersion: active.version, availableVersion: null, lastCheckedAt: null, errorCode: null, persistent: writable, canCheck: true, canRollback: fs.existsSync(names.previous) };
+  var state = { phase: loaded.recovery ? loaded.recovery.phase : 'idle', currentVersion: active.version, availableVersion: null, lastCheckedAt: null,
+    errorCode: loaded.recovery ? loaded.recovery.reasonCode : null, recovery: loaded.recovery,
+    durability: { mode: 'not-written-this-session', directorySynced: null, reasonCode: process.platform === 'win32' ? 'DIRECTORY_FSYNC_UNSUPPORTED_WINDOWS' : null },
+    persistent: writable, canCheck: true, canRollback: fs.existsSync(names.previous) };
   function status() { return clone(state); }
   function ensureOpen() { if (closed) fail('UPDATE_CLOSED', 'Store is closed'); }
   function update(change) { if (closed) return; Object.assign(state, change); if (typeof options.onStatus === 'function') try { options.onStatus(status()); } catch (e) {} }
@@ -188,10 +236,20 @@ function createStore(options) {
     if (typeof options.onChange === 'function') options.onChange(clone(next));
     ensureOpen(); // A consumer may close the store synchronously in its callback.
     try {
-      writeAtomic(names.previous, saved);
+      state.durability = writeAtomic(names.previous, saved);
       ensureOpen();
-      writeAtomic(names.active, Buffer.from(JSON.stringify(next)));
+      state.durability = writeAtomic(names.active, Buffer.from(JSON.stringify(next)));
     } catch (e) {
+      // rename already changed the visible file when its directory fsync fails.
+      // Restore the old validated bytes as well as the in-memory consumer. This
+      // makes a recoverable flush failure leave one consistent active version.
+      if (e.renamedFile === names.active) {
+        try { state.durability = writeAtomic(names.active, saved); }
+        catch (restoreError) {
+          state.durability = { mode: 'restore-unconfirmed', directorySynced: false, reasonCode: restoreError.code || 'UPDATE_RESTORE_FAILED' };
+          e.code = 'UPDATE_RESTORE_FAILED';
+        }
+      }
       if (!closed && typeof options.onChange === 'function') try { options.onChange(clone(before)); } catch (ignored) {}
       throw e;
     }

@@ -86,10 +86,17 @@ function commandText(state, local) {
     if(s.controlError) return 'Ошибка команды: '+clean(s.controlError);
     return c ? clean(c.message || c.phase || c.command) : 'Команды: ожидают действия';
 }
-function reportPage(report, live, version, pageIndex, blockIndex, localResult) {
+function commandPage(state, local, blockIndex) {
+    const text=commandText(state,local), lines=parts(text), blocks=Math.max(1,Math.ceil(lines.length/2));
+    const block=Math.max(0,Math.min(blocks-1,blockIndex||0)), start=block*2;
+    return {text,block,blocks,command:lines[start],commandMore:lines[start+1]||' ',
+        label:blocks>1?'Результат • строки '+(start+1)+'–'+Math.min(lines.length,start+2)+'/'+lines.length+' • далее →':'Результат • показан полностью'};
+}
+function reportPage(report, live, version, pageIndex, blockIndex, localResult, commandBlockIndex) {
     const snap=report||capture(live,version,(live||{}).observedAtMs), s=snap.state||{}, frozen=!!report;
     const p=Math.max(0,Math.min(5,pageIndex||0)), f=s.gpsFix||{}, input=s.gpsInput||{}, timing=input.nmeaTiming||{};
-    const g=s.guidance||{}, c=s.alert||s.nearest||{}, db=s.database||{}, r=s.rendererDetails||{}, layout=r.layout||r.geometry||{};
+    const g=s.guidance||{}, c=s.alert||s.nearest||{}, db=s.database||{}, update=s.databaseUpdate||{},
+        recovery=update.recovery||{}, durability=update.durability||{}, r=s.rendererDetails||{}, layout=r.layout||r.geometry||{};
     const existing=values(s,snap.appVersion||version,frozen), on=v=>v?'вкл':'выкл';
     const measurement=(v,unit)=>Number.isFinite(v)?n(v,0)+(unit||''):'неизвестно';
     const renderTarget=name=>{
@@ -134,7 +141,10 @@ function reportPage(report, live, version, pageIndex, blockIndex, localResult) {
             existing.mode,existing.reason,existing.way,existing.samples].concat(candidates.map((v,i)=>
                 'Кандидат '+(i+1)+': '+clean(v.id)+' • '+n(v.distanceM,0)+' м • '+clean(v.reason))),
         [existing.outputs,renderTarget('map'),renderTarget('hud'),
-            'Renderer: '+clean(layout.rendererVersion||r.version)+' • соединение '+clean(layout.connection||r.connection),
+            'Renderer: '+(r.versionReported===false?'версия renderer не сообщается протоколом':
+                layout.rendererVersion||r.version?'версия '+clean(layout.rendererVersion||r.version):'версия renderer не сообщается протоколом'),
+            'Соединение renderer: '+clean(r.connection||layout.connection||'неизвестно')+
+                ' • backend '+clean(r.backend)+' • протокол '+clean(r.protocol),
             'Держатель приборов: '+clean((r.map||{}).holder), 'Держатель HUD: '+clean((r.hud||{}).holder),
             existing.test,'Тест изображения: '+clean(action(s,'displayTest').reason||'доступен'),
             'Калибровка: '+clean(action(s,'calibrationTest').reason||'доступна'),
@@ -151,17 +161,22 @@ function reportPage(report, live, version, pageIndex, blockIndex, localResult) {
             'Проверка: '+clean((s.databaseUpdate||{}).phase)+' • '+clean((s.databaseUpdate||{}).message),
             'Источник обновления: '+clean((s.databaseUpdate||{}).source||(s.databaseUpdate||{}).url),
             'Предыдущая база: '+clean(db.previousVersion||(s.databaseUpdate||{}).previousVersion),
+            'Восстановление базы: '+clean(recovery.source||recovery.mode||update.phase)+' • причина '+clean(recovery.reasonCode),
+            'До восстановления: '+clean(recovery.originalVersion)+' • загружена '+clean(recovery.recoveredVersion),
+            'Сохранность записи: '+clean(durability.mode)+' • каталог '+
+                (durability.directorySynced===true?'синхронизирован':durability.directorySynced===false?'не синхронизирован':'не проверен')+
+                ' • '+clean(durability.reasonCode),
             'Пропущено: '+clean(db.skippedCount)+' • '+clean(db.coverageReason),
             'Экспорт JSON — отдельное действие; данные GPS не отправляются автоматически']
     ];
     const lines=[]; pages[p].forEach(line=>parts(line).forEach(row=>lines.push(row)));
     const blocks=Math.max(1,Math.ceil(lines.length/PAGE_ROWS)), block=Math.max(0,Math.min(blocks-1,blockIndex||0));
-    const commandLines=parts(commandText(live,localResult));
+    const result=commandPage(live,localResult,commandBlockIndex);
     const rows={stamp:(frozen?'Снимок ':'Живые ')+snap.id+' • '+utc(snap.capturedAtMs),
         versions:'Приложение '+clean(snap.appVersion||version)+' • сервис '+clean(s.serviceVersion),
         page:PAGE_TITLES[p]+' '+(p+1)+'/6 • строки '+(block*PAGE_ROWS+1)+'–'+Math.min(lines.length,(block+1)*PAGE_ROWS)+'/'+lines.length,
-        command:commandLines[0],commandMore:commandLines.slice(1).join(' ').slice(0,ROW_CHARS)};
+        command:result.command,commandMore:result.commandMore};
     for(let i=0;i<PAGE_ROWS;i++) rows['row'+(i+1)]=lines[block*PAGE_ROWS+i]||' ';
-    return {rows,page:p,block,blocks,title:PAGE_TITLES[p],report:snap};
+    return {rows,page:p,block,blocks,title:PAGE_TITLES[p],report:snap,command:result};
 }
-module.exports = { KEYS, values, REASONS, PAGE_KEYS, PAGE_TITLES, PAGE_ROWS, capture, reportPage, action, commandText };
+module.exports = { KEYS, values, REASONS, PAGE_KEYS, PAGE_TITLES, PAGE_ROWS, capture, reportPage, action, commandText, commandPage };

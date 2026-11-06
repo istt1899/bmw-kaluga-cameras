@@ -52,9 +52,13 @@ async function until(check) { const deadline = Date.now() + 2000; while (!check(
         assert.strictEqual(bridge.invalidPayloads, 5);
         enabled = false; status(); await until(() => !bridge.shouldHold());
         enabled = true; status(); await until(() => bridge.shouldHold());
-        now = 2000; await until(() => bridge.state === 'unavailable' && bridge.errorCode === 'GPS_EVENT_TIMEOUT');
-        event({ nmeaString: nmea }); await until(() => bridge.state === 'subscribed');
-        assert.strictEqual(subscriptions, 1, 'stale data does not accumulate duplicate subscriptions');
+        const oldEvent = event;
+        now = 2000; await until(() => subscriptions === 2 && bridge.subscribed);
+        const beforeLate = commands.filter((c) => c.cmd === 'vehicle-nmea').length;
+        oldEvent({ nmeaString: nmea }); await sleep(10);
+        assert.strictEqual(commands.filter((c) => c.cmd === 'vehicle-nmea').length, beforeLate, 'retired subscription cannot replay data after recovery');
+        event({ nmeaString: nmea }); await until(() => commands.filter((c) => c.cmd === 'vehicle-nmea').length > beforeLate);
+        assert.strictEqual(subscriptions, 2, 'silent subscription gets one replacement with one active callback');
         bridge.stop(); await until(() => peers.size === 0);
         const stopped = commands.length; event({ nmeaString: nmea }); await sleep(30);
         assert.strictEqual(commands.length, stopped, 'late data and timers are inert after shutdown');
@@ -63,15 +67,15 @@ async function until(check) { const deadline = Date.now() + 2000; while (!check(
 
     let resolveAvailability, fallbackBuilds = 0, fallbackSubscriptions = 0;
     const pending = new BmwGpsBridge({
-        builders: { buildTypedProxy() { fallbackBuilds++; return Promise.resolve({ init: () => Promise.resolve(),
-            waitUntilAvailable: () => new Promise((resolve) => { resolveAvailability = resolve; }),
+        builders: { buildTypedProxy() { const build = ++fallbackBuilds; return Promise.resolve({ init: () => Promise.resolve(),
+            waitUntilAvailable: () => build === 1 ? new Promise((resolve) => { resolveAvailability = resolve; }) : Promise.resolve(),
             updatePosition: { subscribe() { fallbackSubscriptions++; return Promise.resolve(); } } }); } },
-        controlOptions: { path: socket, retryMs: 10 }, timeoutMs: 15, heartbeatMs: 10
+        controlOptions: { path: socket, retryMs: 10 }, timeoutMs: 15, retryMs: 5, heartbeatMs: 10
     });
     try {
-        pending.start(); await until(() => pending.errorCode === 'GPS_PROXY_TIMEOUT');
-        await sleep(35); assert.strictEqual(fallbackBuilds, 1, 'only one unresolved availability request');
-        resolveAvailability(); await until(() => pending.subscribed); assert.strictEqual(fallbackSubscriptions, 1);
+        pending.start(); await until(() => pending.subscribed);
+        assert.strictEqual(fallbackBuilds, 2, 'timed-out availability permits a bounded replacement');
+        resolveAvailability(); await sleep(20); assert.strictEqual(fallbackSubscriptions, 1, 'late old availability never subscribes');
     } finally { pending.stop(); }
     let resolveLate, lateSubscriptions = 0;
     const late = new BmwGpsBridge({ builders: { buildAndInitTypedProxy: () => new Promise((resolve) => { resolveLate = resolve; }) },
@@ -79,6 +83,52 @@ async function until(check) { const deadline = Date.now() + 2000; while (!check(
     late.start(); await until(() => !!resolveLate); late.stop();
     resolveLate({ updatePosition: { subscribe() { lateSubscriptions++; return Promise.resolve(); } } });
     await sleep(20); assert.strictEqual(lateSubscriptions, 0, 'no late subscription after shutdown');
+
+    function localControl() {
+        const control = new EventEmitter(); control.link = 'up'; control.messages = [];
+        control.open = control.close = () => {}; control.send = (message) => { control.messages.push(message); return true; }; return control;
+    }
+    // Audit P1-2: an unresolved SDK Promise must not permanently lock
+    // connecting, nor create an unbounded collection of native requests.
+    const unresolved = []; let cappedBuilds = 0, cappedSubscriptions = 0;
+    const capped = new BmwGpsBridge({ control: localControl(), timeoutMs: 8, retryMs: 4, retryMaxMs: 8, heartbeatMs: 100,
+        builders: { buildAndInitTypedProxy() {
+            cappedBuilds++;
+            if (cappedBuilds <= 3) return new Promise((resolve) => unresolved.push(resolve));
+            return Promise.resolve({ updatePosition: { subscribe() { cappedSubscriptions++; return Promise.resolve(); } } });
+        } } });
+    try {
+        capped.start(); await until(() => capped.errorCode === 'GPS_RETRY_CAPACITY_LIMIT');
+        assert.strictEqual(cappedBuilds, 3); assert.strictEqual(capped.connecting, false);
+        await sleep(30); assert.strictEqual(cappedBuilds, 3, 'circuit prevents unbounded unresolved builds');
+        unresolved[0]({ updatePosition: { subscribe() { throw new Error('retired builder must never subscribe'); } } });
+        await until(() => capped.subscribed);
+        assert.strictEqual(cappedBuilds, 4); assert.strictEqual(cappedSubscriptions, 1);
+        assert(capped.attempts.size <= capped.maxAttempts);
+    } finally { capped.stop(); }
+
+    let subscribeResolve, subscribedBuilds = 0; const callbacks = [], subscriptionControl = localControl();
+    const subscribing = new BmwGpsBridge({ control: subscriptionControl, timeoutMs: 8, retryMs: 4, heartbeatMs: 100,
+        builders: { buildAndInitTypedProxy() {
+            const index = ++subscribedBuilds;
+            return Promise.resolve({ updatePosition: { subscribe(callback) {
+                callbacks.push(callback); return index === 1 ? new Promise((resolve) => { subscribeResolve = resolve; }) : Promise.resolve();
+            } } });
+        } } });
+    try {
+        subscribing.start(); await until(() => subscribing.subscribed && subscribedBuilds === 2);
+        const before = subscriptionControl.messages.length;
+        callbacks[0]({ nmeaString: nmea }); subscribeResolve(); await sleep(15);
+        assert.strictEqual(subscriptionControl.messages.length, before, 'late subscription result/callback is inert');
+        callbacks[1]({ nmeaString: nmea });
+        assert(subscriptionControl.messages.some((message) => message.cmd === 'vehicle-nmea'));
+    } finally { subscribing.stop(); }
+
+    let stoppedBuilds = 0;
+    const stoppedRetry = new BmwGpsBridge({ control: localControl(), retryMs: 30, heartbeatMs: 100,
+        builders: { buildAndInitTypedProxy() { stoppedBuilds++; return Promise.reject(new Error('temporary')); } } });
+    stoppedRetry.start(); await until(() => stoppedRetry.state === 'error'); stoppedRetry.stop();
+    await sleep(50); assert.strictEqual(stoppedBuilds, 1, 'shutdown cancels pending retries');
     assert(validPayload({ nmeaString: nmea }));
     assert(validPayload({ nmeaString: nmea + '$PUBX,00,unsupported*00\r' }));
     // A daemon can stay connected without reading. Neither NMEA events nor
@@ -97,5 +147,5 @@ async function until(check) { const deadline = Date.now() + 2000; while (!check(
     blocked.event({ nmeaString: nmea }, 1);
     assert.strictEqual(sent, 2, 'next live event resumes after pressure drains, with no replay');
     peers.forEach((s) => s.destroy()); await new Promise((resolve) => server.close(resolve));
-    console.log('PASS BMW GPS bridge: typed named payload -> real IPC; bounds, sanitized errors, availability retry, background hold, stale recovery, shutdown cancellation');
+    console.log('PASS BMW GPS bridge: live IPC, bounded build/subscribe recovery, late-attempt isolation, stale replacement, retry circuit and shutdown cancellation');
 })().catch((error) => { peers.forEach((s) => s.destroy()); server.close(); console.error(error); process.exitCode = 1; });

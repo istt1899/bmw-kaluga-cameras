@@ -14,6 +14,7 @@ class CameraControl extends EventEmitter {
         this.state = null; this.link = 'down'; this.sock = null; this.lastError = null;
         this.opened = false; this.buffer = ''; this.timer = null;
         this.statusTimer = null;
+        this.commandError = null; this.commandErrorRequestId = null;
     }
     open() {
         if (this.opened) return;
@@ -64,7 +65,9 @@ class CameraControl extends EventEmitter {
                     this.state = msg.state; this.emit('change');
                 }
                 if (msg.ev === 'error' && typeof msg.error === 'string') {
-                    this.commandError = msg.error.replace(/[\r\n\t]/g, ' ').slice(0,180); this.emit('change');
+                    this.commandError = msg.error.replace(/[\r\n\t]/g, ' ').slice(0,1024);
+                    this.commandErrorRequestId = typeof msg.requestId === 'string' ? msg.requestId : null;
+                    this.emit('change');
                 }
             }
         });
@@ -77,7 +80,7 @@ class CameraControl extends EventEmitter {
     }
     send(message) {
         if (!this.sock || this.link !== 'up') return false;
-        if (message.cmd !== 'status') this.commandError = null;
+        if (message.cmd !== 'status') { this.commandError = null; this.commandErrorRequestId = null; }
         this.sock.write(JSON.stringify(message) + '\n');
         return true;
     }

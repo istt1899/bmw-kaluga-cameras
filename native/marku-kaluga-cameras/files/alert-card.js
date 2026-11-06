@@ -4,7 +4,7 @@ const fonts = require('./camera-font.json').sizes.map(s => Object.assign({}, s, 
 const width = 320, height = 96;
 const types = {
     speed:'Скор.', lane:'Полоса', redlight:'Свет.', average:'Средн.', belt:'Ремень',
-    stopline:'Стоп', pedestrian:'Пешех.', camera:'Камера'
+    stopline:'Стоп', pedestrian:'Пешех.', phone:'Телеф.', camera:'Камера'
 };
 function presentation(alert) {
     alert = alert || {};
@@ -51,6 +51,7 @@ function card(alert, target) {
         if(type==='redlight') {circle(x+11,y+5,2,red);circle(x+11,y+11,2,amber);circle(x+11,y+17,2,white);}
         else if(type==='lane') {rect(x+5,y+4,2,14,white);rect(x+15,y+4,2,14,white);rect(x+10,y+4,2,4,amber);rect(x+10,y+12,2,5,amber);}
         else if(type==='belt') {for(let k=4;k<18;k++)rect(x+k,y+21-k,2,2,white);rect(x+9,y+8,5,5,amber);}
+        else if(type==='phone') {outline(x+6,y+3,10,16,white);rect(x+8,y+5,6,9,amber);rect(x+10,y+16,2,1,white);}
         else if(type==='average') {circle(x+11,y+11,7,white);circle(x+11,y+11,5,ink);rect(x+10,y+6,2,6,amber);rect(x+11,y+10,5,2,amber);}
         else if(type==='stopline') {rect(x+4,y+15,14,3,white);rect(x+10,y+4,2,8,amber);}
         else if(type==='pedestrian') {circle(x+11,y+5,2,white);rect(x+10,y+9,2,8,white);rect(x+6,y+12,10,2,amber);}

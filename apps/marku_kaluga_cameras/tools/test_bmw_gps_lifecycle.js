@@ -49,7 +49,7 @@ function create(hasRhmi) {
     };
     vm.runInNewContext(source, {
         require: (name) => Object.prototype.hasOwnProperty.call(modules, name) ? modules[name] : require(name),
-        process: { getuid: () => 0, exit: () => { exited++; } }, Buffer, setTimeout, clearTimeout
+        process: { pid: process.pid, getuid: () => 0, exit: () => { exited++; } }, Buffer, setTimeout, clearTimeout
     }, { filename: 'robertn_waze_cluster.js' });
     // Yield one turn while RHMI initialization waits. GPS becomes ready while
     // _initialized is still false: its early change alone cannot report ACTIVE.

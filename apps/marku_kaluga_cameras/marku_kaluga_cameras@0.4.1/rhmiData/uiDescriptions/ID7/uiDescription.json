@@ -1510,6 +1510,15 @@
             }
           ]
         },
+        "349": {
+          "type": "button",
+          "name": "cameraResultMore",
+          "properties": {
+            "Visible": { "value": 1, "type": "UInt" },
+            "Focusable": { "value": 3, "type": "UInt" }
+          },
+          "rows": [{ "Text": { "value": "Результат • показан полностью", "type": "Text" } }]
+        },
         "346": {
           "type": "label",
           "name": "cameraLimit",
@@ -2111,6 +2120,15 @@
               }
             }
           ]
+        },
+        "490": {
+          "type": "button",
+          "name": "cameraDiagResultMore",
+          "properties": {
+            "Visible": { "value": 1, "type": "UInt" },
+            "Focusable": { "value": 3, "type": "UInt" }
+          },
+          "rows": [{ "Text": { "value": "Результат • показан полностью", "type": "Text" } }]
         },
         "509": {
           "type": "label",

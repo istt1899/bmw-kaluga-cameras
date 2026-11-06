@@ -55,7 +55,7 @@ function start(options) {
   var settingsPath = path.join(dataDir, 'settings.json'), settings;
   try { settings = readSettings(settingsPath); }
   catch (e) { storageError = e.message; settings = { enabled: true, outputs: { cluster: false, hud: false }, hudOpacityPct: 100 }; }
-  var state = { serviceVersion: '0.4.0', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
+  var state = { serviceVersion: '0.4.1', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
     street: { name: null, source: 'BMW', state: 'unavailable', reason: 'Название улицы BMW ещё не получено', observedAtMs: null },
     audio: { available: false, reason: 'Безопасный звуковой канал BMW не подтверждён' },
     commandResult: null, actions: {}, databaseUpdate: { phase: 'idle', busy: false }, nearestCandidates: [],
@@ -92,8 +92,13 @@ function start(options) {
   var gps = options.gps || new GpsProvider({ host: process.env.KALUGA_GPSD_HOST || '127.0.0.1',
     port: Number(process.env.KALUGA_GPSD_PORT) || 2947, nmeaHost: process.env.KALUGA_NMEA_HOST || '127.0.0.1',
     nmeaPort: process.env.KALUGA_NMEA_PORT === '0' ? 0 : Number(process.env.KALUGA_NMEA_PORT) || 5001 });
-  function commandResult(commandName, phase, message, id) {
-    state.commandResult = { id: id || ++commandCounter, command: commandName, phase: phase, message: String(message).slice(0,300), timeMs: Date.now() };
+  function requestToken(msg) {
+    return msg && typeof msg.requestId === 'string' && /^[A-Za-z0-9._:-]{1,96}$/.test(msg.requestId) ? msg.requestId : null;
+  }
+  function commandResult(commandName, phase, message, id, requestId) {
+    if (id && state.commandResult && state.commandResult.id === id) requestId = state.commandResult.requestId;
+    state.commandResult = { id: id || ++commandCounter, requestId: requestId || null,
+      command: commandName, phase: phase, message: String(message).slice(0,300), timeMs: Date.now() };
   }
   function describeDatabase(bundle) {
     return { state: 'ready', source: bundle.displaySource || bundle.source, baseSource: bundle.source,
@@ -112,8 +117,11 @@ function start(options) {
     state.databaseUpdate = Object.assign({}, value, { source: dataModule.SOURCE_URL, busy: ['checking','downloading','installing'].indexOf(value.phase) >= 0 });
     var messages = { idle: 'База готова к проверке', checking: 'Проверяю опубликованный источник базы', downloading: 'Загружаю новую базу',
       installing: 'Проверяю и сохраняю новую базу', current: 'База актуальна', updated: 'База обновлена', 'rolled-back': 'Предыдущая база восстановлена',
+      'recovered-from-previous': 'Повреждение активной базы: загружена предыдущая версия',
+      'recovered-from-packaged': 'Локальная база недоступна: загружена база из пакета',
       error: 'Не удалось обновить базу; рабочие данные сохранены' };
     state.databaseUpdate.message = messages[value.phase] || value.phase;
+    if (value.errorCode === 'UPDATE_RESTORE_FAILED') state.databaseUpdate.message = 'Ошибка носителя: восстановление базы на диске не подтверждено';
     if (value.errorCode) state.databaseUpdate.message += ' (' + value.errorCode + ')';
   }
   try {
@@ -273,8 +281,9 @@ function start(options) {
     save(next); state.error = null; tick();
   }
   function command(msg) {
+    if (msg && msg.requestId !== undefined && !requestToken(msg)) throw new Error('Invalid requestId');
     var userCommand = msg && typeof msg.cmd === 'string' && ['status','vehicle-nmea','gps-bridge','vehicle-context'].indexOf(msg.cmd)<0;
-    if(userCommand) { commandResult(msg.cmd,'requested','Выполняется: ' + msg.cmd); broadcast(true); }
+    if(userCommand) { commandResult(msg.cmd,'requested','Выполняется: ' + msg.cmd, null, requestToken(msg)); broadcast(true); }
     try {
       var answer=execute(msg);
       if(userCommand && state.commandResult.phase==='requested' && ['display-test','calibration-test','database-check','database-rollback','audio-test'].indexOf(msg.cmd)<0)
@@ -297,8 +306,9 @@ function start(options) {
         var line = buffer.slice(0, nl); buffer = buffer.slice(nl + 1);
         if (Buffer.byteLength(line, 'utf8') > 8192) { sock.destroy(); return; }
         if (!line.trim()) continue;
-        try { command(JSON.parse(line)); }
-        catch (e) { sock.write(JSON.stringify({ ev: 'error', error: e.message }) + '\n'); }
+        var message = null;
+        try { message = JSON.parse(line); command(message); }
+        catch (e) { sock.write(JSON.stringify({ ev: 'error', error: e.message, requestId: requestToken(message) }) + '\n'); }
         send(sock);
       }
       if (Buffer.byteLength(buffer, 'utf8') > 8192) sock.destroy();

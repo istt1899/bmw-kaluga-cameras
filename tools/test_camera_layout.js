@@ -25,6 +25,12 @@ assert.strictEqual(card.presentation(nearby).limit,null);assert.strictEqual(card
 assert.strictEqual(card.presentation(Object.assign({},a,{captureDirection:'rear'})).direction,'unknown');
 assert.strictEqual(card.presentation(Object.assign({},a,{captureDirection:'rear',captureDirectionVerified:true})).direction,'rear');
 assert.strictEqual(card.presentation({controls:['toString','unknown']}).controls[0],'camera');
+const info=require('../native/marku-kaluga-cameras/files/camera-info');
+const phone={type:'camera',controls:['phone'],distanceM:210};
+assert.deepStrictEqual(info.describe(phone).controls,['phone']);
+assert.strictEqual(info.describe(phone).title,'Контроль телефона');
+assert.deepStrictEqual(card.presentation(phone).controls,['phone']);
+assert(!card.card(phone,'map').equals(card.card({controls:['camera'],distanceM:210},'map')),'phone has a dedicated label and icon');
 const normal=card.card(a,'map'),calibrated=card.card(Object.assign({},a,{test:true,calibration:true}),'map');
 assert.strictEqual(normal.length,320*96*4);assert(!normal.equals(calibrated));
 for(const [x,y] of [[0,0],[319,0],[0,95],[319,95]])assert.strictEqual(calibrated[(y*320+x)*4+3],255);

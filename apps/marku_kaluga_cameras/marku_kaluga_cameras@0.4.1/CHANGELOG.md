@@ -1,4 +1,10 @@
-# Waze Стрелка 0.4.0
+# Waze Стрелка 0.4.1
+
+- Исправлены регистрация сетевого UID сервиса, ограниченное восстановление GPS/NAV/GONG и watchdog команд по точному requestId до терминального ответа.
+- Полные результаты команд доступны перелистыванием; renderer сообщает состояние соединения и честное отсутствие версии в протоколе.
+- Восстановление базы показывает причину и источник; зоны проверяются относительно камеры, rename сопровождается fsync каталога там, где это поддерживается.
+- Добавлены контроль телефона, канонические LF-артефакты и проверки воспроизводимости сборки.
+- На автомобиле этот патч пока не проверен; канал штатных камер BMW и воспроизведение gong не включены.
 
 Shared action policy and immediate command feedback; stationary renderer tests independent of position accuracy; adaptive compact multi-type cards; six-page frozen diagnostics with explicit local RAM export; optional read-only BMW street bridge; relation-aware database with 156 records and independent atomic updates/rollback. Native sound discovery does not enable unverified gong playback. On-car display and native integration remain to be verified.
 

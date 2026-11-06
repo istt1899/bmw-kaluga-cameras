@@ -36,6 +36,23 @@ async function main() {
   bad(function (b) { b.records[0].provenance = 'owner-report'; }); bad(function (b) { b.generatedAt = 'yesterday'; });
   bad(function (b) { b.generatedAt = '2026-02-30T00:00:00Z'; });
   bad(function (b) { b.records[0].description = new Array(260).join('a'); });
+  function zoned() {
+    var b = clone(baseline), pos = b.records[0].position;
+    b.zones = [{ id: b.records[0].id, lat: pos.lat, lon: pos.lon, limit: null, travel: [90],
+      roads: [{ id: 123, dir: 0, cam: 1, pts: [[-50, 0], [0, 0], [50, 0]] }, { id: 124, dir: 1, cam: -1, pts: [[40, -20], [40, 20]] }] }];
+    return b;
+  }
+  var z = zoned(); assert.deepStrictEqual(api.validateBundle(z), z);
+  function badZone(change, code) { var b = zoned(); change(b); assert.throws(function () { api.validateBundle(b); }, function (e) { return e.code === code; }); }
+  badZone(function (b) { b.zones[0].lat += 0.1; }, 'DATA_ZONE_POSITION');
+  badZone(function (b) { b.zones[0].lon += 0.0000001; }, 'DATA_ZONE_POSITION');
+  badZone(function (b) { b.zones[0].roads[0].cam = 2; }, 'DATA_ROAD_CAMERA_ANCHOR');
+  badZone(function (b) { b.zones[0].roads[0].pts[1] = [2, 1]; }, 'DATA_ROAD_CAMERA_ANCHOR');
+  badZone(function (b) { b.zones[0].roads[0].cam = -1; }, 'DATA_ZONE_CAMERA_ANCHOR');
+  badZone(function (b) { b.records[0].limitKmh = 60; b.zones[0].limit = 40; }, 'DATA_ZONE_LIMIT_CONFLICT');
+  var quantized = zoned(); quantized.zones[0].roads[0].pts[1] = [1, 1]; api.validateBundle(quantized);
+  var production = require('./build-camera-database').bundle(); api.validateBundle(production);
+  assert.strictEqual(production.zones.length, 19, 'All existing road zones must remain valid');
   var polluted = JSON.parse(JSON.stringify(baseline).replace('"source":"OpenStreetMap"', '"source":"OpenStreetMap","__proto__":{"polluted":true}'));
   assert.throws(function () { api.validateBundle(polluted); }); assert.strictEqual({}.polluted, undefined);
   assert.throws(function () { api.createStore({ dataDir: root, initial: baseline, sourceUrl: 'https://example.com/manifest.json' }); });
@@ -46,6 +63,11 @@ async function main() {
   var one = s.check(), same = s.check(); assert.strictEqual(one, same, 'Concurrent presses share one bounded transaction');
   var result = await one;
   assert.strictEqual(result.phase, 'updated'); assert.strictEqual(result.currentVersion, '2026.11.06.2');
+  if (process.platform === 'win32') {
+    assert.strictEqual(result.durability.mode, 'file-fsync-only');
+    assert.strictEqual(result.durability.reasonCode, 'DIRECTORY_FSYNC_UNSUPPORTED_WINDOWS');
+    assert.strictEqual(result.durability.directorySynced, false);
+  }
   assert.deepStrictEqual(changed, ['2026.11.06.2']); assert.deepStrictEqual(phases, ['checking', 'checking', 'downloading', 'installing', 'updated']);
   assert.strictEqual(s.calls.length, 2); assert.strictEqual(s.calls[0].url, api.SOURCE_URL);
   assert(s.calls[1].url.indexOf('/' + new Array(41).join('a') + '/data/camera-database-') > 0);
@@ -118,13 +140,72 @@ async function main() {
   var recovery = directory('recovery'); fs.writeFileSync(path.join(recovery, 'camera-database-active.json'), '{invalid');
   fs.writeFileSync(path.join(recovery, 'camera-database-previous.json'), JSON.stringify(version(2)));
   assert.strictEqual(api.loadActive({ dataDir: recovery, initial: baseline }).version, '2026.11.06.2');
+  var recovered = make(recovery, payload(version(3))).status();
+  assert.strictEqual(recovered.phase, 'recovered-from-previous'); assert.strictEqual(recovered.errorCode, 'LOCAL_DATA_JSON');
+  assert.strictEqual(recovered.recovery.originalVersion, null); assert.strictEqual(recovered.recovery.recoveredVersion, '2026.11.06.2');
   fs.writeFileSync(path.join(recovery, 'camera-database-previous.json'), 'broken');
   assert.strictEqual(api.loadActive({ dataDir: recovery, initial: baseline }).version, baseline.version);
-  console.log('PASS corrupt active data falls back to validated previous data, then packaged data; no download on startup');
+  recovered = make(recovery, payload(version(3))).status();
+  assert.strictEqual(recovered.phase, 'recovered-from-packaged'); assert.strictEqual(recovered.recovery.previousErrorCode, 'LOCAL_DATA_JSON');
+  var invalidActive = version(7); invalidActive.region = 'invalid';
+  fs.writeFileSync(path.join(recovery, 'camera-database-active.json'), JSON.stringify(invalidActive));
+  recovered = make(recovery, payload(version(3))).status();
+  assert.strictEqual(recovered.errorCode, 'DATA_SCHEMA'); assert.strictEqual(recovered.recovery.originalVersion, '2026.11.06.7');
+  var fresh = make(directory('first-boot'), payload(version(2))).status();
+  assert.strictEqual(fresh.phase, 'idle'); assert.strictEqual(fresh.errorCode, null); assert.strictEqual(fresh.recovery, null);
+  assert.strictEqual(stores[stores.length - 1].calls.length, 0, 'Startup recovery must never download');
+  console.log('PASS startup recovery reports previous/packaged fallback, invalid source version and reason; first boot remains idle without a download');
+
+  // Observe production file operations while emulating Linux directory handles
+  // on Windows. Injected syscall failures are not a physical power-loss test.
+  var vm = require('vm'), EventEmitter = require('events');
+  function diskBoundary(name, options) {
+    options = options || {};
+    var dir = directory(name), calls = [], directoryFd = 900001, flushes = 0, fakeFs = Object.assign({}, fs), module = { exports: {} };
+    var consumer = [];
+    fakeFs.openSync = function (file, flags, mode) {
+      if (file === dir && flags === 'r') { calls.push('directory-open'); return directoryFd; }
+      calls.push('file-open'); return fs.openSync(file, flags, mode);
+    };
+    fakeFs.fsyncSync = function (fd) {
+      if (fd !== directoryFd) { calls.push('file-fsync'); return fs.fsyncSync(fd); }
+      calls.push('directory-fsync'); flushes++;
+      if (options.failFlush === flushes || options.unsupported) { var e = Error('injected directory fsync failure'); e.code = options.unsupported ? 'EINVAL' : 'EIO'; throw e; }
+    };
+    fakeFs.closeSync = function (fd) { if (fd === directoryFd) calls.push('directory-close'); else { calls.push('file-close'); fs.closeSync(fd); } };
+    fakeFs.renameSync = function (from, to) { calls.push('rename-' + (to.indexOf('previous') >= 0 ? 'previous' : 'active')); return fs.renameSync(from, to); };
+    function load(n) { return n === 'fs' ? fakeFs : require(n); }
+    vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../native/marku-kaluga-cameras/files/database-store.js'), 'utf8'),
+      { module: module, exports: module.exports, require: load, Buffer: Buffer, process: { platform: 'linux', pid: process.pid }, setTimeout: setTimeout, clearTimeout: clearTimeout });
+    var remote = payload(version(2));
+    var store = module.exports.createStore({ dataDir: dir, initial: baseline, onChange: function (b) { consumer.push(b.version); },
+      _test: { explicit: true, transport: function (url) { return Promise.resolve(url === api.SOURCE_URL ? Buffer.from(JSON.stringify(remote.manifest)) : remote.bytes); } } });
+    stores.push(store); return { store: store, calls: calls, consumer: consumer, dir: dir };
+  }
+  var durable = diskBoundary('directory-sync'); result = await durable.store.check();
+  assert.strictEqual(result.phase, 'updated'); assert.strictEqual(result.durability.directorySynced, true);
+  ['previous', 'active'].forEach(function (name) {
+    var at = durable.calls.indexOf('rename-' + name);
+    assert.deepStrictEqual(durable.calls.slice(at - 2, at + 4), ['file-fsync', 'file-close', 'rename-' + name, 'directory-open', 'directory-fsync', 'directory-close']);
+  });
+  var flushFailure = diskBoundary('directory-sync-failure', { failFlush: 2 }); result = await flushFailure.store.check();
+  assert.strictEqual(result.phase, 'error'); assert.strictEqual(result.errorCode, 'UPDATE_DIRECTORY_SYNC');
+  assert.deepStrictEqual(flushFailure.consumer, ['2026.11.06.2', baseline.version]);
+  assert.strictEqual(flushFailure.store.current().version, baseline.version);
+  assert.strictEqual(api.loadActive({ dataDir: flushFailure.dir, initial: version(9) }).version, baseline.version, 'Failed post-rename flush restores old active bytes');
+  assert.strictEqual(flushFailure.calls.filter(function (call) { return call === 'directory-fsync'; }).length, 3, 'Restored active name is flushed too');
+  assert(fs.readdirSync(flushFailure.dir).every(function (n) { return n.indexOf('.tmp-') < 0; }));
+  var previousFailure = diskBoundary('previous-sync-failure', { failFlush: 1 }); result = await previousFailure.store.check();
+  assert.strictEqual(result.errorCode, 'UPDATE_DIRECTORY_SYNC'); assert.strictEqual(previousFailure.calls.indexOf('rename-active'), -1);
+  assert.strictEqual(previousFailure.store.current().version, baseline.version);
+  assert.deepStrictEqual(previousFailure.consumer, ['2026.11.06.2', baseline.version]);
+  var unsupportedSync = diskBoundary('directory-sync-unsupported', { unsupported: true }); result = await unsupportedSync.store.check();
+  assert.strictEqual(result.phase, 'updated'); assert.strictEqual(result.durability.directorySynced, false);
+  assert.strictEqual(result.durability.reasonCode, 'DIRECTORY_FSYNC_UNSUPPORTED');
+  console.log('PASS directory fsync follows both renames; injected flush failure restores disk and consumer; unsupported filesystems report file-only durability');
 
   // Exercise the production HTTPS reader with an in-memory socket boundary.
   // This is not the _test transport and makes no external connection.
-  var vm = require('vm'), EventEmitter = require('events');
   function httpBoundary(name, replies) {
     var calls = [], deadlines = [], module = { exports: {} };
     var fakeHttps = { get: function (options, callback) {

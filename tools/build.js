@@ -7,7 +7,8 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const cp = require('child_process');
-const { packSource, readManifest } = require('./upstream/oap_link');
+const { packSource, readManifest, untar } = require('./upstream/oap_link');
+const canonicalBytes = require('./canonical-bytes');
 const { tgz, MTIME } = require('./upstream/oap_pack');
 
 const ROOT = path.join(__dirname, '..');
@@ -38,6 +39,9 @@ function main() {
     const appName = m.id + '@' + m.version + '.tgz';
     const appFile = path.join(PUBLISH, appName);
     const members = packSource(APP, appFile);
+    fs.writeFileSync(appFile, tgz(untar(fs.readFileSync(appFile)).map(entry => ({
+        name: entry.name, data: canonicalBytes(entry.name, entry.data), mode: 0o644
+    })), MTIME));
     if (members.some((n) => /(?:^|\/)(?:oap-sdk|node_modules)(?:\/|$)|javascript\/app\.js$/.test(n))) {
         throw new Error('source artifact contains a bundled SDK or linked app');
     }
@@ -47,13 +51,13 @@ function main() {
         if (!/^[A-Za-z0-9._/-]+$/.test(f.path) || f.path.split('/').indexOf('..') >= 0 || f.path[0] === '/') {
             throw new Error('unsafe component path');
         }
-        const data = fs.readFileSync(path.join(TOOL, 'files', f.path));
+        const data = canonicalBytes(f.path, fs.readFileSync(path.join(TOOL, 'files', f.path)));
         f.sha256 = sha(data);
         entries.push({ name: 'files/' + f.path, data, mode: parseInt(f.mode || '0644', 8) });
     });
     (component.units || []).forEach((u) => {
         if (!/^[A-Za-z0-9._-]+$/.test(u.name)) throw new Error('unsafe unit name');
-        entries.push({ name: 'units/' + u.name, data: fs.readFileSync(path.join(TOOL, 'units', u.name)), mode: 0o644 });
+        entries.push({ name: 'units/' + u.name, data: canonicalBytes(u.name, fs.readFileSync(path.join(TOOL, 'units', u.name))), mode: 0o644 });
     });
     entries.unshift({ name: 'component.json', data: Buffer.from(JSON.stringify(component, null, 2) + '\n'), mode: 0o644 });
     const toolName = component.id + '@' + component.version + '.tgz';

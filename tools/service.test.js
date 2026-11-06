@@ -74,6 +74,12 @@ async function integration() {
     assert.strictEqual(health.database.reportedCount, 1);
     assert.strictEqual(lines[0].state.outputs.cluster, false); assert.strictEqual(lines[0].state.outputs.hud, false);
     assert.strictEqual(app.state().hudOpacityPct, 100); assert.strictEqual(opacity, 100);
+    client.write(JSON.stringify({cmd:'unsupported-test',requestId:'ipc-rejected-1'})+'\n');
+    await until(function () { return lines.some(function (line) { return line.ev === 'error' && line.requestId === 'ipc-rejected-1'; }); });
+    assert.strictEqual(app.state().commandResult.requestId,'ipc-rejected-1');
+    assert.strictEqual(app.state().commandResult.phase,'error');
+    client.write(JSON.stringify({cmd:'hud-opacity',percent:40,requestId:'ipc-setting-2'})+'\n');
+    await until(function () { return app.state().commandResult.requestId === 'ipc-setting-2' && app.state().commandResult.phase === 'finished'; });
     client.write('{"cmd":"hud-opacity","percent":40}\n');
     await until(function () { return app.state().hudOpacityPct === 40; });
     assert.strictEqual(opacity, 40); assert.strictEqual(app.state().gpsFix, null);

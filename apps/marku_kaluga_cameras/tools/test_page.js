@@ -375,9 +375,9 @@ async function main() {
         .map(([id]) => diagnosticPage.components[id].name);
     assert.deepStrictEqual(controllerStops.filter((name) => /^cameraDiag_/.test(name)).sort(), diagnosticNames,
         'the controller can stop on every diagnostic data row, including all rows below GPS');
-    assert.deepStrictEqual(diagnosticRows.slice(0,8).map(([id]) => diagnosticPage.components[id].name),
+    assert.deepStrictEqual(diagnosticRows.slice(0,9).map(([id]) => diagnosticPage.components[id].name),
         ['cameraDiagTitle','cameraDiag_page','cameraDiag_stamp','cameraDiag_versions','cameraDiag_command','cameraDiag_commandMore',
-            'cameraDiagFreeze','cameraDiagLive'],
+            'cameraDiagResultMore','cameraDiagFreeze','cameraDiagLive'],
         'page, snapshot identity and live command result precede report data');
     const uniqueRhmiIds = matches(XML, /<(?:container|layoutGroup|component) id="(\d+)"/g).map((m) => m[1]);
     assert.strictEqual(uniqueRhmiIds.length, new Set(uniqueRhmiIds).size, 'RHMI ids stay globally unique');
@@ -385,10 +385,12 @@ async function main() {
     console.log('ok   paged diagnostic data and command results are controller stops; snapshot identity remains above data');
     const reportView=require('../src/diagnostics_view');
     const reportState={serviceVersion:'test-service',observedAtMs:Date.now(),gpsFix:{lat:54.5,lon:36.2,accuracyM:19.4,speedKmh:0,timeMs:Date.now()},
-        rendererDetails:{map:{state:'visible',layout:{backend:'mapped',canvas:{width:1088,height:480},
+        rendererDetails:{connection:'ready',versionReported:false,backend:'mapped',protocol:'cluster-render',map:{state:'visible',layout:{backend:'mapped',canvas:{width:1088,height:480},
             card:{x:700,y:340,width:280,height:96,scale:.875},withinBounds:true,profile:'compact',safeArea:{known:false}}},
             hud:{state:'отказ',reason:'TARGET_NOT_AVAILABLE',layout:{canvas:null,card:null,safeArea:{known:false}}}},
         database:{sha256:'a'.repeat(64),source:'OpenStreetMap'},actions:{displayTest:{allowed:true}},
+        databaseUpdate:{phase:'recovered-from-previous',recovery:{source:'previous',reasonCode:'LOCAL_DATA_JSON',
+            originalVersion:'2026.1.3',recoveredVersion:'2026.1.2'},durability:{mode:'rename',directorySynced:false,reasonCode:'DIRECTORY_FSYNC_UNAVAILABLE'}},
         error:'Подробная причина '.repeat(12)};
     const full=reportView.capture(reportState,'test-app',1000), allPages=[];
     for(let p=0;p<6;p++){
@@ -406,6 +408,21 @@ async function main() {
     assert(allPages[4].includes('1088×480')&&allPages[4].includes('масштаб 0.875'));
     assert(allPages[4].includes('hud: неизвестно×неизвестно')&&allPages[4].includes('не подтверждена'));
     assert(allPages[3].includes('TARGET_NOT_AVAILABLE'));
+    assert(allPages[3].replace(/\n/g,' ').includes('версия renderer не сообщается протоколом'));
+    assert(allPages[3].includes('Соединение renderer: ready'));
+    assert(allPages[5].includes('Восстановление базы: previous')&&allPages[5].includes('LOCAL_DATA_JSON'));
+    assert(allPages[5].includes('До восстановления: 2026.1.3')&&allPages[5].includes('загружена 2026.1.2'));
+    assert(allPages[5].includes('DIRECTORY_FSYNC_UNAVAILABLE')&&allPages[5].includes('не синхронизирован'));
+    const knownRenderer=reportView.reportPage(null,{rendererDetails:{connection:'disconnected',version:'1.2.3',versionReported:true}},'test',3,0);
+    assert(Object.keys(knownRenderer.rows).map(k=>knownRenderer.rows[k]).join(' ').includes('Renderer: версия 1.2.3'));
+    assert(Object.keys(knownRenderer.rows).map(k=>knownRenderer.rows[k]).join(' ').includes('Соединение renderer: disconnected'));
+    const longResult='Завершено: '+Array.from({length:45},(_,i)=>'часть'+i).join(' ')+' ОКОНЧАТЕЛЬНАЯ ПРИЧИНА';
+    const resultStart=reportView.commandPage(null,longResult,0), resultLines=[];
+    for(let b=0;b<resultStart.blocks;b++){
+        const v=reportView.reportPage(full,reportState,'ignored-version',0,0,longResult,b);
+        resultLines.push(v.rows.command,v.rows.commandMore.trim());
+    }
+    assert.strictEqual(resultLines.filter(Boolean).join(' '),longResult,'all final-result text survives independent paging');
     assert(allPages[0].split('Подробная причина').length>10,'long reason stays accessible in successive blocks');
     reportState.gpsFix.lat=1;
     assert.strictEqual(full.state.gpsFix.lat,54.5,'snapshot is isolated from live changes');
@@ -495,9 +512,67 @@ async function main() {
         byName.cameraDiagTest.emit('action');
         await until('parked display test sent',()=>cameraCommands.some(m=>m.cmd==='display-test'));
         cameraState.commandResult.id='test-frozen-done';cameraReply();
+        cameraState.commandResult.requestId=OnlineApp.instance._cameraPending.requestId;cameraReply();
         await until('live command result despite frozen report',()=>byName.cameraDiag_command.text.includes('HUD: отказ'));
         assert.strictEqual(byName.cameraDiag_stamp.text,stamp,'test does not discard frozen snapshot');
         assert.strictEqual(reportRows(),frozenRows);
+        // Intermediate ACKs retain the original six-second terminal watchdog.
+        const app=OnlineApp.instance, realSetTimeout=global.setTimeout;
+        let deadline=null;
+        global.setTimeout=(fn,ms)=>{
+            if(ms===6000){deadline={fn,ms};return realSetTimeout(fn,60000);}
+            return realSetTimeout(fn,ms);
+        };
+        try {app._cameraCommand({cmd:'database-check'});} finally {global.setTimeout=realSetTimeout;}
+        const waiting=app._cameraPending, watchdog=app._cameraCommandTimer;
+        assert.strictEqual(deadline.ms,6000);
+        cameraState.commandResult={id:41,command:'database-check',phase:'finished',message:'Без requestId'};
+        app._cameras.state=cameraState;app._refreshCameraFeedback();
+        assert.strictEqual(app._cameraPending,waiting,'legacy numeric IDs cannot ambiguously satisfy a correlated request');
+        cameraState.commandResult={id:42,requestId:waiting.requestId,command:'database-check',phase:'requested',message:'Проверка принята'};
+        app._cameras.state=cameraState;app._refreshCameraFeedback();app._renderCameras();
+        assert.strictEqual(app._cameraCommandTimer,watchdog,'requested ACK never clears the terminal watchdog');
+        assert.strictEqual(app._cameraPending,waiting);
+        clearTimeout(watchdog);deadline.fn();
+        assert(app._cameraFeedback.awaiting&&app._cameraFeedback.message.includes('Нет окончательного подтверждения'));
+        // Two equal command names remain separate requests, even if an old completion/error arrives late.
+        app._cameraCommand({cmd:'database-check'});const firstId=app._cameraPending.requestId;
+        app._cameraCommand({cmd:'database-check'});const secondId=app._cameraPending.requestId;
+        assert.notStrictEqual(firstId,secondId);assert(/^[A-Za-z0-9._-]{1,64}$/.test(secondId));
+        cameraState.commandResult={id:43,requestId:firstId,command:'database-check',phase:'finished',message:'СТАРАЯ КОМАНДА'};
+        app._cameras.state=cameraState;app._refreshCameraFeedback();
+        assert.strictEqual(app._cameraPending.requestId,secondId);
+        cameraPeers.forEach(s=>s.write(JSON.stringify({ev:'error',requestId:firstId,error:'Чужая ошибка'})+'\n'));
+        await until('transport preserves error correlation',()=>app._cameras.commandErrorRequestId===firstId);
+        assert.strictEqual(app._cameraPending.requestId,secondId,'an error for an older request cannot finish the latest one');
+        assert(app._cameraCommandTimer,'other-client errors leave terminal watchdog active');
+        cameraState.commandResult={id:44,requestId:secondId,command:'database-check',phase:'finished',message:longResult};
+        cameraReply();await until('exact terminal result',()=>!app._cameraPending&&app._cameraFeedback.message===longResult);
+        assert.strictEqual(app._cameraCommandTimer,null);
+        const mainResult=[],diagResult=[],guiBlocks=app._cameraResultView().blocks;
+        for(let b=0;b<guiBlocks;b++){
+            app._lastPress={};
+            mainResult.push(byName.cameraCommand.text,byName.cameraCommandMore.text.trim());
+            diagResult.push(byName.cameraDiag_command.text,byName.cameraDiag_commandMore.text.trim());
+            assert(byName.cameraResultMore.text.includes('строки')&&byName.cameraDiagResultMore.text.includes('строки'));
+            (b%2?byName.cameraDiagResultMore:byName.cameraResultMore).emit('action');
+        }
+        assert.strictEqual(mainResult.filter(Boolean).join(' '),longResult,'main controller paging exposes every result character');
+        assert.strictEqual(diagResult.filter(Boolean).join(' '),longResult,'diagnostic controller paging exposes every result character');
+        assert.strictEqual(byName.cameraDiag_stamp.text,stamp,'result paging preserves frozen report identity');
+        assert.strictEqual(reportRows(),frozenRows);
+        cameraState.commandResult={id:45,requestId:firstId,command:'database-check',phase:'finished',message:'СТАРАЯ КОМАНДА'};
+        cameraReply();await sleep(30);
+        assert.strictEqual(app._cameraFeedback.message,longResult,'late old completion cannot replace the displayed terminal result');
+        // A matching transport error is terminal; uncorrelated legacy errors stay diagnostic only.
+        app._cameraCommand({cmd:'database-check'});const errorId=app._cameraPending.requestId;
+        cameraPeers.forEach(s=>s.write(JSON.stringify({ev:'error',error:'Без ID'})+'\n'));
+        await until('legacy error received',()=>app._cameras.commandError==='Без ID');
+        assert(app._cameraPending&&app._cameraCommandTimer);
+        cameraPeers.forEach(s=>s.write(JSON.stringify({ev:'error',requestId:errorId,error:'Ошибка текущей команды'})+'\n'));
+        await until('matching transport error ends current command',()=>!app._cameraPending);
+        assert(app._cameraFeedback.message.includes('Ошибка текущей команды'));assert.strictEqual(app._cameraCommandTimer,null);
+        console.log('ok   requested ACK retains six-second watchdog; exact request IDs reject stale completions/errors; both controller pages read complete long results');
         byName.cameraDiagAudio.emit('action');
         await until('audio denial visible beside command',()=>byName.cameraDiag_command.text.includes('Нет проверенного аудиоканала'));
         assert(!cameraCommands.some(m=>m.cmd==='audio-test'),'unavailable action is explained without sending an unsupported request');

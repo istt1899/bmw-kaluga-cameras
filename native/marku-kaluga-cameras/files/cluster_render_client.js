@@ -122,6 +122,7 @@ class ClusterRender extends EventEmitter {
         this.blocked = false;
         this.inbuf = Buffer.alloc(0);
         this.backend = '';
+        this.version = null;
         this.targets = '';
     }
 
@@ -207,6 +208,8 @@ class ClusterRender extends EventEmitter {
     _event(ev) {
         if (ev.ev === 'hello') {
             this.backend = ev.backend;
+            // Version is optional in protocol 1. Never infer it from backend.
+            this.version = typeof ev.version === 'string' && /^[A-Za-z0-9._+-]{1,64}$/.test(ev.version) ? ev.version : null;
             this.targets = ev.targets;
             this.ready = true;
             this.backoff = 0;

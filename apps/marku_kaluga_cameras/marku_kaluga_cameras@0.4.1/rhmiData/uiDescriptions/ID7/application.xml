@@ -203,6 +203,7 @@
 <property id="3" value="1"/>
 <component id="344" type="label" widget="LT_Label_1Row"><property id="2" value="1"/><property id="3" value="3"/></component>
 <component id="345" type="label" widget="LT_Label_1Row"><property id="2" value="1"/><property id="3" value="3"/></component>
+<component id="349" type="button" widget="LT_Button_1Row"><property id="2" value="1"/><property id="3" value="3"/></component>
 <component id="390" type="label" widget="LT_Label_Header_1Row"><property id="2" value="1"/><property id="3" value="0"/></component>
 <component id="320" type="label" widget="LT_Label_1Row"><property id="2" value="1"/><property id="3" value="3"/></component>
 <component id="342" type="label" widget="LT_Label_1Row"><property id="2" value="1"/><property id="3" value="3"/></component>
@@ -236,6 +237,7 @@
 <component id="421" type="label" widget="LT_Label_1Row"><property id="2" value="1"/><property id="3" value="3"/></component>
 <component id="488" type="label" widget="LT_Label_1Row"><property id="2" value="1"/><property id="3" value="3"/></component>
 <component id="489" type="label" widget="LT_Label_1Row"><property id="2" value="1"/><property id="3" value="3"/></component>
+<component id="490" type="button" widget="LT_Button_1Row"><property id="2" value="1"/><property id="3" value="3"/></component>
 <component id="411" type="button" widget="LT_Button_1Row"><property id="2" value="1"/><property id="3" value="3"/></component>
 <component id="412" type="button" widget="LT_Button_1Row"><property id="2" value="1"/><property id="3" value="3"/></component>
 <component id="500" type="label" widget="LT_Label_1Row"><property id="2" value="1"/><property id="3" value="3"/></component>

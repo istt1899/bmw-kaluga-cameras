@@ -93,6 +93,11 @@ function createDisplay(options){
             client.connect();
         }else{active=alert;if(signature!==sig){signature=sig;send();}}
     },status:function(){return client?Object.keys(states).map(k=>k+' '+states[k].state+(states[k].reason?' '+states[k].reason:'')).join(', '):'Ожидание подтверждённого предупреждения';},
-    diagnostics:function(){return JSON.parse(JSON.stringify(states));},close:function(){release(false);}};
+    diagnostics:function(){return Object.assign(JSON.parse(JSON.stringify(states)), {
+        connection: client && client.ready ? 'ready' : 'disconnected',
+        backend: client && client.backend || null,
+        version: client && client.ready && client.version || null,
+        versionReported: !!(client && client.ready && client.version)
+    });},close:function(){release(false);}};
 }
 module.exports={createDisplay,parseTargets,layoutFor};

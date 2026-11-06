@@ -3,7 +3,7 @@
 // enforcement or of a particular hardware model.
 const fs = require('fs');
 const LABELS = { speed: 'Контроль скорости', redlight: 'Контроль светофора', average: 'Средняя скорость',
-    stopline: 'Стоп-линия', belt: 'Контроль ремня', pedestrian: 'Пешеходный переход', lane: 'Контроль полосы' };
+    stopline: 'Стоп-линия', belt: 'Контроль ремня', pedestrian: 'Пешеходный переход', lane: 'Контроль полосы', phone: 'Контроль телефона' };
 function controls(camera) {
     const source = camera && camera.controls || [camera && camera.type];
     return source.filter((c, i) => LABELS[c] && source.indexOf(c) === i);

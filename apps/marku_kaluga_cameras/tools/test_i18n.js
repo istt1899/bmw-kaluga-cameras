@@ -74,7 +74,7 @@ const CODES = ['ar', 'cs', 'da', 'de', 'el', 'es', 'es-US', 'fi', 'fr', 'fr-CA',
 const placeholders = (s) => (s.match(/\{\d+\}/g) || []).sort();
 const all = locales.read();
 eq(all.map((l) => l.code).sort(), CODES.slice().sort(), 'the Store\'s languages');
-eq(fs.readFileSync(locales.OUT, 'utf8'), locales.source(), 'src/locales.js as tools/gen_locales.js writes it');
+eq(fs.readFileSync(locales.OUT, 'utf8').replace(/\r\n/g, '\n'), locales.source(), 'src/locales.js as tools/gen_locales.js writes it (canonical LF)');
 eq(i18n.codes(), all.map((l) => l.code), 'every locale in the app');
 const TEXTS = path.join(TREE, 'rhmiData', 'variantGroups', 'Common', 'texts');
 const readText = (name) => JSON.parse(fs.readFileSync(path.join(TEXTS, `${name}.json`), 'utf8'));

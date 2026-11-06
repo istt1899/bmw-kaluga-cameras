@@ -11,6 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const zlib = require('zlib');
+const canonicalBytes = require('./canonical-bytes');
 const ROOT = path.resolve(__dirname, '..');
 const REPOSITORY = 'istt1899/bmw-kaluga-cameras';
 const INPUT = path.join(ROOT, 'dist', 'publish', 'kaluga-cameras');
@@ -54,7 +55,7 @@ function readPublicFile(file, name) {
   const stat = fs.lstatSync(file);
   assert(stat.isFile() && !stat.isSymbolicLink(), 'Expected regular file: ' + name);
   assert(stat.size <= MAX_FILE, 'Public source file too large: ' + name);
-  const bytes = fs.readFileSync(file); inspectContent(name, bytes); return bytes;
+  const bytes = canonicalBytes(name, fs.readFileSync(file)); inspectContent(name, bytes); return bytes;
 }
 function tarMembers(file, expectedKind) {
   const tar = zlib.gunzipSync(fs.readFileSync(file), { maxOutputLength: 96 * 1024 * 1024 });
@@ -87,7 +88,7 @@ function compareSource(contents, component) {
   if (component.kind === 'app') {
     contents.forEach((bytes, name) => {
       const source = path.join(ROOT, 'apps', component.id, name);
-      assert(fs.existsSync(source) && bytes.equals(fs.readFileSync(source)), 'Source changed since app build: ' + name);
+      assert(fs.existsSync(source) && bytes.equals(canonicalBytes(name, fs.readFileSync(source))), 'Source changed since app build: ' + name);
     });
   } else {
     const directory = path.join(ROOT, 'native', component.id);
@@ -98,7 +99,7 @@ function compareSource(contents, component) {
     assert(contents.size === expected.size, 'Unexpected native archive members');
     contents.forEach((bytes, name) => {
       assert(expected.has(name), 'Undeclared native archive member: ' + name);
-      if (name !== 'component.json') assert(bytes.equals(fs.readFileSync(path.join(directory, name))), 'Source changed since service build: ' + name);
+      if (name !== 'component.json') assert(bytes.equals(canonicalBytes(name, fs.readFileSync(path.join(directory, name)))), 'Source changed since service build: ' + name);
     });
     const packed = JSON.parse(contents.get('component.json').toString('utf8'));
     packed.files.forEach(file => { delete file.sha256; });
@@ -121,7 +122,7 @@ function collectSource() {
     });
   }
   ['README.md', 'LICENSE'].forEach(add);
-  ['NOTICE', 'THIRD_PARTY_NOTICES.md', 'package.json', 'package-lock.json', '.gitignore', 'catalog-providers.json'].forEach(name => {
+  ['NOTICE', 'THIRD_PARTY_NOTICES.md', 'package.json', 'package-lock.json', '.gitignore', '.gitattributes', 'catalog-providers.json', 'tools/canonical-bytes.js'].forEach(name => {
     if (fs.existsSync(path.join(ROOT, name))) add(name);
   });
   ['apps', 'native', 'data', 'docs', 'tools/fixtures'].forEach(tree);
@@ -204,6 +205,9 @@ function main() {
   fs.writeFileSync(path.join(assets, 'catalog.json'), JSON.stringify(catalog, null, 2) + '\n');
   fs.writeFileSync(path.join(exported, '.gitignore'), 'dist/\nnode_modules/\n*.pbf\n*.osm.pbf\n.env\n.env.*\n');
   const notes = '# Waze Стрелка ' + version + '\n\n' +
+    'Патч по независимому аудиту: сервис зарегистрирован в mgu-uplink (UID 5000), зависшие GPS-попытки инвалидируются с ограниченным восстановлением, NAV/GONG повторяют временные отказы. Команды сопоставляются по точному requestId; промежуточный requested не отключает шестисекундный watchdog.\n\n' +
+    'Полный результат команды перелистывается на обоих экранах. Диагностика показывает восстановление базы, причину, версии до/после, режим сохранности и состояние renderer; неизвестная версия runtime явно обозначается. Проверяются координаты зоны и привязка камеры, добавлен контроль телефона. LF/CRLF сборки дают одинаковые архивы.\n\n' +
+    'Подтверждённого SDK unsubscribe нет: максимум три удерживаемых регистрации на канал, только одна передаёт данные; исчерпание лимита требует перезапуска процесса. Фактический сетевой доступ MGU, HUD и отключение питания ещё требуют проверки на машине.\n\n' +
     'Переработаны внутренние экраны и компактные карточки камер. До трёх типов контроля, расстояние и скорость; применимый известный лимит показывается только при подтверждённой дороге. Неизвестные лимит и направление не выдумываются. Размер и положение карточки вычисляются из runtime-холста renderer.\n\n' +
     'Тест изображения и калибровка работают по свежей скорости стоянки, независимо от точности координат. Условия кнопки и сервиса едины, результат и отказ видны сразу. Шесть страниц диагностики сохраняют один снимок, реальные размеры/состояния вывода и локальный JSON-отчёт по отдельному действию.\n\n' +
     'База: ' + dataCounts.total + ' записей = ' + dataCounts.osm + ' исходных OSM-точек + ' + dataCounts.relations + ' дополнительных устройств из enforcement relations + ' + dataCounts.reported + ' сообщение владельца. Тульское шоссе — Генерала Попова учтено через relation 10391645. Исходные ' + dataCounts.zones + ' дорожных зон сохранены. Это неполный набор открытых данных.\n\n' +

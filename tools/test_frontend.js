@@ -46,4 +46,13 @@ check('RHMI identity and action components match implementation', () => {
     ['cameraCluster', 'cameraHud', 'cameraUpdate', 'cameraDiagnostics', 'cameraAlert'].forEach((n) => assert(names.indexOf(n) >= 0));
     assert.strictEqual(p.mguLocalOnly, true);
 });
+check('settings use non-focusable iDrive section headers', () => {
+    const m = JSON.parse(fs.readFileSync(path.join(APP, 'mgu-app.json'), 'utf8'));
+    const ui = JSON.parse(fs.readFileSync(path.join(APP, m.tree, 'rhmiData', 'uiDescriptions', 'ID7', 'uiDescription.json'), 'utf8'));
+    const xml = fs.readFileSync(path.join(APP, m.tree, 'rhmiData', 'uiDescriptions', 'ID7', 'application.xml'), 'utf8');
+    ['90', '91', '92'].forEach((id) => {
+        assert.strictEqual(ui.containers['1'].components[id].properties.Focusable.value, 0);
+        assert(xml.includes('<component id="' + id + '" type="label" widget="LT_Label_Header_1Row">'));
+    });
+});
 console.log('PASS: ' + count + ' frontend checks');

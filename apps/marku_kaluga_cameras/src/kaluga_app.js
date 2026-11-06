@@ -34,7 +34,11 @@ class KalugaCamerasApp extends OnlineApp {
     appInitialized() {
         if (!this.rhmiApplication) return this.initialized();
         const foreground = this.startedForeground();
-        return this.setupRhmi().then(() => this.registerEntryPoint()).then(() => this.initialized()).then(() => {
+        return this.setupRhmi().then(() => this.registerEntryPoint()).then(() => {
+            // A tile launch must report ACTIVE before initialized() publishes
+            // the initial status, otherwise the manager can suspend the app.
+            if (foreground) return this.registerActive();
+        }).then(() => this.initialized()).then(() => {
             if (foreground || this.visible) { this.sawForeground = true; this.setVisible(true); }
             const uuid = this.getLastExecutedEntryPointUuid && this.getLastExecutedEntryPointUuid();
             return uuid ? this.openEntry(uuid) : undefined;
@@ -77,7 +81,9 @@ class KalugaCamerasApp extends OnlineApp {
         if (!ours) return Promise.reject(new Error('no entry point'));
         const d = ours.getDescription();
         return ours.init().then(() => this.rhmiApplication.mapEntryState(d.uuid, this.state))
-            .then(() => ours.entryPoint.setText(d.textId)).then(() => d.icon ? ours.entryPoint.setIcon(d.icon) : undefined)
+            .then(() => Promise.resolve().then(() => ours.entryPoint.setText(d.textId))
+                .then(() => d.icon ? ours.entryPoint.setIcon(d.icon) : undefined)
+                .catch((err) => logger.warn('kaluga entry point resources: ' + err.message)))
             .then(() => ours.setAvailability('ENABLED'));
     }
     openEntry(uuid) {

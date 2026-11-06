@@ -60,7 +60,7 @@ published.components.forEach((c) => {
         assert(!members.some((m) => /node_modules\/oap-sdk|javascript\/app\.js/.test(m.name)));
     }
     assert.strictEqual(result.id, c.id);
-    assert.strictEqual(result.version, '0.1.0');
+    assert.strictEqual(result.version, JSON.parse(fs.readFileSync(path.join(ROOT, 'apps', 'marku_kaluga_cameras', 'mgu-app.json'), 'utf8')).version);
     console.log('PASS: upstream ' + c.kind + ' validator + catalog SHA/size/requires/USB: ' + c.id);
 });
 console.log('PASS: upstream validators only; SDK link, systemd and RHMI on head unit remain untested');

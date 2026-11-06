@@ -1,9 +1,18 @@
 {
   "schema": 1,
   "id": "marku_kaluga_cameras",
-  "version": "0.1.0",
-  "tree": "marku_kaluga_cameras@0.1.0",
-  "mguHmi": ["ID7"],
-  "modules": ["src/kaluga_app.js", "src/control.js", "src/view_model.js"],
-  "sdk": ["oap-sdk/src/core/OnlineApp.js", "oap-sdk/src/logging/logging"]
+  "version": "0.1.1",
+  "tree": "marku_kaluga_cameras@0.1.1",
+  "mguHmi": [
+    "ID7"
+  ],
+  "modules": [
+    "src/kaluga_app.js",
+    "src/control.js",
+    "src/view_model.js"
+  ],
+  "sdk": [
+    "oap-sdk/src/core/OnlineApp.js",
+    "oap-sdk/src/logging/logging"
+  ]
 }

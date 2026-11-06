@@ -127,8 +127,9 @@ async function main() {
   var vm = require('vm'), EventEmitter = require('events');
   function httpBoundary(name, replies) {
     var calls = [], deadlines = [], module = { exports: {} };
-    var fakeHttps = { get: function (url, options, callback) {
-      var req = new EventEmitter(), reply = replies.shift(); calls.push({ url: url, headers: options.headers });
+    var fakeHttps = { get: function (options, callback) {
+      assert.strictEqual(arguments.length,2,'MGU Node 8 requires the options/callback HTTPS overload');
+      var req = new EventEmitter(), reply = replies.shift(); calls.push({ url: options.protocol+'//'+options.hostname+options.path, headers: options.headers });
       req.destroy = function (err) { setImmediate(function () { req.emit('error', err || Error('destroyed')); }); };
       if (!reply.hang) setImmediate(function () {
         var res = new EventEmitter(); res.statusCode = reply.status || 200; res.headers = reply.headers || {}; res.resume = res.destroy = function () {};

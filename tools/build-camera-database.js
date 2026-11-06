@@ -16,7 +16,7 @@ function bundle(){
 }
 if(require.main===module){
  const db=bundle(),data=Buffer.from(JSON.stringify(db)+'\n'),out=path.join(__dirname,'../data/camera-database-'+db.version+'.json');
- if(fs.existsSync(out)&&!fs.readFileSync(out).equals(data))throw Error('Refusing to replace an existing data version with different bytes');
+ if(fs.existsSync(out)&&!Buffer.from(fs.readFileSync(out,'utf8').replace(/\r\n/g,'\n')).equals(data))throw Error('Refusing to replace an existing data version with different bytes');
  fs.mkdirSync(path.dirname(out),{recursive:true});fs.writeFileSync(out,data);
  console.log(JSON.stringify({file:path.basename(out),version:db.version,records:db.records.length,zones:db.zones.length,size:data.length,sha256:crypto.createHash('sha256').update(data).digest('hex')}));
 }

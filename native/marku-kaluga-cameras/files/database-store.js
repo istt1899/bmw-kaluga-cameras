@@ -131,7 +131,12 @@ function fetchBounded(url, max, requests, redirects) {
   return new Promise(function (resolve, reject) {
     var done = false, req, deadline;
     function finish(err, value) { if (done) return; done = true; clearTimeout(deadline); if (req) { var at = requests.indexOf(req); if (at >= 0) requests.splice(at, 1); } if (err) reject(err); else resolve(value); }
-    req = https.get(url, { headers: { 'User-Agent': 'Waze-Strelka-Camera-Data', 'Accept': 'application/json' } }, function (res) {
+    // Node 8 (MGU) supports https.get(options, callback), not the newer
+    // three-argument URL + options overload. Keep TLS validation enabled.
+    var parsedUrl=new URL(url);
+    var requestOptions={protocol:'https:',hostname:parsedUrl.hostname,path:parsedUrl.pathname,
+      headers:{ 'User-Agent': 'Waze-Strelka-Camera-Data', 'Accept': 'application/json' }};
+    req = https.get(requestOptions, function (res) {
       if ([301, 302, 303, 307, 308].indexOf(res.statusCode) >= 0) {
         res.resume(); var target;
         try { target = new URL(res.headers.location, url).toString(); allowed(target, url === SOURCE); if ((redirects || 0) >= 2) fail('UPDATE_REDIRECT'); }

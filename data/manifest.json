@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "region": "RU-KLU",
+  "version": "2026.11.6.1",
+  "generatedAt": "2026-11-06T00:00:00.000Z",
+  "artifact": {
+    "url": "https://raw.githubusercontent.com/istt1899/bmw-kaluga-cameras/910268cc525ff8170d213e82895ec26a48724143/data/camera-database-2026.11.6.1.json",
+    "size": 1364253,
+    "sha256": "654c86c1a54f060a1777372531b794a6d6c9e747b87e60a7cf2cd953b78524a2"
+  }
+}

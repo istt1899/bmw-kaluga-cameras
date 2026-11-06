@@ -56,4 +56,112 @@ function values(state, version, frozen) {
     };
     return text;
 }
-module.exports = { KEYS, values, REASONS };
+const PAGE_TITLES = ['Сводка','GPS','Камера','Вывод','Размеры','База'];
+const PAGE_ROWS = 10, ROW_CHARS = 66;
+const PAGE_KEYS = ['stamp','versions','page','command','commandMore'].concat(Array.from({length:PAGE_ROWS},(_,i)=>'row'+(i+1)));
+let snapshotSequence = 0;
+function capture(state, version, now) {
+    const at = Number.isFinite(now) ? now : Date.now();
+    // Only the service's public state is captured, never a transport/client or SDK object.
+    return {schema:1,id:'S'+at.toString(36).toUpperCase()+'-'+(++snapshotSequence),capturedAtMs:at,
+        appVersion:version,state:JSON.parse(JSON.stringify(state || {}))};
+}
+function parts(text) {
+    let remaining = clean(text), rows = [];
+    while (remaining.length > ROW_CHARS) {
+        let cut = remaining.lastIndexOf(' ',ROW_CHARS);
+        if (cut < Math.floor(ROW_CHARS/2)) cut = ROW_CHARS;
+        rows.push(remaining.slice(0,cut)); remaining = remaining.slice(cut).trim();
+    }
+    rows.push(remaining); return rows;
+}
+function action(state, name) {
+    const s=state||{}, a=s.actions&&s.actions[name];
+    if (!state) return {allowed:false,code:'SERVICE_UNAVAILABLE',reason:'Сервис недоступен'};
+    return a && typeof a.allowed === 'boolean' ? a : {allowed:false,code:'ACTION_UNAVAILABLE',reason:'Сервис не подтвердил доступность действия'};
+}
+function commandText(state, local) {
+    if (local) return local;
+    const s=state||{}, c=s.commandResult;
+    if(s.controlError) return 'Ошибка команды: '+clean(s.controlError);
+    return c ? clean(c.message || c.phase || c.command) : 'Команды: ожидают действия';
+}
+function reportPage(report, live, version, pageIndex, blockIndex, localResult) {
+    const snap=report||capture(live,version,(live||{}).observedAtMs), s=snap.state||{}, frozen=!!report;
+    const p=Math.max(0,Math.min(5,pageIndex||0)), f=s.gpsFix||{}, input=s.gpsInput||{}, timing=input.nmeaTiming||{};
+    const g=s.guidance||{}, c=s.alert||s.nearest||{}, db=s.database||{}, r=s.rendererDetails||{}, layout=r.layout||r.geometry||{};
+    const existing=values(s,snap.appVersion||version,frozen), on=v=>v?'вкл':'выкл';
+    const measurement=(v,unit)=>Number.isFinite(v)?n(v,0)+(unit||''):'неизвестно';
+    const renderTarget=name=>{
+        const t=r[name]||{}; return (name==='map'?'Приборы':'HUD')+': '+clean(t.state||s.renderer)+
+            ' • цель '+clean(t.target)+' • '+clean(t.reason||t.targetReason||'нет причины отказа');
+    };
+    const rawTargets=layout.targets||r.targets||{};
+    const targetLayout=name=>(r[name]||{}).layout||{};
+    const targetRow=name=>{
+        const target=Array.isArray(rawTargets)?rawTargets.find(t=>t.name===name||t.id===name):rawTargets[name];
+        const own=targetLayout(name), t=target||{}, size=own.canvas||t.size||t.viewport||t;
+        return name+': '+measurement(size.w===undefined?size.width:size.w)+'×'+measurement(size.h===undefined?size.height:size.h)+
+            ' • safe area '+clean(own.safeArea&&own.safeArea.known?JSON.stringify(own.safeArea):'не подтверждена');
+    };
+    const rectRow=name=>{
+        const t=r[name]||{}, rect=targetLayout(name).card||t.rect||t.rectangle||(layout.layers||{})[name]||{};
+        return (name==='map'?'Приборы':'HUD')+' x/y '+measurement(rect.x)+'/'+measurement(rect.y)+
+            ' • w/h '+measurement(rect.w===undefined?rect.width:rect.w)+'/'+measurement(rect.h===undefined?rect.height:rect.h);
+    };
+    const layoutRow=name=>{
+        const own=targetLayout(name), card=own.card||{};
+        return name+': масштаб '+n(card.scale,3)+' • границы '+(own.withinBounds===true?'в пределах':own.withinBounds===false?'выход за экран':'не проверены')+
+            ' • профиль '+clean(own.profile)+' • backend '+clean(own.backend);
+    };
+    const candidates=Array.isArray(s.nearestCandidates)?s.nearestCandidates:[];
+    const pages=[
+        [existing.service,existing.health,'GPS: '+clean(s.gps),existing.outputs,existing.alert,
+            'Тест: '+clean(action(s,'displayTest').reason||'доступен'),
+            'Улица '+clean((s.street||{}).name)+' • '+clean((s.street||{}).source||'BMW')+' • '+clean((s.street||{}).reason),
+            existing.database,'База: '+clean((s.databaseUpdate||{}).message|| (s.databaseUpdate||{}).phase),'Ошибка: '+clean(s.controlError||s.error)],
+        [existing.position,existing.fixUtc,existing.age,existing.accuracy,existing.motion,existing.gnss,
+            'RMC UTC '+clean(timing.rmcTime)+' • возраст '+n(timing.lastRmcAgeMs,0)+' мс',
+            'GGA UTC '+clean(timing.ggaTime)+' • возраст '+n(timing.lastGgaAgeMs,0)+' мс',
+            'GST UTC '+clean(timing.gstTime)+' • возраст '+n(timing.lastGstAgeMs,0)+' мс',
+            existing.nmeaRmcGga,existing.nmeaGgaGst,existing.nmeaPair,existing.counts,existing.reject,
+            existing.bridge,'GPS: '+clean(s.gps),existing.rejectReason],
+        ['Объект: '+clean(c.id), 'Расстояние: '+n(c.distanceM===undefined?c.distance:c.distanceM,0)+' м • '+clean(c.positionKind),
+            'Источник: '+clean(c.provenance||c.source)+' • '+clean(c.sourceUrl||c.positionSourceUrl),
+            'Типы: '+clean(Array.isArray(c.controls)&&c.controls.length?c.controls.join(', '):c.title||c.type||'тип не подтверждён'),
+            'Описание: '+clean(c.description),existing.limit,
+            'Контроль: '+clean(c.captureDirectionVerified?{front:'спереди',rear:'сзади',both:'спереди и сзади'}[c.captureDirection]||'направление неизвестно':'направление неизвестно')+' • источник '+clean(c.captureDirectionSource),
+            existing.mode,existing.reason,existing.way,existing.samples].concat(candidates.map((v,i)=>
+                'Кандидат '+(i+1)+': '+clean(v.id)+' • '+n(v.distanceM,0)+' м • '+clean(v.reason))),
+        [existing.outputs,renderTarget('map'),renderTarget('hud'),
+            'Renderer: '+clean(layout.rendererVersion||r.version)+' • соединение '+clean(layout.connection||r.connection),
+            'Держатель приборов: '+clean((r.map||{}).holder), 'Держатель HUD: '+clean((r.hud||{}).holder),
+            existing.test,'Тест изображения: '+clean(action(s,'displayTest').reason||'доступен'),
+            'Калибровка: '+clean(action(s,'calibrationTest').reason||'доступна'),
+            'Звук: '+((s.audio||{}).available?'доступен':'недоступен')+' • '+clean((s.audio||{}).reason),
+            'Последняя команда: '+commandText(s), 'Ошибка: '+clean(s.controlError||s.error)],
+        ['Геометрия целей: приборы '+(targetLayout('map').canvas?'получена':'неизвестна')+' • HUD '+(targetLayout('hud').canvas?'получена':'неизвестна'),
+            targetRow('map'),targetRow('panel'),targetRow('hud'),rectRow('map'),rectRow('hud'),layoutRow('map'),layoutRow('hud'),
+            existing.dimmer,'Калибровка: '+clean(layout.calibration||layout.calibrationState||'не подтверждена'),
+            'Размеры viewport логические; физический размер экрана не измерен'],
+        [existing.database,'Версия: '+clean(db.version)+' • регион '+clean(db.region),
+            'UTC базы: '+clean(db.updated||db.generatedAt||db.sourceTimestamp),
+            'Хеш: '+clean(db.sha256||db.digest||db.pbfMd5),
+            'OSM '+clean(db.osmCount)+' • сообщения владельца '+clean(db.reportedCount)+' • отношения '+clean(db.relationCount),
+            'Проверка: '+clean((s.databaseUpdate||{}).phase)+' • '+clean((s.databaseUpdate||{}).message),
+            'Источник обновления: '+clean((s.databaseUpdate||{}).source||(s.databaseUpdate||{}).url),
+            'Предыдущая база: '+clean(db.previousVersion||(s.databaseUpdate||{}).previousVersion),
+            'Пропущено: '+clean(db.skippedCount)+' • '+clean(db.coverageReason),
+            'Экспорт JSON — отдельное действие; данные GPS не отправляются автоматически']
+    ];
+    const lines=[]; pages[p].forEach(line=>parts(line).forEach(row=>lines.push(row)));
+    const blocks=Math.max(1,Math.ceil(lines.length/PAGE_ROWS)), block=Math.max(0,Math.min(blocks-1,blockIndex||0));
+    const commandLines=parts(commandText(live,localResult));
+    const rows={stamp:(frozen?'Снимок ':'Живые ')+snap.id+' • '+utc(snap.capturedAtMs),
+        versions:'Приложение '+clean(snap.appVersion||version)+' • сервис '+clean(s.serviceVersion),
+        page:PAGE_TITLES[p]+' '+(p+1)+'/6 • строки '+(block*PAGE_ROWS+1)+'–'+Math.min(lines.length,(block+1)*PAGE_ROWS)+'/'+lines.length,
+        command:commandLines[0],commandMore:commandLines.slice(1).join(' ').slice(0,ROW_CHARS)};
+    for(let i=0;i<PAGE_ROWS;i++) rows['row'+(i+1)]=lines[block*PAGE_ROWS+i]||' ';
+    return {rows,page:p,block,blocks,title:PAGE_TITLES[p],report:snap};
+}
+module.exports = { KEYS, values, REASONS, PAGE_KEYS, PAGE_TITLES, PAGE_ROWS, capture, reportPage, action, commandText };

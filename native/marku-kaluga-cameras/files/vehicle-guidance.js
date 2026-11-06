@@ -79,6 +79,12 @@ function createGuidance(data) {
             distanceM: nearest && nearest.distanceM, way: debug.way || null, lateralErrorM: debug.lateralErrorM,
             fixTimeMs: f.timeMs, observedAtMs: now, approachSamples: 0 };
         state.roadReason = state.reason;
+        state.candidates = nearby.slice(0,3).map(item => {
+            const zone=zones.find(z=>z.id===item.record.id), detail={};
+            if(moving&&zone)candidate(zone,f,detail);
+            return {id:item.record.id,distanceM:Math.round(item.distanceM),reason:!moving?'WAITING_MOTION':zone?detail.reason||'WAITING_APPROACH':'NO_ROAD_ZONE',
+                way:detail.way||null,lateralErrorM:detail.lateralErrorM===undefined?null:detail.lateralErrorM};
+        });
         const next = moving ? zones.map(z => candidate(z, f)).filter(Boolean).sort((a, b) => a.distanceM - b.distanceM)[0] || null : null;
         let selected = null;
         if (next && prior && dt > 0 && dt <= 3 && prior.id === next.id && prior.way === next.way && prior.sign === next.sign) {
@@ -120,6 +126,7 @@ function createGuidance(data) {
             if (active.roadConfirmed) state.roadReason = state.reason;
             state.cameraId = active.id; state.distanceM = active.distanceM;
             if (active.roadConfirmed) { state.way = active.way; if (!active.stopped) anchor = { lat: f.lat, lon: f.lon }; }
+            state.candidates.forEach(c=>{if(c.id===active.id)c.reason=state.reason;});
         } else anchor = null;
         return active;
     }, reset: () => reset('RESET'), diagnostic: () => Object.assign({}, state), count: zones.length };

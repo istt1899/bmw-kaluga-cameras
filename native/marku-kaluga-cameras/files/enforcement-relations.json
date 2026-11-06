@@ -1,0 +1,911 @@
+{
+  "schema": 1,
+  "source": "OpenStreetMap",
+  "region": "RU-KLU",
+  "sourceTimestamp": "2026-11-05T00:06:20.000Z",
+  "retrievedAt": "2026-11-05T00:06:20.000Z",
+  "origin": "https://download.openstreetmap.fr/extracts/russia/central_federal_district/kaluga_oblast.osm.pbf",
+  "inputSha256": "f16d5518c6c5a16503ba3ec10e6fb1d980725c0ef2de749e5cb6934421638469",
+  "sourcePbfMd5": "bd360458900c604d889f78d73ef66f64",
+  "licence": "ODbL-1.0",
+  "attribution": "© OpenStreetMap contributors",
+  "licenceUrl": "https://opendatacommons.org/licenses/odbl/1-0/",
+  "notes": "Relation facts preserve their original source dates. A mapped device is not proof of current operation. Camera orientation and capture side remain unknown unless independently verified.",
+  "audit": {
+    "scannedRelations": 5,
+    "eligibleRelations": 5,
+    "uniqueDevices": 5,
+    "duplicateDevicesMerged": 0,
+    "explicitNumericLimits": 0,
+    "nonnumericLimits": 5,
+    "unknownCaptureSide": 5,
+    "unsupported": [],
+    "origin": "https://download.openstreetmap.fr/extracts/russia/central_federal_district/kaluga_oblast.osm.pbf",
+    "coverage": "Available enforcement relations in the source extract; not a complete inventory of operating cameras."
+  },
+  "records": [
+    {
+      "id": "osm:node:259864146",
+      "type": "speed",
+      "controls": [
+        "speed"
+      ],
+      "position": {
+        "lat": 54.513889,
+        "lon": 36.2612607
+      },
+      "limitKmh": null,
+      "rawLimits": [
+        "RU:urban"
+      ],
+      "provenance": "OpenStreetMap",
+      "positionKind": "camera-node",
+      "captureSide": "unknown",
+      "description": null,
+      "inKalugaCity": null,
+      "sourceUrl": "https://www.openstreetmap.org/relation/10391681",
+      "positionSourceUrl": "https://www.openstreetmap.org/node/259864146",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/259864146",
+        "https://www.openstreetmap.org/relation/10391681"
+      ],
+      "relationSourceTimestamp": "2026-11-05T00:06:20.000Z",
+      "enforcementRelations": [
+        {
+          "id": 10391681,
+          "version": 1,
+          "timestamp": "2019-12-09T20:59:13.000Z",
+          "tags": {
+            "enforcement": "maxspeed",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2860971/",
+            "type": "enforcement"
+          },
+          "sourceUrl": "https://www.openstreetmap.org/relation/10391681",
+          "members": [
+            {
+              "type": "node",
+              "ref": 1460413848,
+              "role": "from",
+              "position": {
+                "lat": 54.5140332,
+                "lon": 36.2613181
+              }
+            },
+            {
+              "type": "node",
+              "ref": 259864146,
+              "role": "device",
+              "position": {
+                "lat": 54.513889,
+                "lon": 36.2612607
+              }
+            },
+            {
+              "type": "node",
+              "ref": 258903357,
+              "role": "to",
+              "position": {
+                "lat": 54.5137861,
+                "lon": 36.2612197
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1460413836,
+              "role": "from",
+              "position": {
+                "lat": 54.5136926,
+                "lon": 36.2611825
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1460413843,
+              "role": "from",
+              "position": {
+                "lat": 54.5138121,
+                "lon": 36.2610044
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1460413845,
+              "role": "from",
+              "position": {
+                "lat": 54.513914,
+                "lon": 36.2610493
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1460413844,
+              "role": "from",
+              "position": {
+                "lat": 54.5138669,
+                "lon": 36.2614558
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1460413841,
+              "role": "from",
+              "position": {
+                "lat": 54.5137647,
+                "lon": 36.2614093
+              }
+            }
+          ]
+        }
+      ],
+      "deviceTags": {
+        "highway": "traffic_signals"
+      }
+    },
+    {
+      "id": "osm:node:277053780",
+      "type": "speed",
+      "controls": [
+        "speed"
+      ],
+      "position": {
+        "lat": 54.524378,
+        "lon": 36.2710889
+      },
+      "limitKmh": null,
+      "rawLimits": [
+        "RU:urban"
+      ],
+      "provenance": "OpenStreetMap",
+      "positionKind": "camera-node",
+      "captureSide": "unknown",
+      "description": null,
+      "inKalugaCity": null,
+      "sourceUrl": "https://www.openstreetmap.org/relation/10391799",
+      "positionSourceUrl": "https://www.openstreetmap.org/node/277053780",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/277053780",
+        "https://www.openstreetmap.org/relation/10391799"
+      ],
+      "relationSourceTimestamp": "2026-11-05T00:06:20.000Z",
+      "enforcementRelations": [
+        {
+          "id": 10391799,
+          "version": 1,
+          "timestamp": "2019-12-09T21:14:10.000Z",
+          "tags": {
+            "enforcement": "maxspeed",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2860922/",
+            "type": "enforcement"
+          },
+          "sourceUrl": "https://www.openstreetmap.org/relation/10391799",
+          "members": [
+            {
+              "type": "node",
+              "ref": 277053780,
+              "role": "device",
+              "position": {
+                "lat": 54.524378,
+                "lon": 36.2710889
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1516409287,
+              "role": "from",
+              "position": {
+                "lat": 54.5242576,
+                "lon": 36.2710114
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1516409289,
+              "role": "from",
+              "position": {
+                "lat": 54.5243368,
+                "lon": 36.2713392
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1516409292,
+              "role": "from",
+              "position": {
+                "lat": 54.5245148,
+                "lon": 36.2711816
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1480008430,
+              "role": "from",
+              "position": {
+                "lat": 54.5244175,
+                "lon": 36.2709108
+              }
+            }
+          ]
+        }
+      ],
+      "deviceTags": {
+        "highway": "traffic_signals"
+      }
+    },
+    {
+      "id": "osm:node:277060623",
+      "type": "speed",
+      "controls": [
+        "speed"
+      ],
+      "position": {
+        "lat": 54.5648622,
+        "lon": 36.2594838
+      },
+      "limitKmh": null,
+      "rawLimits": [
+        "RU:urban"
+      ],
+      "provenance": "OpenStreetMap",
+      "positionKind": "camera-node",
+      "captureSide": "unknown",
+      "description": null,
+      "inKalugaCity": null,
+      "sourceUrl": "https://www.openstreetmap.org/relation/10391709",
+      "positionSourceUrl": "https://www.openstreetmap.org/node/277060623",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/277060623",
+        "https://www.openstreetmap.org/relation/10391709"
+      ],
+      "relationSourceTimestamp": "2026-11-05T00:06:20.000Z",
+      "enforcementRelations": [
+        {
+          "id": 10391709,
+          "version": 1,
+          "timestamp": "2019-12-09T21:04:39.000Z",
+          "tags": {
+            "enforcement": "maxspeed",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2861269/",
+            "type": "enforcement"
+          },
+          "sourceUrl": "https://www.openstreetmap.org/relation/10391709",
+          "members": [
+            {
+              "type": "node",
+              "ref": 277060623,
+              "role": "device",
+              "position": {
+                "lat": 54.5648622,
+                "lon": 36.2594838
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1941134264,
+              "role": "from",
+              "position": {
+                "lat": 54.5648355,
+                "lon": 36.2599073
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1986928901,
+              "role": "from",
+              "position": {
+                "lat": 54.5647074,
+                "lon": 36.2595851
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1986928990,
+              "role": "from",
+              "position": {
+                "lat": 54.5648765,
+                "lon": 36.25919
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1986929082,
+              "role": "from",
+              "position": {
+                "lat": 54.5649985,
+                "lon": 36.2593959
+              }
+            }
+          ]
+        }
+      ],
+      "deviceTags": {
+        "crossing": "traffic_signals",
+        "highway": "traffic_signals"
+      }
+    },
+    {
+      "id": "osm:node:3199757952",
+      "type": "speed",
+      "controls": [
+        "speed"
+      ],
+      "position": {
+        "lat": 54.4932235,
+        "lon": 36.2283816
+      },
+      "limitKmh": null,
+      "rawLimits": [
+        "RU:urban"
+      ],
+      "provenance": "OpenStreetMap",
+      "positionKind": "camera-node",
+      "captureSide": "unknown",
+      "description": null,
+      "inKalugaCity": null,
+      "sourceUrl": "https://www.openstreetmap.org/relation/10391645",
+      "positionSourceUrl": "https://www.openstreetmap.org/node/3199757952",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/3199757952",
+        "https://www.openstreetmap.org/relation/10391645"
+      ],
+      "relationSourceTimestamp": "2026-11-05T00:06:20.000Z",
+      "enforcementRelations": [
+        {
+          "id": 10391645,
+          "version": 1,
+          "timestamp": "2019-12-09T20:43:35.000Z",
+          "tags": {
+            "enforcement": "maxspeed",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2860857/",
+            "type": "enforcement"
+          },
+          "sourceUrl": "https://www.openstreetmap.org/relation/10391645",
+          "members": [
+            {
+              "type": "node",
+              "ref": 339911605,
+              "role": "from",
+              "position": {
+                "lat": 54.4931209,
+                "lon": 36.2278783
+              }
+            },
+            {
+              "type": "node",
+              "ref": 3199757953,
+              "role": "from",
+              "position": {
+                "lat": 54.4932715,
+                "lon": 36.2278574
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1870729307,
+              "role": "from",
+              "position": {
+                "lat": 54.4935208,
+                "lon": 36.2282375
+              }
+            },
+            {
+              "type": "node",
+              "ref": 6346736925,
+              "role": "from",
+              "position": {
+                "lat": 54.4929179,
+                "lon": 36.2283854
+              }
+            },
+            {
+              "type": "node",
+              "ref": 3199757952,
+              "role": "device",
+              "position": {
+                "lat": 54.4932235,
+                "lon": 36.2283816
+              }
+            },
+            {
+              "type": "node",
+              "ref": 259878959,
+              "role": "to",
+              "position": {
+                "lat": 54.4932186,
+                "lon": 36.2282345
+              }
+            }
+          ]
+        }
+      ],
+      "deviceTags": {
+        "highway": "traffic_signals"
+      }
+    },
+    {
+      "id": "osm:node:343571619",
+      "type": "speed",
+      "controls": [
+        "speed"
+      ],
+      "position": {
+        "lat": 54.5135972,
+        "lon": 36.2638399
+      },
+      "limitKmh": null,
+      "rawLimits": [
+        "RU:urban"
+      ],
+      "provenance": "OpenStreetMap",
+      "positionKind": "camera-node",
+      "captureSide": "unknown",
+      "description": null,
+      "inKalugaCity": null,
+      "sourceUrl": "https://www.openstreetmap.org/relation/10391682",
+      "positionSourceUrl": "https://www.openstreetmap.org/node/343571619",
+      "sourceUrls": [
+        "https://www.openstreetmap.org/node/343571619",
+        "https://www.openstreetmap.org/relation/10391682"
+      ],
+      "relationSourceTimestamp": "2026-11-05T00:06:20.000Z",
+      "enforcementRelations": [
+        {
+          "id": 10391682,
+          "version": 1,
+          "timestamp": "2019-12-09T20:59:13.000Z",
+          "tags": {
+            "enforcement": "maxspeed",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2860957/",
+            "type": "enforcement"
+          },
+          "sourceUrl": "https://www.openstreetmap.org/relation/10391682",
+          "members": [
+            {
+              "type": "node",
+              "ref": 343571646,
+              "role": "to",
+              "position": {
+                "lat": 54.5134895,
+                "lon": 36.2637663
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1491143054,
+              "role": "from",
+              "position": {
+                "lat": 54.5133883,
+                "lon": 36.2636879
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1491143061,
+              "role": "from",
+              "position": {
+                "lat": 54.5135186,
+                "lon": 36.2635397
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1491143062,
+              "role": "from",
+              "position": {
+                "lat": 54.5136165,
+                "lon": 36.2635996
+              }
+            },
+            {
+              "type": "node",
+              "ref": 343571619,
+              "role": "device",
+              "position": {
+                "lat": 54.5135972,
+                "lon": 36.2638399
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1491143069,
+              "role": "from",
+              "position": {
+                "lat": 54.5137124,
+                "lon": 36.263915
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1098053858,
+              "role": "from",
+              "position": {
+                "lat": 54.513596,
+                "lon": 36.2640784
+              }
+            },
+            {
+              "type": "node",
+              "ref": 1098053983,
+              "role": "from",
+              "position": {
+                "lat": 54.5134558,
+                "lon": 36.2639984
+              }
+            }
+          ]
+        }
+      ],
+      "deviceTags": {
+        "button_operated": "no",
+        "highway": "traffic_signals",
+        "tactile_paving": "no",
+        "traffic_signals:sound": "no",
+        "traffic_signals:vibration": "no"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": 10391645,
+      "version": 1,
+      "timestamp": "2019-12-09T20:43:35.000Z",
+      "tags": {
+        "enforcement": "maxspeed",
+        "maxspeed": "RU:urban",
+        "source": "https://гибдд.рф/milestones/2860857/",
+        "type": "enforcement"
+      },
+      "sourceUrl": "https://www.openstreetmap.org/relation/10391645",
+      "members": [
+        {
+          "type": "node",
+          "ref": 339911605,
+          "role": "from",
+          "position": {
+            "lat": 54.4931209,
+            "lon": 36.2278783
+          }
+        },
+        {
+          "type": "node",
+          "ref": 3199757953,
+          "role": "from",
+          "position": {
+            "lat": 54.4932715,
+            "lon": 36.2278574
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1870729307,
+          "role": "from",
+          "position": {
+            "lat": 54.4935208,
+            "lon": 36.2282375
+          }
+        },
+        {
+          "type": "node",
+          "ref": 6346736925,
+          "role": "from",
+          "position": {
+            "lat": 54.4929179,
+            "lon": 36.2283854
+          }
+        },
+        {
+          "type": "node",
+          "ref": 3199757952,
+          "role": "device",
+          "position": {
+            "lat": 54.4932235,
+            "lon": 36.2283816
+          }
+        },
+        {
+          "type": "node",
+          "ref": 259878959,
+          "role": "to",
+          "position": {
+            "lat": 54.4932186,
+            "lon": 36.2282345
+          }
+        }
+      ]
+    },
+    {
+      "id": 10391681,
+      "version": 1,
+      "timestamp": "2019-12-09T20:59:13.000Z",
+      "tags": {
+        "enforcement": "maxspeed",
+        "maxspeed": "RU:urban",
+        "source": "https://гибдд.рф/milestones/2860971/",
+        "type": "enforcement"
+      },
+      "sourceUrl": "https://www.openstreetmap.org/relation/10391681",
+      "members": [
+        {
+          "type": "node",
+          "ref": 1460413848,
+          "role": "from",
+          "position": {
+            "lat": 54.5140332,
+            "lon": 36.2613181
+          }
+        },
+        {
+          "type": "node",
+          "ref": 259864146,
+          "role": "device",
+          "position": {
+            "lat": 54.513889,
+            "lon": 36.2612607
+          }
+        },
+        {
+          "type": "node",
+          "ref": 258903357,
+          "role": "to",
+          "position": {
+            "lat": 54.5137861,
+            "lon": 36.2612197
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1460413836,
+          "role": "from",
+          "position": {
+            "lat": 54.5136926,
+            "lon": 36.2611825
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1460413843,
+          "role": "from",
+          "position": {
+            "lat": 54.5138121,
+            "lon": 36.2610044
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1460413845,
+          "role": "from",
+          "position": {
+            "lat": 54.513914,
+            "lon": 36.2610493
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1460413844,
+          "role": "from",
+          "position": {
+            "lat": 54.5138669,
+            "lon": 36.2614558
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1460413841,
+          "role": "from",
+          "position": {
+            "lat": 54.5137647,
+            "lon": 36.2614093
+          }
+        }
+      ]
+    },
+    {
+      "id": 10391682,
+      "version": 1,
+      "timestamp": "2019-12-09T20:59:13.000Z",
+      "tags": {
+        "enforcement": "maxspeed",
+        "maxspeed": "RU:urban",
+        "source": "https://гибдд.рф/milestones/2860957/",
+        "type": "enforcement"
+      },
+      "sourceUrl": "https://www.openstreetmap.org/relation/10391682",
+      "members": [
+        {
+          "type": "node",
+          "ref": 343571646,
+          "role": "to",
+          "position": {
+            "lat": 54.5134895,
+            "lon": 36.2637663
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1491143054,
+          "role": "from",
+          "position": {
+            "lat": 54.5133883,
+            "lon": 36.2636879
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1491143061,
+          "role": "from",
+          "position": {
+            "lat": 54.5135186,
+            "lon": 36.2635397
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1491143062,
+          "role": "from",
+          "position": {
+            "lat": 54.5136165,
+            "lon": 36.2635996
+          }
+        },
+        {
+          "type": "node",
+          "ref": 343571619,
+          "role": "device",
+          "position": {
+            "lat": 54.5135972,
+            "lon": 36.2638399
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1491143069,
+          "role": "from",
+          "position": {
+            "lat": 54.5137124,
+            "lon": 36.263915
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1098053858,
+          "role": "from",
+          "position": {
+            "lat": 54.513596,
+            "lon": 36.2640784
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1098053983,
+          "role": "from",
+          "position": {
+            "lat": 54.5134558,
+            "lon": 36.2639984
+          }
+        }
+      ]
+    },
+    {
+      "id": 10391709,
+      "version": 1,
+      "timestamp": "2019-12-09T21:04:39.000Z",
+      "tags": {
+        "enforcement": "maxspeed",
+        "maxspeed": "RU:urban",
+        "source": "https://гибдд.рф/milestones/2861269/",
+        "type": "enforcement"
+      },
+      "sourceUrl": "https://www.openstreetmap.org/relation/10391709",
+      "members": [
+        {
+          "type": "node",
+          "ref": 277060623,
+          "role": "device",
+          "position": {
+            "lat": 54.5648622,
+            "lon": 36.2594838
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1941134264,
+          "role": "from",
+          "position": {
+            "lat": 54.5648355,
+            "lon": 36.2599073
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1986928901,
+          "role": "from",
+          "position": {
+            "lat": 54.5647074,
+            "lon": 36.2595851
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1986928990,
+          "role": "from",
+          "position": {
+            "lat": 54.5648765,
+            "lon": 36.25919
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1986929082,
+          "role": "from",
+          "position": {
+            "lat": 54.5649985,
+            "lon": 36.2593959
+          }
+        }
+      ]
+    },
+    {
+      "id": 10391799,
+      "version": 1,
+      "timestamp": "2019-12-09T21:14:10.000Z",
+      "tags": {
+        "enforcement": "maxspeed",
+        "maxspeed": "RU:urban",
+        "source": "https://гибдд.рф/milestones/2860922/",
+        "type": "enforcement"
+      },
+      "sourceUrl": "https://www.openstreetmap.org/relation/10391799",
+      "members": [
+        {
+          "type": "node",
+          "ref": 277053780,
+          "role": "device",
+          "position": {
+            "lat": 54.524378,
+            "lon": 36.2710889
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1516409287,
+          "role": "from",
+          "position": {
+            "lat": 54.5242576,
+            "lon": 36.2710114
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1516409289,
+          "role": "from",
+          "position": {
+            "lat": 54.5243368,
+            "lon": 36.2713392
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1516409292,
+          "role": "from",
+          "position": {
+            "lat": 54.5245148,
+            "lon": 36.2711816
+          }
+        },
+        {
+          "type": "node",
+          "ref": 1480008430,
+          "role": "from",
+          "position": {
+            "lat": 54.5244175,
+            "lon": 36.2709108
+          }
+        }
+      ]
+    }
+  ]
+}

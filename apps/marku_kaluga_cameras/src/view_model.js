@@ -34,27 +34,42 @@ function model(state) {
     const connected = !!state;
     const a = s.alert;
     const count = Number.isFinite(db.count) ? db.count : 0;
+    const fix=s.gpsFix||{}, street=s.street||{}, c=a||s.nearest||{}, result=s.commandResult||{}, update=s.databaseUpdate||{};
+    const fixAge=Number.isFinite(s.observedAtMs)&&Number.isFinite(fix.timeMs)?s.observedAtMs-fix.timeMs:null;
+    const fresh=Number.isFinite(fixAge)&&fixAge>=-500&&fixAge<=3000;
+    const limit=Number.isFinite(c.cameraLimitKmh)?c.cameraLimitKmh:Number.isFinite(c.limitKmh)?c.limitKmh:c.limit;
+    const capture={front:'спереди',rear:'сзади',both:'спереди и сзади'}[c.captureDirection]||'направление неизвестно';
     const text = {
         cameraStatus: connected ? (s.enabled ? 'Предупреждения включены' : 'Предупреждения выключены') : 'Сервис недоступен',
-        cameraAlert: a ? clean(a.title || TYPES[a.type] || a.type, 'Камера') + ' • ' + distance(a.distance) +
+        cameraAlert: a ? clean(a.title || TYPES[a.type] || a.type, 'Камера') + ' • ' + distance(a.distanceM===undefined?a.distance:a.distanceM) +
             (a.positionKind === 'intersection' ? ' • до перекрёстка' : a.confidence === 'nearby' ? ' • рядом' : ' • по дороге') + (a.limit ? ' • лимит ' + a.limit : '') :
             s.nearest ? clean(s.nearest.title || TYPES[s.nearest.type], 'Камера') + ' • ' + distance(s.nearest.distanceM) + (s.nearest.positionKind === 'intersection' ? ' • до перекрёстка' : ' • рядом') : 'Активных предупреждений нет',
         cameraDescription: 'Описание камеры: ' + clean((a || s.nearest || {}).description, 'не указано в базе'),
         cameraDatabase: connected ? 'База: ' + clean(db.source, 'нет источника') + ' • ' + count + ' объектов' : 'База: ожидание ответа сервиса',
         cameraDate: connected ? 'Дата базы: ' + date(db.updated || db.generatedAt || db.sourceUpdated) : 'Дата базы: ожидание ответа сервиса',
         cameraGps: 'Положение: ' + clean(s.gps, 'нет подтверждённых координат'),
-        cameraCluster: 'Приборная панель: ' + (outputs.cluster === true ? 'вкл' : 'выкл'),
-        cameraHud: 'Проекция HUD: ' + (outputs.hud === true ? 'вкл' : 'выкл'),
-        cameraInfo: s.storage && s.storage.persistent === false ? 'Настройки временные: хранилище недоступно' : (gpsSummary(s) || 'Калужская область'),
-        cameraDiagnostics: 'Диагностика'
+        cameraMotion:'Скорость: '+(fresh&&Number.isFinite(fix.speedKmh)?Math.round(fix.speedKmh)+' км/ч':'нет свежих данных'),
+        cameraStreet:street.name?'Улица: '+clean(street.name,'—')+' • '+clean(street.source,'BMW'):
+            'Улица BMW: '+clean(street.reason,'недоступна'),
+        cameraCommand:result.message?'Команда: '+clean(result.message,'—'):'Команды: ожидают действия',
+        cameraCommandMore:' ',
+        cameraLimit:'Лимит объекта: '+(Number.isFinite(limit)?limit+' км/ч':'неизвестен')+
+            (a&&a.roadConfirmed?' • дорога подтверждена':' • применимость к дороге не подтверждена'),
+        cameraDirection:'Контроль: '+capture,
+        cameraEnable:!connected?'Предупреждения: сервис недоступен':s.enabled?'Выключить предупреждения':'Включить предупреждения',
+        cameraCluster: 'Приборная панель: ' + (!(s.capabilities||{}).outputs?'вывод недоступен':outputs.cluster === true ? 'вкл' : 'выкл'),
+        cameraHud: 'Проекция HUD: ' + (!(s.capabilities||{}).outputs?'вывод недоступен':outputs.hud === true ? 'вкл' : 'выкл'),
+        cameraInfo: s.storage && s.storage.persistent === false ? 'Настройки временные: хранилище недоступно' : update.message?'Проверка базы: '+clean(update.message,'—'):(gpsSummary(s) || 'Калужская область'),
+        cameraDiagnostics: 'Диагностика • 6 страниц',
+        cameraUpdate:'Проверить базу', cameraRollback:'Вернуть предыдущую базу'
     };
     if (db.error) text.cameraDate += ' • ошибка базы';
     return { text, enabled: {
-        cameraEnable: connected && !s.enabled,
-        cameraDisable: connected && !!s.enabled,
+        cameraEnable: connected,
         cameraCluster: connected && !!(s.capabilities && s.capabilities.outputs),
         cameraHud: connected && !!(s.capabilities && s.capabilities.outputs),
-        cameraDiagnostics: true
+        cameraDiagnostics: true,
+        cameraUpdate:true, cameraRollback:true
     } };
 }
 function outputCommand(state, target) {

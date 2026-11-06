@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "id": "marku_kaluga_cameras",
-  "version": "0.3.2",
-  "tree": "marku_kaluga_cameras@0.3.2",
+  "version": "0.4.0",
+  "tree": "marku_kaluga_cameras@0.4.0",
   "modules": [
     "src/robertn_waze_cluster.js",
     "src/i18n.js",
@@ -14,7 +14,8 @@
     "src/control.js",
     "src/view_model.js",
     "src/bmw_gps_bridge.js",
-    "src/diagnostics_view.js"
+    "src/diagnostics_view.js",
+    "src/bmw_navigation_bridge.js"
   ],
   "sdk": [
     "oap-sdk/src/core/OnlineApp.js",

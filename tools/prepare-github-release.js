@@ -124,9 +124,9 @@ function collectSource() {
   ['NOTICE', 'THIRD_PARTY_NOTICES.md', 'package.json', 'package-lock.json', '.gitignore', 'catalog-providers.json'].forEach(name => {
     if (fs.existsSync(path.join(ROOT, name))) add(name);
   });
-  ['apps', 'native', 'data', 'tools/fixtures'].forEach(tree);
+  ['apps', 'native', 'data', 'docs', 'tools/fixtures'].forEach(tree);
   fs.readdirSync(path.join(ROOT, 'tools')).sort().forEach(name => {
-    if (/^(?:build\.js|build-road-zones\.mjs|build-camera-font\.py|prepare-github-release\.js|test[-_][A-Za-z0-9_-]+\.js|[A-Za-z0-9_-]+\.test\.js)$/.test(name)) add('tools/' + name);
+    if (/^(?:build\.js|build-road-zones\.mjs|build-enforcement-relations\.mjs|build-camera-database\.js|build-camera-font\.py|prepare-github-release\.js|test[-_][A-Za-z0-9_-]+\.js|[A-Za-z0-9_-]+\.test\.js)$/.test(name)) add('tools/' + name);
   });
   ['oap_link.js', 'oap_pack.js', 'mgu-install.js', 'mgu-deploy.js', 'LICENSE'].forEach(name => add('tools/upstream/' + name));
   if (fs.existsSync(path.join(ROOT, 'tools', 'upstream', 'UPSTREAM.json'))) add('tools/upstream/UPSTREAM.json');
@@ -189,7 +189,9 @@ function main() {
     roadZones.pbfMd5 === snapshot.pbfMd5, 'Camera snapshot and road geometry must share the same regional source');
   const reported = JSON.parse(fs.readFileSync(path.join(ROOT, 'native', 'marku-kaluga-cameras', 'files', 'reported-cameras.json'), 'utf8'));
   assert(reported.source === 'owner-report' && reported.region === snapshot.region && reported.basePbfMd5 === snapshot.pbfMd5, 'Reported reference must match base region');
-  const dataCounts = { total: snapshot.records.length + reported.records.length, osm: snapshot.records.length, reported: reported.records.length,
+  const relations = JSON.parse(fs.readFileSync(path.join(ROOT, 'native', 'marku-kaluga-cameras', 'files', 'enforcement-relations.json'), 'utf8'));
+  const fullData = require('./build-camera-database').bundle();
+  const dataCounts = { total: fullData.records.length, relations: relations.records.length, osm: snapshot.records.length, reported: reported.records.length,
     city: snapshot.records.filter(record => record.inKalugaCity).length,
     withLimit: snapshot.records.filter(record => typeof record.limitKmh === 'number').length, zones: roadZones.zones.length };
   const assets = path.join(output, 'assets'); const exported = path.join(output, 'source');
@@ -202,11 +204,12 @@ function main() {
   fs.writeFileSync(path.join(assets, 'catalog.json'), JSON.stringify(catalog, null, 2) + '\n');
   fs.writeFileSync(path.join(exported, '.gitignore'), 'dist/\nnode_modules/\n*.pbf\n*.osm.pbf\n.env\n.env.*\n');
   const notes = '# Waze Стрелка ' + version + '\n\n' +
-    'Исправлена воспроизведённая регрессия GPS 0.3.1: координаты/UTC берутся из GGA, RMC даёт дату и движение с допуском 500 мс, GST совпадает с GGA в пределах 100 мс. Исходная свежесть до 3 секунд и метрическая точность до 15 м сохранены. Фактическое расхождение сообщений этой BMW пока не измерено; требуется проверка на автомобиле.\n\n' +
-    'Обновить приложение и сервис до ' + version + '. Камеры → Диагностика: 40 строк доступны контроллером iDrive. Вверху — причина, UTC/возраст RMC, GGA, GST и разницы времени. Зафиксировать снимок сохраняет все данные для фотографий. Проекция карты и прозрачность сохранены.\n\n' +
-    'База: ' + dataCounts.total + ' записей = ' + dataCounts.osm + ' исходных OSM-точек и ' + dataCounts.reported + ' отдельный отчёт владельца. Болдина — Никитина добавлена как ориентир перекрёстка: тип камеры, нарушения и лимит не подтверждены. Расстояние относится к перекрёстку, а не к измеренному положению устройства. ' +
-    dataCounts.zones + ' прежних дорожных зон сохранены. Это не полная база действующих камер.\n\n' +
-    '© OpenStreetMap contributors, ODbL 1.0. Полная атрибуция и ограничения — в README.\n';
+    'Переработаны внутренние экраны и компактные карточки камер. До трёх типов контроля, расстояние и скорость; применимый известный лимит показывается только при подтверждённой дороге. Неизвестные лимит и направление не выдумываются. Размер и положение карточки вычисляются из runtime-холста renderer.\n\n' +
+    'Тест изображения и калибровка работают по свежей скорости стоянки, независимо от точности координат. Условия кнопки и сервиса едины, результат и отказ видны сразу. Шесть страниц диагностики сохраняют один снимок, реальные размеры/состояния вывода и локальный JSON-отчёт по отдельному действию.\n\n' +
+    'База: ' + dataCounts.total + ' записей = ' + dataCounts.osm + ' исходных OSM-точек + ' + dataCounts.relations + ' дополнительных устройств из enforcement relations + ' + dataCounts.reported + ' сообщение владельца. Тульское шоссе — Генерала Попова учтено через relation 10391645. Исходные ' + dataCounts.zones + ' дорожных зон сохранены. Это неполный набор открытых данных.\n\n' +
+    'Добавлены независимая проверка базы по опубликованному источнику, валидация размера/SHA/региона/связей, атомарная активация и откат. Ошибка сети не очищает рабочие данные. GPS в интернет не отправляется.\n\n' +
+    'Добавлено необязательное чтение улицы BMW; отсутствие интерфейса обрабатывается явно. Безопасные параметры штатного звука и канал BMW Traffic Camera Information пока не подтверждены: воспроизведение gong и переключение радио не включены. Видимость новых карточек, дополнительная улица и размеры требуют проверки на автомобиле.\n\n' +
+    'Обновить приложение и сервис до ' + version + '. Проекция карты, прозрачность и идентификаторы сохранены. © OpenStreetMap contributors, ODbL 1.0. Подробности и приёмка — в README и docs/.\n';
   fs.writeFileSync(path.join(output, 'release-notes.md'), notes);
   const commands = [
     '# Review source/ and assets/ before running. This file has NOT been executed.',

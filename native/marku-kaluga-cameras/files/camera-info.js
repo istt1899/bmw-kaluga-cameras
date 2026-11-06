@@ -3,7 +3,7 @@
 // enforcement or of a particular hardware model.
 const fs = require('fs');
 const LABELS = { speed: 'Контроль скорости', redlight: 'Контроль светофора', average: 'Средняя скорость',
-    stopline: 'Стоп-линия', belt: 'Контроль ремня', pedestrian: 'Пешеходный переход' };
+    stopline: 'Стоп-линия', belt: 'Контроль ремня', pedestrian: 'Пешеходный переход', lane: 'Контроль полосы' };
 function controls(camera) {
     const source = camera && camera.controls || [camera && camera.type];
     return source.filter((c, i) => LABELS[c] && source.indexOf(c) === i);
@@ -15,12 +15,19 @@ function title(camera) {
     return c.map(k => LABELS[k]).join(' / ') || 'Камера';
 }
 function describe(camera) {
+    const side = ['front','rear'].indexOf(camera.captureSide)>=0 && typeof camera.captureSideSourceUrl==='string' &&
+        /^https:\/\/(?:www\.)?openstreetmap\.org\/(?:node|way|relation)\/\d+$/.test(camera.captureSideSourceUrl) &&
+        Number.isFinite(Date.parse(camera.captureSideVerifiedAt)) ? camera.captureSide : null;
     return { type: controls(camera).indexOf('redlight') >= 0 ? 'redlight' : camera.type || 'speed', controls: controls(camera), title: title(camera),
         cameraLimitKmh: camera.limitKmh === undefined ? null : camera.limitKmh,
         description: camera.description || null, sourceUrl: camera.sourceUrl || null,
         provenance: camera.provenance || 'OpenStreetMap', positionKind: camera.positionKind || 'camera-node',
         positionSourceUrl: camera.positionSourceUrl || camera.sourceUrl || null,
-        reportStatus: camera.reportStatus || null };
+        reportStatus: camera.reportStatus || null,
+        captureDirection: side,
+        captureDirectionVerified: !!side,
+        captureDirectionSource: side ? camera.captureSideSourceUrl : null,
+        enforcementRelations: camera.enforcementRelations ? camera.enforcementRelations.map(r => ({id:r.id,sourceUrl:r.sourceUrl})) : null };
 }
 function enrich(database, file) {
     const meta = JSON.parse(fs.readFileSync(file, 'utf8'));

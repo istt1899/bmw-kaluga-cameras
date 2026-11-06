@@ -56,7 +56,7 @@ const path = require('path');
 const { FakeRender, FakePatch, FakeLogs, RENDER_PAGE, RENDER_FPS } = require('./fakes.js');
 const { RENDER_PATH, PATCH_PATH, PENDING_PATH, SIZE, SAFE, HUD_SIZE_STEPS } = require('../src/waze_cluster_control.js');
 const { LOGS_PATH } = require('../src/logs_control.js');
-const { KEYS: DIAGNOSTIC_KEYS } = require('../src/diagnostics_view.js');
+const { PAGE_KEYS: DIAGNOSTIC_KEYS } = require('../src/diagnostics_view.js');
 
 const STAGED = fs.readdirSync(path.join(__dirname, '..'))
     .find((name) => name.startsWith('marku_kaluga_cameras@') && !name.endsWith('.tgz'));
@@ -77,6 +77,8 @@ const SOCKETS = { [RENDER_PATH]: RSOCK, [PATCH_PATH]: PSOCK, [LOGS_PATH]: LSOCK,
     '/dev/shm/marku-kaluga-cameras/ctl.sock': CSOCK };
 const cameraPeers = new Set(), cameraCommands = [];
 let cameraState = { enabled: true, capabilities: { outputs: true, hudOpacity: true }, hudOpacityPct: 100,
+    actions:{displayTest:{allowed:true},calibrationTest:{allowed:true},audioTest:{allowed:false,reason:'Нет проверенного аудиоканала'},
+        databaseCheck:{allowed:true},databaseRollback:{allowed:false,reason:'Нет предыдущей базы'}},
     outputs: { cluster: false, hud: false }, database: { source: 'OpenStreetMap', count: 150, updated: '2026-11-05T00:00:00Z' } };
 const cameraReply = () => cameraPeers.forEach((s) => s.write(JSON.stringify({ ev: 'status', state: cameraState }) + '\n'));
 const cameraServer = net.createServer((s) => {
@@ -373,13 +375,41 @@ async function main() {
         .map(([id]) => diagnosticPage.components[id].name);
     assert.deepStrictEqual(controllerStops.filter((name) => /^cameraDiag_/.test(name)).sort(), diagnosticNames,
         'the controller can stop on every diagnostic data row, including all rows below GPS');
-    assert.deepStrictEqual(diagnosticRows.slice(0,9).map(([id]) => diagnosticPage.components[id].name),
-        ['cameraDiagTitle','cameraDiagFreeze','cameraDiagLive','cameraDiag_stamp','cameraDiag_versions','cameraDiag_service',
-            'cameraDiagHead_position','cameraDiag_health','cameraDiag_nmeaPair'],
-        'the first diagnostic photo shows GPS health and pairing reason before coordinates');
+    assert.deepStrictEqual(diagnosticRows.slice(0,8).map(([id]) => diagnosticPage.components[id].name),
+        ['cameraDiagTitle','cameraDiag_page','cameraDiag_stamp','cameraDiag_versions','cameraDiag_command','cameraDiag_commandMore',
+            'cameraDiagFreeze','cameraDiagLive'],
+        'page, snapshot identity and live command result precede report data');
     const uniqueRhmiIds = matches(XML, /<(?:container|layoutGroup|component) id="(\d+)"/g).map((m) => m[1]);
     assert.strictEqual(uniqueRhmiIds.length, new Set(uniqueRhmiIds).size, 'RHMI ids stay globally unique');
-    console.log('ok   all diagnostic data rows are controller stops in JSON/XML; headers are skipped; GPS health and NMEA reason come first');
+    assert(!byName.cameraDisable, 'one warning toggle replaces opposite enable/disable controls');
+    console.log('ok   paged diagnostic data and command results are controller stops; snapshot identity remains above data');
+    const reportView=require('../src/diagnostics_view');
+    const reportState={serviceVersion:'test-service',observedAtMs:Date.now(),gpsFix:{lat:54.5,lon:36.2,accuracyM:19.4,speedKmh:0,timeMs:Date.now()},
+        rendererDetails:{map:{state:'visible',layout:{backend:'mapped',canvas:{width:1088,height:480},
+            card:{x:700,y:340,width:280,height:96,scale:.875},withinBounds:true,profile:'compact',safeArea:{known:false}}},
+            hud:{state:'отказ',reason:'TARGET_NOT_AVAILABLE',layout:{canvas:null,card:null,safeArea:{known:false}}}},
+        database:{sha256:'a'.repeat(64),source:'OpenStreetMap'},actions:{displayTest:{allowed:true}},
+        error:'Подробная причина '.repeat(12)};
+    const full=reportView.capture(reportState,'test-app',1000), allPages=[];
+    for(let p=0;p<6;p++){
+        const first=reportView.reportPage(full,reportState,'ignored-version',p,0);
+        let contents='';
+        for(let b=0;b<first.blocks;b++){
+            const v=reportView.reportPage(full,reportState,'ignored-version',p,b);
+            assert(v.rows.page.includes((p+1)+'/6'));
+            assert.strictEqual(v.rows.stamp,first.rows.stamp);
+            assert.strictEqual(v.rows.versions,'Приложение test-app • сервис test-service');
+            for(let i=1;i<=10;i++){assert(v.rows['row'+i].length<=66);contents+=v.rows['row'+i]+'\n';}
+        }
+        allPages.push(contents);
+    }
+    assert(allPages[4].includes('1088×480')&&allPages[4].includes('масштаб 0.875'));
+    assert(allPages[4].includes('hud: неизвестно×неизвестно')&&allPages[4].includes('не подтверждена'));
+    assert(allPages[3].includes('TARGET_NOT_AVAILABLE'));
+    assert(allPages[0].split('Подробная причина').length>10,'long reason stays accessible in successive blocks');
+    reportState.gpsFix.lat=1;
+    assert.strictEqual(full.state.gpsFix.lat,54.5,'snapshot is isolated from live changes');
+    console.log('ok   all six report pages preserve identity, wrap every field, show runtime geometry and keep unknown values honest');
 
     const render = new FakeRender(RSOCK);
     let patch = new FakePatch(PSOCK);
@@ -430,7 +460,8 @@ async function main() {
         await until('camera child page opens', () => rhmi.opened.includes('ST_OnlineApps_WazeStrelkaCameras'));
         byName.ST_OnlineApps_WazeStrelkaCameras.emit('visible', { visible: true });
         await until('camera database shown', () => byName.cameraDatabase.text.includes('150'));
-        byName.cameraDisable.emit('action');
+        await until('single toggle follows confirmed enabled state',()=>byName.cameraEnable.text==='Выключить предупреждения');
+        byName.cameraEnable.emit('action');
         await until('camera disable command', () => cameraCommands.some((m) => m.cmd === 'disable'));
         cameraState.observedAtMs = Date.UTC(2026,10,6,13,3,0);
         cameraState.serviceVersion = '0.3.1';
@@ -445,32 +476,50 @@ async function main() {
         await until('dedicated diagnostics opens', () => rhmi.opened.includes('ST_OnlineApps_WazeStrelkaDiagnostics'));
         byName.ST_OnlineApps_WazeStrelkaCameras.emit('visible',{visible:false});
         byName.ST_OnlineApps_WazeStrelkaDiagnostics.emit('visible',{visible:true});
-        await until('exact GPS coordinates in own diagnostic row', () => byName.cameraDiag_position.text.includes('54.517580') && byName.cameraDiagTest.enabled);
-        assert(byName.cameraDiag_health.text.includes('позиция принята') && byName.cameraDiag_health.text.includes('READY'));
-        assert(byName.cameraDiag_nmeaRmc.text.includes('160300.250') && byName.cameraDiag_nmeaRmc.text.includes('0.11 с'));
-        assert(byName.cameraDiag_nmeaGga.text.includes('160300.000') && byName.cameraDiag_nmeaGst.text.includes('160300.000'));
-        assert(byName.cameraDiag_nmeaRmcGga.text.includes('(GGA − RMC): -250 мс'));
-        assert(byName.cameraDiag_nmeaGgaGst.text.includes('(GST − GGA): 0 мс'));
-        assert(byName.cameraDiag_nmeaPair.text.includes('READY'));
+        const reportRows=()=>Array.from({length:10},(_,i)=>byName['cameraDiag_row'+(i+1)].text).join('\n');
+        await until('summary reports accepted GPS',()=>reportRows().includes('позиция принята')&&reportRows().includes('READY'));
         byName.cameraDiagFreeze.emit('action');
-        await until('snapshot frozen',()=>byName.cameraDiag_stamp.text.startsWith('Снимок зафиксирован'));
-        const frozenRows = DIAGNOSTIC_KEYS.map((key) => byName[`cameraDiag_${key}`].text);
+        await until('snapshot frozen',()=>byName.cameraDiag_stamp.text.startsWith('Снимок S'));
+        const stamp=byName.cameraDiag_stamp.text;
+        byName.cameraDiagNext.emit('action');
+        await until('GPS page opens',()=>byName.cameraDiag_page.text.startsWith('GPS 2/6'));
+        assert(reportRows().includes('54.517580'));
+        const frozenRows = reportRows();
         cameraState.observedAtMs+=5000;cameraState.gpsFix.lat=54.518;
         Object.assign(cameraState.gpsInput.nmeaTiming, {rmcTime:'160305.250',ggaTime:'160305.350',gstTime:'160305.400',
             rmcGgaDeltaMs:100,ggaGstDeltaMs:50,pairReason:'RMC_GGA_OFFSET',lastRmcAgeMs:15,lastGgaAgeMs:10,lastGstAgeMs:5});
         cameraReply();await sleep(60);
-        assert.deepStrictEqual(DIAGNOSTIC_KEYS.map((key) => byName[`cameraDiag_${key}`].text), frozenRows,
-            'the whole snapshot keeps its coordinates, NMEA times, signed offsets, reason and ages');
-        byName.cameraDiagLive.emit('action');
-        await until('live diagnostics resumes',()=>byName.cameraDiag_position.text.includes('54.518000'));
-        assert(byName.cameraDiag_nmeaRmc.text.includes('160305.250') && byName.cameraDiag_nmeaRmc.text.includes('0.01 с'));
-        assert(byName.cameraDiag_nmeaGga.text.includes('160305.350') && byName.cameraDiag_nmeaGst.text.includes('160305.400'));
-        assert(byName.cameraDiag_nmeaRmcGga.text.includes('100 мс') && byName.cameraDiag_nmeaGgaGst.text.includes('50 мс'));
-        assert(byName.cameraDiag_nmeaPair.text.includes('RMC_GGA_OFFSET'));
+        assert.strictEqual(reportRows(),frozenRows,'frozen GPS page keeps old data');
+        assert.strictEqual(byName.cameraDiag_stamp.text,stamp);
+        cameraState.commandResult={id:'test-frozen',command:'display-test',phase:'finished',message:'Приборы: тест запрошен; HUD: отказ',timeMs:Date.now()};
         byName.cameraDiagTest.emit('action');
         await until('parked display test sent',()=>cameraCommands.some(m=>m.cmd==='display-test'));
+        cameraState.commandResult.id='test-frozen-done';cameraReply();
+        await until('live command result despite frozen report',()=>byName.cameraDiag_command.text.includes('HUD: отказ'));
+        assert.strictEqual(byName.cameraDiag_stamp.text,stamp,'test does not discard frozen snapshot');
+        assert.strictEqual(reportRows(),frozenRows);
+        byName.cameraDiagAudio.emit('action');
+        await until('audio denial visible beside command',()=>byName.cameraDiag_command.text.includes('Нет проверенного аудиоканала'));
+        assert(!cameraCommands.some(m=>m.cmd==='audio-test'),'unavailable action is explained without sending an unsupported request');
+        byName.cameraDiagExport.emit('action');
+        await until('explicit local JSON export',()=>!!OnlineApp.instance._lastDiagnosticExport);
+        const exportFile=OnlineApp.instance._lastDiagnosticExport;
+        const exported=JSON.parse(fs.readFileSync(exportFile,'utf8'));
+        assert.strictEqual(exported.state.gpsFix.lat,54.51758,'export is the exact frozen report, not a later live state');
+        fs.unlinkSync(exportFile);
+        byName.cameraDiagMore.emit('action');
+        await until('second GPS block',()=>byName.cameraDiag_page.text.includes('строки 11'));
+        assert(frozenRows.includes('(GGA − RMC): -250 мс'));
+        assert(reportRows().includes('(GST − GGA): 0 мс')&&reportRows().includes('READY'),reportRows());
+        byName.cameraDiagLive.emit('action');
+        await until('live diagnostics resumes',()=>reportRows().includes('54.518000'));
+        assert(byName.cameraDiag_stamp.text.startsWith('Живые '));
+        byName.cameraUpdate.emit('action');
+        await until('real database check request',()=>cameraCommands.some(m=>m.cmd==='database-check'));
+        byName.cameraDiagCalibration.emit('action');
+        await until('real calibration request',()=>cameraCommands.some(m=>m.cmd==='calibration-test'));
         byName.ST_OnlineApps_WazeStrelkaDiagnostics.emit('visible',{visible:false});
-        console.log('ok   detailed diagnostics: own child page, exact coordinates, model/type, frozen time-consistent snapshot, live resume and parked display-test command');
+        console.log('ok   six-page diagnostics, frozen JSON report, live command results, exact action guards, database check and calibration');
         byName.ST_OnlineApps_WazeStrelkaCameras.emit('visible', { visible: false });
         byName.ST_OnlineApps_WazeCluster.emit('visible', { visible: true });
         cameraPeers.forEach((s) => s.destroy());

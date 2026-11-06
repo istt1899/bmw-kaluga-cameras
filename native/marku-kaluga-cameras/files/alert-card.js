@@ -2,8 +2,27 @@
 const zlib = require('zlib');
 const fonts = require('./camera-font.json').sizes.map(s => Object.assign({}, s, { pixels: zlib.inflateSync(Buffer.from(s.alpha,'base64')) }));
 const width = 320, height = 96;
+const types = {
+    speed:'Скор.', lane:'Полоса', redlight:'Свет.', average:'Средн.', belt:'Ремень',
+    stopline:'Стоп', pedestrian:'Пешех.', camera:'Камера'
+};
+function presentation(alert) {
+    alert = alert || {};
+    const supported = value => typeof value === 'string' && Object.prototype.hasOwnProperty.call(types,value);
+    const known = Array.isArray(alert.controls) ? alert.controls.filter((v,i,a) => supported(v) && a.indexOf(v) === i) : [];
+    const controls = known.length ? known.slice(0,3) : [supported(alert.type) ? alert.type : 'camera'];
+    const limit = alert.roadConfirmed === true && Number.isFinite(alert.limitKmh) && alert.limitKmh > 0 && alert.limitKmh <= 300 ? Math.round(alert.limitKmh) : null;
+    const speed = Number.isFinite(alert.speedKmh) && alert.speedKmh >= 0 && alert.speedKmh <= 400 ? Math.round(alert.speedKmh) : null;
+    const direction = alert.captureDirectionVerified === true && ['front','rear'].indexOf(alert.captureDirection) >= 0 ? alert.captureDirection : 'unknown';
+    return { controls, limit, speed, direction,
+        distance: Number.isFinite(alert.distanceM) && alert.distanceM >= 0 ? Math.round(alert.distanceM/10)*10 : null,
+        mode: alert.positionKind === 'intersection' ? 'Ориентир' : alert.roadConfirmed === true ? 'По дороге' : 'Рядом',
+        test: alert.test === true, calibration: alert.calibration === true,
+        overspeed: alert.overspeed === true && limit !== null && speed !== null && speed > limit };
+}
 function card(alert, target) {
-    const px = Buffer.alloc(width*height*4), white=[244,247,250], amber=[255,190,94], red=[255,90,88];
+    const model=presentation(alert), px=Buffer.alloc(width*height*4);
+    const white=[244,247,250], amber=[255,190,94], red=[255,90,88], muted=[184,194,204], ink=[12,17,24];
     function put(x,y,color,alpha) {
         x=Math.round(x);y=Math.round(y);if(x<0||x>=width||y<0||y>=height||alpha<=0)return;
         const off=(y*width+x)*4,a=alpha/255,b=px[off+3]/255,out=a+b*(1-a);
@@ -12,7 +31,6 @@ function card(alert, target) {
     }
     function rect(x,y,w,h,color,alpha){for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)put(i,j,color,alpha===undefined?255:alpha);}
     function circle(x,y,r,color){for(let j=-r;j<=r;j++)for(let i=-r;i<=r;i++)if(i*i+j*j<=r*r)put(x+i,y+j,color,255);}
-    if(target==='map')rect(0,0,width,height,[10,16,24],232);
     const f = size => fonts.find(v=>v.size===size);
     function text(value,x,baseline,size,color,maxWidth) {
         const font=f(size), start=x;
@@ -23,21 +41,39 @@ function card(alert, target) {
             x+=g[6];
         }
     }
-    const signal=alert.controls&&alert.controls.indexOf('redlight')>=0;
-    if(signal) {
-        rect(14,5,19,31,[30,34,38]);circle(23,11,4,red);circle(23,20,4,amber);circle(23,29,4,[62,197,115]);
-    } else {
-        rect(8,12,28,19,amber);rect(12,7,10,5,amber);circle(25,21,6,[20,25,32]);circle(25,21,3,white);
+    function centered(value,x,baseline,size,color,maxWidth) {
+        const font=f(size), w=Array.from(String(value)).reduce((n,c)=>n+(font.glyphs[c.codePointAt(0)]||font.glyphs[63])[6],0);
+        text(value,x-w/2,baseline,size,color,maxWidth);
     }
-    text(alert.test?'ТЕСТ УВЕДОМЛЕНИЯ':alert.title||'Камера',45,25,18,signal?red:amber,270);
-    text(alert.description||'Описание камеры не указано',10,47,18,white,300);
-    text(alert.test?'Тест':alert.positionKind==='intersection'?'Ориентир':alert.roadConfirmed?'По дороге':'Рядом',10,85,18,white,102);
-    if(alert.roadConfirmed&&Number.isFinite(alert.limitKmh)) {
-        circle(142,76,18,red);circle(142,76,14,[244,247,250]);
-        const number=String(alert.limitKmh),font=f(18),w=Array.from(number).reduce((v,c)=>v+(font.glyphs[c.codePointAt(0)]||font.glyphs[63])[6],0);
-        text(number,142-w/2,83,18,[12,17,24],40);
+    function outline(x,y,w,h,color){rect(x,y,w,1,color);rect(x,y+h-1,w,1,color);rect(x,y,1,h,color);rect(x+w-1,y,1,h,color);}
+    function icon(type,x,y) {
+        outline(x,y,22,22,amber);
+        if(type==='redlight') {circle(x+11,y+5,2,red);circle(x+11,y+11,2,amber);circle(x+11,y+17,2,white);}
+        else if(type==='lane') {rect(x+5,y+4,2,14,white);rect(x+15,y+4,2,14,white);rect(x+10,y+4,2,4,amber);rect(x+10,y+12,2,5,amber);}
+        else if(type==='belt') {for(let k=4;k<18;k++)rect(x+k,y+21-k,2,2,white);rect(x+9,y+8,5,5,amber);}
+        else if(type==='average') {circle(x+11,y+11,7,white);circle(x+11,y+11,5,ink);rect(x+10,y+6,2,6,amber);rect(x+11,y+10,5,2,amber);}
+        else if(type==='stopline') {rect(x+4,y+15,14,3,white);rect(x+10,y+4,2,8,amber);}
+        else if(type==='pedestrian') {circle(x+11,y+5,2,white);rect(x+10,y+9,2,8,white);rect(x+6,y+12,10,2,amber);}
+        else {rect(x+4,y+7,14,10,white);rect(x+6,y+4,6,3,white);circle(x+12,y+12,4,ink);circle(x+12,y+12,2,amber);}
     }
-    text(String(Math.max(0,Math.round(alert.distanceM/10)*10))+' м',194,86,32,white,124);
+    // A fixed intrinsic raster is fitted to the actual runtime target by the
+    // layer adapter. No blur, animated glass or full-screen takeover.
+    if(target==='map')rect(0,0,width,height,[10,16,24],232);
+    circle(28,27,23,model.limit === null ? muted : red);
+    circle(28,27,19,white);
+    centered(model.limit === null ? '?' : model.limit,28,34,18,ink,48);
+    if(model.test || model.calibration)text(model.calibration?'КАЛИБРОВКА':'ТЕСТ',63,17,18,amber,244);
+    const distanceText=model.distance === null ? '— м' : model.distance >= 1000 ? (model.distance/1000).toFixed(1)+' км' : model.distance+' м';
+    text(distanceText,63,46,32,white,166);
+    text(model.speed === null ? '— км/ч' : model.speed+' км/ч',231,42,18,model.overspeed?red:white,86);
+    model.controls.forEach((type,index)=>{const x=6+index*106;icon(type,x,53);text(types[type],x+27,71,18,white,73);});
+    text(model.test||model.calibration?'ТЕСТ':model.mode,7,90,18,muted,150);
+    text(model.direction==='front'?'В лоб':model.direction==='rear'?'Сзади':'Напр. ?',202,90,18,muted,111);
+    if(model.calibration) {
+        // Mark only this card's boundary. It cannot obscure the whole panel.
+        outline(0,0,width,height,amber);
+        [[0,0],[width-9,0],[0,height-9],[width-9,height-9]].forEach(p=>{rect(p[0],p[1],9,2,white);rect(p[0],p[1],2,9,white);});
+    }
     return px;
 }
-module.exports={card,width,height};
+module.exports={card,width,height,presentation};

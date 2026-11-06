@@ -2,6 +2,8 @@
 var fs = require('fs'), net = require('net'), path = require('path');
 var GpsProvider = require('./gps-source').GpsProvider;
 var cameraInfo = require('./camera-info');
+var actionPolicy = require('./action-policy'), dataModule = require('./database-store');
+var crypto = require('crypto');
 function validPosition(f, now) {
   return f && [f.timeMs, f.lat, f.lon, f.accuracyM, now].every(Number.isFinite) && Math.abs(f.lat) <= 90 &&
     Math.abs(f.lon) <= 180 && f.accuracyM > 0 && f.accuracyM <= 15 && now - f.timeMs <= 3000 && f.timeMs <= now + 500;
@@ -53,7 +55,10 @@ function start(options) {
   var settingsPath = path.join(dataDir, 'settings.json'), settings;
   try { settings = readSettings(settingsPath); }
   catch (e) { storageError = e.message; settings = { enabled: true, outputs: { cluster: false, hud: false }, hudOpacityPct: 100 }; }
-  var state = { serviceVersion: '0.3.2', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
+  var state = { serviceVersion: '0.4.0', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
+    street: { name: null, source: 'BMW', state: 'unavailable', reason: 'Название улицы BMW ещё не получено', observedAtMs: null },
+    audio: { available: false, reason: 'Безопасный звуковой канал BMW не подтверждён' },
+    commandResult: null, actions: {}, databaseUpdate: { phase: 'idle', busy: false }, nearestCandidates: [],
     hudDimming: 'unavailable', capabilities: { outputs: false, update: false, hudOpacity: false, displayTest: false },
     rendererDetails: {}, displayTest: { active: false, untilMs: 0 },
     gps: 'Ожидание моста GPS BMW', gpsFix: null,
@@ -62,11 +67,12 @@ function start(options) {
     database: { state: 'error', source: 'OpenStreetMap', count: 0, error: null },
     renderer: 'off', alert: null, nearest: null, error: null, diagnostic: 'No confirmed road; nearby points are diagnostic only',
     storage: { persistent: !storageError, error: storageError } };
-  var database = null, guidance = null, display = null, dimmer = null, clients = [], lastStatus = '', closed = false, ownsSocket = false, server;
+  var database = null, guidance = null, display = null, dimmer = null, store = null, audio = null, commandCounter = 0, clients = [], lastStatus = '', closed = false, ownsSocket = false, server;
   try {
     database = loadDatabase(options.database || path.join(__dirname, 'kaluga-speed.json'));
     cameraInfo.enrich(database, options.cameraDetails || path.join(__dirname, 'camera-details.json'));
     cameraInfo.supplement(database, options.reportedCameras || path.join(__dirname, 'reported-cameras.json'));
+    database = dataModule.mergeRelations(database, JSON.parse(fs.readFileSync(options.enforcementRelations || path.join(__dirname, 'enforcement-relations.json'), 'utf8')));
     state.database = { state: 'ready', source: database.displaySource || database.source, baseSource: database.source,
       osmCount: database.osmCount, reportedCount: database.reportedCount, updated: database.sourceTimestamp, count: database.records.length,
       version: database.version, error: null, licence: database.licence, metadataRetrievedAt: database.metadataRetrievedAt };
@@ -86,6 +92,40 @@ function start(options) {
   var gps = options.gps || new GpsProvider({ host: process.env.KALUGA_GPSD_HOST || '127.0.0.1',
     port: Number(process.env.KALUGA_GPSD_PORT) || 2947, nmeaHost: process.env.KALUGA_NMEA_HOST || '127.0.0.1',
     nmeaPort: process.env.KALUGA_NMEA_PORT === '0' ? 0 : Number(process.env.KALUGA_NMEA_PORT) || 5001 });
+  function commandResult(commandName, phase, message, id) {
+    state.commandResult = { id: id || ++commandCounter, command: commandName, phase: phase, message: String(message).slice(0,300), timeMs: Date.now() };
+  }
+  function describeDatabase(bundle) {
+    return { state: 'ready', source: bundle.displaySource || bundle.source, baseSource: bundle.source,
+      osmCount: bundle.osmCount, reportedCount: bundle.reportedCount, relationCount: bundle.relationCount || 0,
+      updated: bundle.sourceTimestamp, generatedAt: bundle.generatedAt, count: bundle.records.length, version: bundle.version,
+      sha256: crypto.createHash('sha256').update(JSON.stringify(bundle)).digest('hex'), digestKind: 'canonical-json',
+      licence: bundle.licence, region: bundle.region, coverage: 'Неполное покрытие открытых источников',
+      skippedCount: bundle.enforcementAudit && Array.isArray(bundle.enforcementAudit.unsupported) ? bundle.enforcementAudit.unsupported.length : null,
+      coverageReason: bundle.enforcementAudit && bundle.enforcementAudit.coverage || 'Неполный набор открытых источников', error: null };
+  }
+  function activateDatabase(bundle) {
+    var nextGuidance = options.guidance || require('./vehicle-guidance').createGuidance({ zones: bundle.zones, records: bundle.records });
+    database = bundle; guidance = nextGuidance; state.database = describeDatabase(bundle);
+  }
+  function updateStatus(value) {
+    state.databaseUpdate = Object.assign({}, value, { source: dataModule.SOURCE_URL, busy: ['checking','downloading','installing'].indexOf(value.phase) >= 0 });
+    var messages = { idle: 'База готова к проверке', checking: 'Проверяю опубликованный источник базы', downloading: 'Загружаю новую базу',
+      installing: 'Проверяю и сохраняю новую базу', current: 'База актуальна', updated: 'База обновлена', 'rolled-back': 'Предыдущая база восстановлена',
+      error: 'Не удалось обновить базу; рабочие данные сохранены' };
+    state.databaseUpdate.message = messages[value.phase] || value.phase;
+    if (value.errorCode) state.databaseUpdate.message += ' (' + value.errorCode + ')';
+  }
+  try {
+    if (database) {
+      var initialBundle = Object.assign({}, database, { schema: 1, version: '2026.11.6.1', generatedAt: '2026-11-06T00:00:00.000Z',
+        source: database.displaySource || database.source, zones: zones && zones.zones || [] });
+      initialBundle.records = initialBundle.records.map(function (record) { return Object.assign({}, record, { controls: cameraInfo.controls(record) }); });
+      store = (options.storeFactory || dataModule.createStore)({ dataDir: dataDir, initial: initialBundle, onChange: activateDatabase, onStatus: updateStatus });
+      activateDatabase(store.current()); updateStatus(store.status()); state.capabilities.update = true;
+    }
+  } catch (e) { state.databaseUpdate = { phase: 'error', busy: false, errorCode: 'DATA_STORE_UNAVAILABLE', message: 'Обновление базы недоступно: ' + e.message }; }
+  try { audio = require('./warning-audio').createAudio(options.audio); state.audio = audio.status(); } catch (ignored) {}
   function publicState() { return state; }
   function send(sock) {
     var pending = typeof sock.writableLength === 'number' ? sock.writableLength : sock.bufferSize;
@@ -109,48 +149,105 @@ function start(options) {
     settings = next; state.enabled = settings.enabled; state.outputs = settings.outputs; state.hudOpacityPct = settings.hudOpacityPct;
   }
   function tick() {
+    if(closed)return;
     var now = Date.now(), fix = null;
     try { fix = gps.current(now); } catch (e) { state.error = 'GPS provider: ' + e.message; }
     var valid = fix && typeof fix.accuracyM === 'number' && fix.accuracyM > 0 && fix.accuracyM <= 15 &&
       typeof fix.speedKmh === 'number' && isFinite(fix.speedKmh) && fix.speedKmh >= 0 && typeof fix.headingDeg === 'number' && isFinite(fix.headingDeg);
     state.gpsFix = fix || null;
+    if (state.street.observedAtMs !== null && now - state.street.observedAtMs > 15000) state.street = { name: null, source: 'BMW', state: 'stale', reason: 'Название улицы BMW устарело', observedAtMs: null };
+    state.actions = actionPolicy.policies(state, fix, now);
     if (typeof gps.diagnostics === 'function') {
       var gpsDiagnostics = gps.diagnostics(now); state.gpsBridge = gpsDiagnostics.gpsBridge; state.gpsInput = gpsDiagnostics.gpsInput;
     }
     state.gps = typeof gps.description === 'function' ? gps.description(fix, now) : !fix ? 'Нет свежих подтверждённых координат UTC (максимум 3 с)' :
       !valid ? 'Координаты есть; точность, скорость или курс не подтверждены' : 'Свежие координаты, скорость, курс и точность получены';
-    state.nearest = database && fix ? nearest(database.records, fix) : null;
+    state.nearestCandidates = database && fix ? database.records.map(function(r) { return nearest([r],fix); }).filter(Boolean).sort(function(a,b){return a.distanceM-b.distanceM;}).slice(0,3) : [];
+    state.nearest = state.nearestCandidates[0] || null;
     var alert = null;
     try { if (guidance) alert = guidance.evaluate(database && validPosition(fix, now) ? fix : null, now, settings.enabled); }
     catch (e) { state.error = 'Guidance: ' + e.message; }
     if (!settings.enabled || !validPosition(fix, now) || !database) alert = null;
     state.guidance = guidance && typeof guidance.diagnostic === 'function' ? guidance.diagnostic() : null;
+    state.nearestCandidates = state.nearestCandidates.map(function(item){
+      var detail=state.guidance && state.guidance.candidates && state.guidance.candidates.find(function(c){return c.id===item.id;});
+      return Object.assign({},item,{reason:!validPosition(fix,now)?'GPS_INVALID':detail?detail.reason:'NO_ROAD_ZONE',way:detail&&detail.way||null});
+    });
     state.observedAtMs = now;
     state.alert = alert ? Object.assign({}, alert, { limit: alert.limitKmh, distance: Math.round(alert.distanceM), stage: alert.stage || (alert.roadConfirmed ? 'approach' : 'nearby') }) : null;
-    state.displayTest.active = state.displayTest.untilMs > now && validPosition(fix, now) && Number.isFinite(fix.speedKmh) && fix.speedKmh <= 1;
+    if (state.alert) { state.alert.speedKmh = fix.speedKmh; state.alert.overspeed = !!state.alert.roadConfirmed && Number.isFinite(state.alert.limitKmh) && fix.speedKmh > state.alert.limitKmh; }
+    state.displayTest.active = state.displayTest.untilMs > now && state.actions.displayTest.allowed;
     if (!state.displayTest.active) state.displayTest.untilMs = 0;
     var displayAlert = state.displayTest.active ? { id: '__display_test__', test: true, title: 'ТЕСТ УВЕДОМЛЕНИЯ',
-      description: 'Проверка приборов и HUD', controls: ['redlight','speed'], distanceM: 150, roadConfirmed: false, confidence: 'test' } : alert;
+      description: 'Проверка приборов и HUD', controls: ['redlight','speed'], distanceM: 150, roadConfirmed: true, limitKmh: 60, speedKmh: fix && fix.speedKmh, confidence: 'test', calibration: !!state.displayTest.calibration } : state.alert;
     if (display) {
       try { display.update(displayAlert, settings.outputs); state.renderer = display.status();
         state.rendererDetails = typeof display.diagnostics === 'function' ? display.diagnostics() : {}; }
       catch (e) { state.renderer = 'error: ' + e.message; state.error = 'Display: ' + e.message; }
     }
+    if (state.commandResult && ['display-test','calibration-test'].indexOf(state.commandResult.command) >= 0 && state.commandResult.phase === 'requested') {
+      var details = state.rendererDetails || {}, results = [], completed = true, failed = false;
+      [['map',settings.outputs.cluster],['hud',settings.outputs.hud]].forEach(function(pair) {
+        if(!pair[1])return;
+        var item = details[pair[0]], label = pair[0] === 'map' ? 'Приборы' : 'HUD';
+        var shown = item && item.state === 'shown';
+        var refused = item && (item.state === 'отказ' || item.state === 'error' || item.reason === 'CANVAS_UNKNOWN' || item.disabled);
+        if(!shown && !refused)completed=false;
+        if(refused)failed=true;
+        results.push(label + ': ' + (shown ? 'renderer подтвердил показ' : refused ? 'отказ ' + (item.reason || item.targetReason || 'вывод недоступен') : 'ожидание подтверждения'));
+      });
+      if(completed || !state.displayTest.active) commandResult(state.commandResult.command, failed ? 'error' : completed ? 'shown' : 'unconfirmed',
+        results.join('; ') + (!state.displayTest.active && !completed ? '; тест завершён без подтверждения показа' : ''), state.commandResult.id);
+    }
+    if (audio) { audio.update(state.alert, fix, now); var audioState = audio.status();
+      if(state.audio && state.audio.probeState)audioState.probeState=state.audio.probeState;
+      state.audio=audioState;
+    }
+    state.actions = actionPolicy.policies(state, fix, now);
     if (dimmer) {
       try { dimmer.update(settings.hudOpacityPct); state.hudDimming = dimmer.status(); }
       catch (e) { state.hudDimming = 'error: ' + e.message; }
     }
     broadcast(false);
   }
-  function command(msg) {
+  function execute(msg) {
+    if(closed)throw new Error('Сервис завершает работу');
     if (!msg || typeof msg.cmd !== 'string') throw new Error('Invalid command');
     if (msg.cmd === 'status') return;
-    if (msg.cmd === 'display-test') {
-      var testFix = gps.current(Date.now());
-      if (!state.capabilities.displayTest) throw new Error('Вывод уведомлений недоступен');
-      if (!validPosition(testFix, Date.now()) || !Number.isFinite(testFix.speedKmh) || testFix.speedKmh > 1) throw new Error('Для теста остановитесь и дождитесь свежего GPS');
-      if (!settings.outputs.cluster && !settings.outputs.hud) throw new Error('Для теста включите приборы или HUD');
+    if (msg.cmd === 'display-test' || msg.cmd === 'calibration-test') {
+      state.actions = actionPolicy.policies(state, gps.current(Date.now()), Date.now());
+      var policy = state.actions[msg.cmd === 'display-test' ? 'displayTest' : 'calibrationTest'];
+      if(!policy.allowed)throw new Error(policy.reason);
+      state.displayTest.calibration = msg.cmd === 'calibration-test';
       state.displayTest.untilMs = Date.now() + 5000; tick(); return;
+    }
+    if (msg.cmd === 'database-check' || msg.cmd === 'database-rollback') {
+      tick(); var dataPolicy = state.actions[msg.cmd === 'database-check' ? 'databaseCheck' : 'databaseRollback'];
+      if(!dataPolicy.allowed)throw new Error(dataPolicy.reason);
+      var requestId=state.commandResult.id;
+      (msg.cmd === 'database-check' ? store.check() : store.rollback()).then(function(status) {
+        if(closed)return;updateStatus(status);
+        if(state.commandResult && state.commandResult.id===requestId)commandResult(msg.cmd,status.phase==='error'?'error':'finished',state.databaseUpdate.message,requestId);tick();
+      },function(error){if(!closed){if(state.commandResult && state.commandResult.id===requestId)commandResult(msg.cmd,'error',error.message,requestId);tick();}});return;
+    }
+    if (msg.cmd === 'audio-test') {
+      tick();if(!state.actions.audioTest.allowed)throw new Error(state.actions.audioTest.reason);
+      var audioRequestId=state.commandResult.id;
+      audio.test(Date.now()).then(function(){if(!closed){if(state.commandResult && state.commandResult.id===audioRequestId)commandResult(msg.cmd,'played','Воспроизведение сигнала подтверждено',audioRequestId);tick();}},
+        function(error){if(!closed){if(state.commandResult && state.commandResult.id===audioRequestId)commandResult(msg.cmd,'error',error.message,audioRequestId);tick();}});return;
+    }
+    if (msg.cmd === 'vehicle-context') {
+      var street=msg.street, audioProbe=msg.audio, observed=street && street.observedAtMs, nowContext=Date.now();
+      if(street && street.source==='BMW' && ['ready','unavailable','stale'].indexOf(street.state)>=0) {
+        var name=street.name;
+        if(name!==null && (typeof name!=='string'||name.length>96||Buffer.byteLength(name,'utf8')>240||/[\x00-\x1f\x7f]/.test(name)))throw new Error('STREET_PAYLOAD_INVALID');
+        if(typeof name==='string')name=name.trim();
+        var freshName=street.state==='ready' && typeof name==='string' && name.length>0 && Number.isFinite(observed) && nowContext-observed<=15000 && observed<=nowContext+500;
+        state.street={name:freshName?name:null,source:'BMW',state:freshName?'ready':'unavailable',observedAtMs:freshName?observed:null,
+          reason:freshName?null:'BMW не передала свежее название текущей улицы'};
+      }
+      if(audioProbe && ['detected','unavailable','unverified'].indexOf(audioProbe.state)>=0 && state.audio)state.audio.probeState=audioProbe.state;
+      tick();return;
     }
     if (msg.cmd === 'vehicle-nmea') {
       if (typeof msg.data !== 'string' || !msg.data.length || Buffer.byteLength(msg.data, 'utf8') > 4096) throw new Error('GPS_PACKET_INVALID');
@@ -171,9 +268,19 @@ function start(options) {
       if (!state.capabilities.hudOpacity) throw new Error('HUD opacity unavailable');
       if (!Number.isInteger(msg.percent) || msg.percent < 10 || msg.percent > 100) throw new Error('HUD opacity requires an integer from 10 to 100');
       next.hudOpacityPct = msg.percent;
-    } else if (msg.cmd === 'update') throw new Error('Offline snapshot: rebuild on PC and install the updated Store package');
+    } else if (msg.cmd === 'update') throw new Error('Используйте команду database-check для независимого обновления базы');
     else throw new Error('Unsupported command');
     save(next); state.error = null; tick();
+  }
+  function command(msg) {
+    var userCommand = msg && typeof msg.cmd === 'string' && ['status','vehicle-nmea','gps-bridge','vehicle-context'].indexOf(msg.cmd)<0;
+    if(userCommand) { commandResult(msg.cmd,'requested','Выполняется: ' + msg.cmd); broadcast(true); }
+    try {
+      var answer=execute(msg);
+      if(userCommand && state.commandResult.phase==='requested' && ['display-test','calibration-test','database-check','database-rollback','audio-test'].indexOf(msg.cmd)<0)
+        commandResult(msg.cmd,'finished','Настройка применена',state.commandResult.id);
+      if(userCommand)broadcast(true);return answer;
+    } catch(error) { if(userCommand){commandResult(msg.cmd,'error',error.message,state.commandResult.id);broadcast(true);}throw error; }
   }
   server = net.createServer(function (sock) {
     if (clients.length >= 16) { sock.destroy(); return; }
@@ -226,12 +333,14 @@ function start(options) {
       });
     }
   }
-  gps.on('status', function (text) { state.diagnostic = text; });
+  function onGpsStatus(text) { if(!closed)state.diagnostic=text; }
+  gps.on('status', onGpsStatus);
   gps.on('fix', tick);
   try { gps.start(); } catch (e) { state.error = 'GPS start: ' + e.message; }
   var timer = setInterval(tick, 500); tick();
   function close() {
-    if (closed) return; closed = true; clearInterval(timer); gps.close(); if (display) display.close(); if (dimmer) dimmer.close();
+    if (closed) return; closed = true; clearInterval(timer); gps.close(); if (display) display.close(); if (dimmer) dimmer.close(); if(store)store.close(); if(audio)audio.close();
+    if(typeof gps.removeListener==='function'){gps.removeListener('fix',tick);gps.removeListener('status',onGpsStatus);}
     clients.forEach(function (c) { c.destroy(); }); try { server.close(); } catch (e) {}
     if (ownsSocket) { try { fs.unlinkSync(socketPath); } catch (e) {} }
   }

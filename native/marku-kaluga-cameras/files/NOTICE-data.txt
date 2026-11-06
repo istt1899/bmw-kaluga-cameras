@@ -18,3 +18,9 @@ reported by the owner; type, controls, device position and limit are unverified.
 The reference point is the intersection, not a surveyed camera location.
 Intersection position: © OpenStreetMap contributors, ODbL 1.0.
 https://www.openstreetmap.org/node/277492125
+
+Additional enforcement relations: 10391645, 10391681, 10391682, 10391709, 10391799.
+Five additional devices from the same regional source PBF. Original tags,
+member roles and source dates retained in enforcement-relations.json.
+Symbolic speed limits and unknown capture side are not converted to numbers
+or front/rear claims. © OpenStreetMap contributors, ODbL 1.0.

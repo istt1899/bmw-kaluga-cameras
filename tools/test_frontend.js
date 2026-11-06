@@ -29,7 +29,7 @@ check('offline service cannot issue control commands', () => {
 });
 check('outputs default off and require explicit capability', () => {
     const s = { enabled: false };
-    assert.strictEqual(model(s).text.cameraHud, 'Проекция HUD: выкл');
+    assert.strictEqual(model(s).text.cameraHud, 'Проекция HUD: вывод недоступен');
     assert.strictEqual(outputCommand(s, 'hud'), null);
 });
 check('output command preserves other display and waits for server state', () => {

@@ -1,6 +1,6 @@
 {
   "name": "bmw-kaluga-cameras",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "private": true,
   "license": "GPL-3.0-or-later",
   "description": "Waze on Cluster fork with camera warnings for BMW iDrive 7",
@@ -8,7 +8,7 @@
     "build": "node tools/build.js",
     "test": "node tools/test_rhmi_graph.js && node tools/test_control.js && node tools/test_frontend.js && npm run test:native && npm run test:waze",
     "test:packages": "node tools/test_packages.js",
-    "test:native": "node tools/service.test.js && node tools/service_process.test.js && node tools/service_activation.test.js && node tools/service_prepare.test.js && node tools/test_guidance.js && node tools/test_layers.js && node tools/test_hud_dimmer.js && node tools/service_gps_bridge.test.js && node tools/test_bmw_nmea_e2e.js && node tools/test_camera_warnings.js && node tools/test_diagnostics.js && node tools/test_gps_epoch_alignment.js && node tools/test_reported_camera.js",
+    "test:native": "node tools/service.test.js && node tools/service_process.test.js && node tools/service_activation.test.js && node tools/service_prepare.test.js && node tools/test_guidance.js && node tools/test_layers.js && node tools/test_hud_dimmer.js && node tools/service_gps_bridge.test.js && node tools/test_bmw_nmea_e2e.js && node tools/test_camera_warnings.js && node tools/test_diagnostics.js && node tools/test_gps_epoch_alignment.js && node tools/test_reported_camera.js && node tools/test_action_policy.js && node tools/test_camera_layout.js && node tools/test_database_store.js && node tools/test_enforcement_relations.js && node tools/test_navigation_bridge.js && node tools/test_service_04.js && node tools/test_popova_approaches.js",
     "test:waze": "node apps/marku_kaluga_cameras/tools/test_control.js && node apps/marku_kaluga_cameras/tools/test_page.js && node apps/marku_kaluga_cameras/tools/test_i18n.js && node apps/marku_kaluga_cameras/tools/test_bmw_gps.js && node apps/marku_kaluga_cameras/tools/test_bmw_gps_lifecycle.js"
   },
   "devDependencies": {

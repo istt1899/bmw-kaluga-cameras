@@ -1,3 +1,7 @@
+# Waze Стрелка 0.4.0
+
+Shared action policy and immediate command feedback; stationary renderer tests independent of position accuracy; adaptive compact multi-type cards; six-page frozen diagnostics with explicit local RAM export; optional read-only BMW street bridge; relation-aware database with 156 records and independent atomic updates/rollback. Native sound discovery does not enable unverified gong playback. On-car display and native integration remain to be verified.
+
 # Waze Стрелка 0.3.1
 
 Preserve complete GNSS measurements across staggered RMC/GGA/GST epochs, keep stopped-approach notices, display typed/model camera cards and explicit proximity notices. Dedicated detailed diagnostics with frozen snapshots and parked-only five-second display test. Alert layers contend for their enabled targets without being exclusive. Camera metadata retains original OSM enforcement/description tags.

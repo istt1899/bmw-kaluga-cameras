@@ -1,0 +1,31 @@
+'use strict';
+const assert=require('assert');
+const {stationary,policies}=require('../native/marku-kaluga-cameras/files/action-policy');
+const now=Date.now(),fix={timeMs:now,motionTimeMs:now-200,speedKmh:0,accuracyM:19.4};
+const state={capabilities:{displayTest:true,update:true},outputs:{cluster:true,hud:true},storage:{persistent:true},databaseUpdate:{busy:false,canRollback:true}};
+assert(stationary(fix,now).allowed,'19.4m position accuracy must not block an otherwise fresh stationary display test');
+assert(policies(state,fix,now).displayTest.allowed);
+assert(!policies(state,Object.assign({},fix,{motionTimeMs:now-3001}),now).displayTest.allowed);
+assert(!policies(state,Object.assign({},fix,{speedKmh:2}),now).displayTest.allowed);
+assert(!policies(state,Object.assign({},fix,{speedKmh:null}),now).displayTest.allowed);
+assert(!policies(Object.assign({},state,{outputs:{cluster:false,hud:false}}),fix,now).displayTest.allowed);
+assert(!policies(Object.assign({},state,{databaseUpdate:{busy:true}}),fix,now).databaseCheck.allowed);
+assert(!policies(state,fix,now).audioTest.allowed);
+assert(policies(state,fix,now).databaseRollback.allowed);
+console.log('PASS shared action policy: 19.4m stationary renderer test, separate motion UTC, movement, unavailable outputs/storage/audio and update busy');
+async function audio(){
+ const calls=[],a=require('../native/marku-kaluga-cameras/files/warning-audio').createAudio({play:x=>{calls.push(x);return Promise.resolve({played:true});}});
+ a.configure(true,0);const alert={id:'camera',roadConfirmed:true,limitKmh:60,sign:1};
+ a.update(alert,Object.assign({},fix,{speedKmh:70}),now);await new Promise(r=>setImmediate(r));
+ a.update(alert,Object.assign({},fix,{speedKmh:70,timeMs:now+13000}),now+13000);await new Promise(r=>setImmediate(r));
+ assert.strictEqual(calls.length,1,'same camera approach must not sound every GPS frame');
+ a.update(Object.assign({},alert,{roadConfirmed:false,id:'other'}),fix,now+14000);assert.strictEqual(calls.length,1);
+ await a.test(now+15000);assert.strictEqual(calls.length,2);a.close();
+ const unavailable=require('../native/marku-kaluga-cameras/files/warning-audio').createAudio();
+ await unavailable.test(now).then(()=>assert.fail('must not claim playback'),()=>{});
+ assert.strictEqual(require('../native/marku-kaluga-cameras/files/warning-audio').createAudio({}).status().available,false);
+ let lateCalls=0;const closing=require('../native/marku-kaluga-cameras/files/warning-audio').createAudio({play:()=>{lateCalls++;return Promise.resolve({played:true});}});
+ const cancelled=closing.test(now);closing.close();await cancelled.then(()=>assert.fail('closed playback must fail'),()=>{});assert.strictEqual(lateCalls,0);
+ console.log('PASS bounded audio adapter, per-camera deduplication and no fabricated playback when native channel is unavailable');
+}
+audio().catch(e=>{console.error(e.stack);process.exitCode=1;});

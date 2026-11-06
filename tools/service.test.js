@@ -69,7 +69,7 @@ async function integration() {
     client.on('data', function (chunk) { buf += chunk; var nl; while ((nl = buf.indexOf('\n')) >= 0) { lines.push(JSON.parse(buf.slice(0, nl))); buf = buf.slice(nl + 1); } });
     await until(function () { return peer && lines.length > 0; });
     var health = await probe({ socket: socket, checkPermissions: false, version: VERSION });
-    assert.strictEqual(health.database.count, 151);
+    assert.strictEqual(health.database.count, 156);
     assert.strictEqual(health.database.osmCount, 150);
     assert.strictEqual(health.database.reportedCount, 1);
     assert.strictEqual(lines[0].state.outputs.cluster, false); assert.strictEqual(lines[0].state.outputs.hud, false);
@@ -87,7 +87,7 @@ async function integration() {
     var saved = JSON.parse(fs.readFileSync(path.join(dir, 'settings.json'), 'utf8')); assert.strictEqual(saved.enabled, false); assert.strictEqual(saved.outputs.cluster, true);
     assert.strictEqual(saved.hudOpacityPct, 40); assert.strictEqual(app.state().hudOpacityPct, 40);
     client.write('{"cmd":"update"}\n');
-    await until(function () { return lines.some(function (l) { return l.ev === 'error' && /Offline snapshot/.test(l.error); }); });
+    await until(function () { return lines.some(function (l) { return l.ev === 'error' && /database-check/.test(l.error); }); });
     peer.write(JSON.stringify(tpv({ time: new Date(Date.now() - 10000).toISOString() })) + '\n');
     await until(function () { return app.state().gpsFix === null; }); assert.strictEqual(app.state().alert, null);
     // Exercise real UDP input with a current RMC/GGA/GST triplet.
@@ -126,7 +126,7 @@ async function storageFailure() {
         display: { update: function () {}, status: function () { return 'off'; }, close: function () {} } });
     });
     var health = await probe({ socket: socket, checkPermissions: false, version: VERSION });
-    assert.strictEqual(health.database.count, 151);
+    assert.strictEqual(health.database.count, 156);
     assert.strictEqual(health.database.osmCount, 150);
     assert.strictEqual(health.database.reportedCount, 1);
     assert.strictEqual(health.storage.persistent, false);

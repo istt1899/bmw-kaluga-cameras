@@ -69,6 +69,18 @@
       "broadcasts": [
         "updatePosition"
       ]
+    },
+    "de.bmw.infotainment.navigation.positioning.Positioning": {
+      "instances": "Main_Instance",
+      "attributes": {
+        "currentLocation": "rs"
+      }
+    },
+    "de.bmw.infotainment.gp.gongplayer.IGPCommand": {
+      "instances": "1",
+      "methods": [
+        "getAllSampleSets"
+      ]
     }
   },
   "services": {

@@ -63,6 +63,7 @@ const { CameraControl } = require('./control.js');
 const cameraView = require('./view_model.js');
 const cameraDiagnostics = require('./diagnostics_view.js');
 const { BmwGpsBridge } = require('./bmw_gps_bridge.js');
+const { BmwNavigationBridge } = require('./bmw_navigation_bridge.js');
 
 const logger = logging.getSDKLogger();
 
@@ -103,9 +104,11 @@ const LOGS_URL = 'wocLogsUrl';
 const CAMERA_LINK = 'wocCameras';
 const CAMERA_STATE = 'ST_OnlineApps_WazeStrelkaCameras';
 const DIAG_STATE = 'ST_OnlineApps_WazeStrelkaDiagnostics';
-const DIAG_NAMES = cameraDiagnostics.KEYS.map(k => 'cameraDiag_' + k).concat(['cameraDiagFreeze','cameraDiagLive','cameraDiagTest']);
+const DIAG_NAMES = cameraDiagnostics.PAGE_KEYS.map(k => 'cameraDiag_' + k).concat(['cameraDiagFreeze','cameraDiagLive','cameraDiagTest',
+    'cameraDiagCalibration','cameraDiagAudio','cameraDiagExport','cameraDiagPrev','cameraDiagNext','cameraDiagMore']);
 const CAMERA_NAMES = ['cameraStatus', 'cameraAlert', 'cameraDatabase', 'cameraDate', 'cameraGps',
-    'cameraEnable', 'cameraDisable', 'cameraCluster', 'cameraHud', 'cameraUpdate', 'cameraDiagnostics', 'cameraInfo', 'cameraDescription'];
+    'cameraEnable', 'cameraCluster', 'cameraHud', 'cameraUpdate', 'cameraRollback', 'cameraDiagnostics', 'cameraInfo', 'cameraDescription',
+    'cameraMotion','cameraStreet','cameraCommand','cameraCommandMore','cameraLimit','cameraDirection'];
 const LOGS_ROW_NAMES = Array.from({ length: LOGS_ROWS }, (_, i) => `wocLogsRow${i + 1}`);
 const ROW_CHARS = 90;
 const PRESS_DEDUPE_MS = 400;
@@ -137,6 +140,8 @@ class WazeClusterApp extends OnlineApp {
         this._visible = false;
         this._pages = { main: false, logs: false, cameras: false, diagnostics: false };
         this._diagFrozen = null;
+        this._diagPage = 0; this._diagBlock = 0;
+        this._cameraFeedback = null; this._cameraCommandTimer = null;
         this._shownPage = 'main';   /* the page last shown, which shows again when the app does */
         this._hideTimer = null;
         this._qr = { url: undefined, file: null, chain: Promise.resolve() };
@@ -151,8 +156,9 @@ class WazeClusterApp extends OnlineApp {
         this._cameraState = null;
         this._cameraInfoMode = null;
         this._cameras = new CameraControl();
-        this._cameras.on('change', () => { this._renderCameras(); this._renderHudOpacity(); });
+        this._cameras.on('change', () => { this._refreshCameraFeedback(); this._renderCameras(); this._renderHudOpacity(); });
         this._gpsBridge = new BmwGpsBridge({ builders: someipBuilders });
+        this._navigationBridge = new BmwNavigationBridge({builders:someipBuilders,control:this._gpsBridge.control});
         this._gpsBridge.on('change', () => this._syncActivity());
 
         this.on('initialized', () => {
@@ -173,7 +179,7 @@ class WazeClusterApp extends OnlineApp {
         logger.info(`robertn_waze_cluster ${this.getAppId()} v${this._packageJson.version} starting`);
         // Never await GPS for RHMI startup. Its separate local IPC client and
         // background hold survive leaving this screen for CarPlay.
-        Promise.resolve().then(() => this._gpsBridge.start()).catch(() => logger.warn('BMW GPS bridge start failed'));
+        Promise.resolve().then(() => { this._gpsBridge.start(); this._navigationBridge.start(); }).catch(() => logger.warn('BMW context bridge start failed'));
         if (!this.rhmiApplication) {
             logger.info('no RhmiApplication for this start reason; initializing without a screen');
             return Promise.resolve(this.initialized()).then(() => this._syncActivity());
@@ -285,23 +291,38 @@ class WazeClusterApp extends OnlineApp {
         this._bind(LOGS_SAVE, () => this._logs.save());
         this._bind(CAMERA_LINK, () => Promise.resolve(rhmi.openState(CAMERA_STATE))
             .catch((err) => logger.warn('camera page: ' + err.message)));
-        this._bind('cameraEnable', () => this._cameraCommand({ cmd: 'enable' }));
-        this._bind('cameraDisable', () => this._cameraCommand({ cmd: 'disable' }));
+        this._bind('cameraEnable', () => this._cameraCommand({ cmd: this._cameras.state && this._cameras.state.enabled ? 'disable' : 'enable' }));
         this._bind('cameraCluster', () => this._cameraCommand(cameraView.outputCommand(this._cameras.state, 'cluster')));
         this._bind('cameraHud', () => this._cameraCommand(cameraView.outputCommand(this._cameras.state, 'hud')));
         this._bind('cameraDiagnostics', () => {
+            this._diagPage = 0; this._diagBlock = 0;
             this._cameras.send({ cmd: 'status' }); this._renderDiagnostics();
             return Promise.resolve(rhmi.openState(DIAG_STATE)).catch(() => logger.warn('camera diagnostics page unavailable'));
         });
         this._bind('cameraDiagFreeze', () => {
-            if (this._cameras.state) this._diagFrozen = JSON.parse(JSON.stringify(Object.assign({},this._cameras.state,{controlError:this._cameras.commandError})));
+            if (this._cameras.state) {
+                this._diagFrozen = cameraDiagnostics.capture(this._cameras.state,this._packageJson.version,Date.now());
+                this._cameraFeedback = {message:'Снимок '+this._diagFrozen.id+' зафиксирован; команды остаются живыми'};
+                this._diagBlock = 0;
+            } else this._cameraFeedback = {message:'Снимок недоступен: сервис не отвечает'};
             this._renderDiagnostics();
         });
-        this._bind('cameraDiagLive', () => { this._diagFrozen = null; this._renderDiagnostics(); });
-        this._bind('cameraDiagTest', () => {
-            this._diagFrozen = null; this._cameras.send({ cmd: 'display-test' }); this._renderDiagnostics();
+        this._bind('cameraDiagLive', () => { this._diagFrozen = null; this._diagBlock=0;
+            this._cameraFeedback={message:'Живые данные включены'}; this._renderDiagnostics(); });
+        this._bind('cameraDiagTest', () => this._cameraAction('displayTest','display-test'));
+        this._bind('cameraDiagCalibration', () => this._cameraAction('calibrationTest','calibration-test'));
+        this._bind('cameraDiagAudio', () => this._cameraAction('audioTest','audio-test'));
+        this._bind('cameraDiagExport', () => this._exportDiagnostic());
+        this._bind('cameraDiagPrev', () => { this._diagPage=(this._diagPage+5)%6; this._diagBlock=0; this._renderDiagnostics(); });
+        this._bind('cameraDiagNext', () => { this._diagPage=(this._diagPage+1)%6; this._diagBlock=0; this._renderDiagnostics(); });
+        this._bind('cameraDiagMore', () => {
+            const page=cameraDiagnostics.reportPage(this._diagFrozen,this._cameras.state,this._packageJson.version,this._diagPage,this._diagBlock);
+            this._diagBlock=(this._diagBlock+1)%page.blocks;
+            if(page.blocks===1)this._cameraFeedback={message:'Все строки этой страницы уже показаны'};
+            this._renderDiagnostics();
         });
-        this._bind('cameraUpdate', () => { this._cameraInfoMode = 'update'; this._renderCameras(); });
+        this._bind('cameraUpdate', () => this._cameraAction('databaseCheck','database-check'));
+        this._bind('cameraRollback', () => this._cameraAction('databaseRollback','database-rollback'));
         // Presses also arrive as the application's raw 'userEvent'; both paths
         // land in _press, which keeps a press delivered twice to one.
         rhmi.on('userEvent', (ev) => {
@@ -651,9 +672,72 @@ class WazeClusterApp extends OnlineApp {
     }
 
     _cameraCommand(message) {
-        if (!message) return;
+        clearTimeout(this._cameraCommandTimer); this._cameraCommandTimer=null;
+        if (!message) {
+            this._cameraFeedback={message:'Действие недоступно: сервис не подтвердил управление выходом'};
+            this._renderCameras(); return;
+        }
         this._cameraInfoMode = null;
-        if (!this._cameras.send(message)) this._write('cameraInfo', this._cameras.diagnostic());
+        const previous=(this._cameras.state||{}).commandResult||{};
+        this._cameraFeedback={message:'Ожидание ответа: '+message.cmd,command:message.cmd,previousId:previous.id,pending:true};
+        if (!this._cameras.send(message)) this._cameraFeedback={message:this._cameras.diagnostic()};
+        else {
+            this._cameraCommandTimer=setTimeout(()=>{
+                this._cameraCommandTimer=null;
+                if(this._cameraFeedback&&this._cameraFeedback.pending){
+                    this._cameraFeedback={message:'Нет подтверждения команды '+message.cmd+'; проверьте связь с сервисом',
+                        command:message.cmd,previousId:previous.id,awaiting:true};
+                    this._renderCameras();
+                }
+            },6000);
+            if(this._cameraCommandTimer.unref)this._cameraCommandTimer.unref();
+        }
+        this._renderCameras();
+    }
+
+    _cameraAction(name,command) {
+        const a=cameraDiagnostics.action(this._cameras.state,name);
+        if(!a.allowed){
+            clearTimeout(this._cameraCommandTimer); this._cameraCommandTimer=null;
+            this._cameraFeedback={message:a.reason||'Действие недоступно ('+a.code+')'};
+            this._renderCameras(); return;
+        }
+        this._cameraCommand({cmd:command});
+    }
+
+    _refreshCameraFeedback() {
+        const pending=this._cameraFeedback, result=(this._cameras.state||{}).commandResult;
+        if(!pending||(!pending.pending&&!pending.awaiting))return;
+        if(this._cameras.commandError){
+            this._cameraFeedback={message:'Ошибка: '+this._cameras.commandError};
+        }else if(result&&result.command===pending.command&&result.id!==pending.previousId){
+            this._cameraFeedback=null;
+        }else return;
+        clearTimeout(this._cameraCommandTimer); this._cameraCommandTimer=null;
+    }
+
+    _exportDiagnostic() {
+        try {
+            if(!this._diagFrozen&&!this._cameras.state)throw new Error('Нет снимка или ответа сервиса');
+            const report=this._diagFrozen||cameraDiagnostics.capture(this._cameras.state,this._packageJson.version,Date.now());
+            const payload=JSON.stringify(report,null,2)+'\n';
+            if(Buffer.byteLength(payload,'utf8')>262144)throw new Error('Отчёт больше 256 КБ; экспорт отменён');
+            if(!fs.existsSync(QR_DIR))fs.mkdirSync(QR_DIR,0o700);
+            const dir=path.join(QR_DIR,'diagnostics');
+            if(!fs.existsSync(dir))fs.mkdirSync(dir,0o700);
+            if(fs.lstatSync(QR_DIR).isSymbolicLink()||fs.lstatSync(dir).isSymbolicLink())throw new Error('Небезопасный каталог отчёта');
+            const file=path.join(dir,'diagnostic-'+report.id+'.json');
+            if(fs.existsSync(file)){
+                if(fs.lstatSync(file).isSymbolicLink()||fs.readFileSync(file,'utf8')!==payload)throw new Error('Файл отчёта уже существует с другими данными');
+            }else {
+                if(fs.readdirSync(dir).filter(name=>/^diagnostic-S[A-Z0-9-]+\.json$/.test(name)).length>=20)
+                    throw new Error('Сохранено 20 временных отчётов; новые снимки не записаны');
+                fs.writeFileSync(file,payload,{flag:'wx',mode:0o600});
+            }
+            this._cameraFeedback={message:'JSON '+report.id+' сохранён локально в RAM; не отправлен. Путь: '+file};
+            this._lastDiagnosticExport=file;
+        }catch(err){this._cameraFeedback={message:'Экспорт: '+String(err.message||err).slice(0,150)};}
+        this._renderDiagnostics();
     }
 
     _renderCameras() {
@@ -661,7 +745,9 @@ class WazeClusterApp extends OnlineApp {
         const view = cameraView.model(this._cameras.state);
         if (!this._cameras.state) view.text.cameraStatus = this._cameras.diagnostic();
         if (this._cameraInfoMode === 'diagnostics') view.text.cameraInfo = this._cameras.state ? cameraView.diagnostics(this._cameras.state) : this._cameras.diagnostic();
-        if (this._cameraInfoMode === 'update') view.text.cameraInfo = 'База обновляется через Store вместе с сервисом камер';
+        const current=this._cameras.state&&Object.assign({},this._cameras.state,{controlError:this._cameras.commandError});
+        const result=cameraDiagnostics.commandText(current,this._cameraFeedback&&this._cameraFeedback.message);
+        view.text.cameraCommand=result.slice(0,66); view.text.cameraCommandMore=result.length>66?result.slice(66,132):' ';
         Object.keys(view.text).forEach((name) => this._write(name, view.text[name]));
         Object.keys(view.enabled).forEach((name) => this._setEnabled(name, view.enabled[name]));
         this._renderDiagnostics();
@@ -669,14 +755,20 @@ class WazeClusterApp extends OnlineApp {
 
     _renderDiagnostics() {
         if (!this._diagState || this._shutdownPromise) return;
-        const s = this._diagFrozen || (this._cameras.state && Object.assign({},this._cameras.state,{controlError:this._cameras.commandError}));
-        const rows = cameraDiagnostics.values(s, this._packageJson.version, !!this._diagFrozen);
-        cameraDiagnostics.KEYS.forEach(key => this._write('cameraDiag_' + key, rows[key]));
-        this._setEnabled('cameraDiagFreeze', !!this._cameras.state);
-        this._setEnabled('cameraDiagLive', !!this._diagFrozen);
-        const live = this._cameras.state, fix = live && live.gpsFix;
-        this._setEnabled('cameraDiagTest', !!(live && live.capabilities && live.capabilities.displayTest && fix &&
-            Number.isFinite(fix.speedKmh) && fix.speedKmh <= 1 && (live.outputs.cluster || live.outputs.hud)));
+        const live = this._cameras.state&&Object.assign({},this._cameras.state,{controlError:this._cameras.commandError});
+        const page=cameraDiagnostics.reportPage(this._diagFrozen,live,this._packageJson.version,this._diagPage,this._diagBlock,
+            this._cameraFeedback&&this._cameraFeedback.message);
+        this._diagBlock=page.block;
+        cameraDiagnostics.PAGE_KEYS.forEach(key=>this._write('cameraDiag_'+key,page.rows[key]));
+        this._write('cameraDiagFreeze','Зафиксировать снимок'); this._write('cameraDiagLive','Живые данные');
+        this._write('cameraDiagPrev','← Предыдущая страница'); this._write('cameraDiagNext','Следующая страница →');
+        this._write('cameraDiagMore',page.blocks>1?'Следующие строки • '+(page.block+1)+'/'+page.blocks:'Все строки показаны');
+        this._write('cameraDiagTest','Тест изображения • на стоянке');
+        this._write('cameraDiagCalibration','Проверить границы • на стоянке');
+        this._write('cameraDiagAudio','Проверить звук'); this._write('cameraDiagExport','Сохранить JSON локально • RAM');
+        // Keep diagnostic actions reachable: every press either acts or explains the exact service guard.
+        ['cameraDiagFreeze','cameraDiagLive','cameraDiagTest','cameraDiagCalibration','cameraDiagAudio','cameraDiagExport',
+            'cameraDiagPrev','cameraDiagNext','cameraDiagMore'].forEach(name=>this._setEnabled(name,true));
     }
 
     _renderLogs() {
@@ -758,11 +850,13 @@ class WazeClusterApp extends OnlineApp {
         }
         logger.info(`robertn_waze_cluster shutdown: ${JSON.stringify(reason)}`);
         this._shuttingDown = true;
+        clearTimeout(this._cameraCommandTimer); this._cameraCommandTimer=null;
         clearTimeout(this._hideTimer);
         this._control.close();
         this._logs.close();
         this._cameras.close();
         this._gpsBridge.stop();
+        this._navigationBridge.stop();
         if (this._qr.file) {
             try {
                 fs.unlinkSync(this._qr.file);

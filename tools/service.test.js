@@ -56,25 +56,33 @@ async function integration() {
     udp = dgram.createSocket('udp4'); await new Promise(function (resolve) { udp.bind(0, '127.0.0.1', resolve); });
     var udpPort = udp.address().port; udp.close(); udp = null;
     provider = new GpsProvider({ host: '127.0.0.1', port: gpsd.address().port, nmeaHost: '127.0.0.1', nmeaPort: udpPort, retryMs: 50 });
-    var called = 0, shown = null;
+    var called = 0, shown = null, opacity = null;
     await new Promise(function (resolve, reject) {
       app = service.start({ dataDir: dir, socket: socket, gps: provider, onListening: resolve, onError: reject,
         guidance: { evaluate: function (fix) { called++; assert.ok(!fix || fix.accuracyM > 0); return null; } },
-        display: { update: function (alert) { shown = alert; }, status: function () { return 'off'; }, close: function () {} } });
+        display: { update: function (alert) { shown = alert; }, status: function () { return 'off'; }, close: function () {} },
+        dimmer: { update: function (percent) { opacity = percent; }, status: function () { return 'test overlay'; }, close: function () {} } });
     });
     var lines = [], buf = '';
     client = net.connect(socket); client.setEncoding('utf8'); client.on('error', function () {});
     client.on('data', function (chunk) { buf += chunk; var nl; while ((nl = buf.indexOf('\n')) >= 0) { lines.push(JSON.parse(buf.slice(0, nl))); buf = buf.slice(nl + 1); } });
     await until(function () { return peer && lines.length > 0; });
-    var health = await probe({ socket: socket, checkPermissions: false, version: '0.1.2' });
+    var health = await probe({ socket: socket, checkPermissions: false, version: '0.2.0' });
     assert.strictEqual(health.database.count, 150);
     assert.strictEqual(lines[0].state.outputs.cluster, false); assert.strictEqual(lines[0].state.outputs.hud, false);
+    assert.strictEqual(app.state().hudOpacityPct, 100); assert.strictEqual(opacity, 100);
+    client.write('{"cmd":"hud-opacity","percent":40}\n');
+    await until(function () { return app.state().hudOpacityPct === 40; });
+    assert.strictEqual(opacity, 40); assert.strictEqual(app.state().gpsFix, null);
+    assert.throws(function () { app.command({ cmd: 'hud-opacity', percent: 9 }); }, /integer from 10 to 100/);
+    assert.throws(function () { app.command({ cmd: 'hud-opacity', percent: 50.5 }); }, /integer from 10 to 100/);
     peer.write(JSON.stringify(tpv({ time: new Date().toISOString() })) + '\n');
     await until(function () { return app.state().gpsFix !== null; });
     assert.strictEqual(app.state().gpsFix.speedKmh, 72); assert.ok(app.state().nearest); assert.strictEqual(app.state().alert, null); assert.strictEqual(shown, null);
     client.write('{"cmd":"disable"}\n{"cmd":"outputs","cluster":true,"hud":false}\n');
     await until(function () { return !app.state().enabled && app.state().outputs.cluster; });
     var saved = JSON.parse(fs.readFileSync(path.join(dir, 'settings.json'), 'utf8')); assert.strictEqual(saved.enabled, false); assert.strictEqual(saved.outputs.cluster, true);
+    assert.strictEqual(saved.hudOpacityPct, 40); assert.strictEqual(app.state().hudOpacityPct, 40);
     client.write('{"cmd":"update"}\n');
     await until(function () { return lines.some(function (l) { return l.ev === 'error' && /Offline snapshot/.test(l.error); }); });
     peer.write(JSON.stringify(tpv({ time: new Date(Date.now() - 10000).toISOString() })) + '\n');
@@ -114,13 +122,13 @@ async function storageFailure() {
       app = service.start({ dataDir: obstacle, socket: socket, gps: gps, onListening: resolve, onError: reject,
         display: { update: function () {}, status: function () { return 'off'; }, close: function () {} } });
     });
-    var health = await probe({ socket: socket, checkPermissions: false, version: '0.1.2' });
+    var health = await probe({ socket: socket, checkPermissions: false, version: '0.2.0' });
     assert.strictEqual(health.database.count, 150);
     assert.strictEqual(health.storage.persistent, false);
     app.command({ cmd: 'disable' });
     assert.strictEqual(app.state().enabled, false);
     assert.strictEqual(app.state().storage.persistent, false);
-    await probe({ socket: socket, checkPermissions: false, version: 'wrong' }).then(function () { throw new Error('wrong version accepted'); }, function (err) {
+    await probe({ socket: socket, checkPermissions: false, version: 'wrong', timeoutMs: 100, retryMs: 10 }).then(function () { throw new Error('wrong version accepted'); }, function (err) {
       assert(/Wrong running service version/.test(err.message));
     });
     console.log('PASS unavailable storage: database and app socket stay available; settings explicitly temporary; old service rejected');

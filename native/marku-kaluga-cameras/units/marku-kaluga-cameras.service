@@ -7,22 +7,22 @@ Wants=cluster-render.socket
 
 [Service]
 Type=simple
-User=3921
+User=hmi_5000
 Group=tm_oap_app
 UMask=0007
 WorkingDirectory=/var/opt/marku-kaluga-cameras/current
 # Storage can be read-only during boot. Status and the bundled database
 # must still be available; the daemon reports temporary settings explicitly.
-ExecStartPre=-+/bin/mkdir -p /var/opt/marku-kaluga-cameras/data
-ExecStartPre=-+/bin/chown 3921:tm_oap_app /var/opt/marku-kaluga-cameras/data
+ExecStartPre=-+/usr/bin/node /var/opt/marku-kaluga-cameras/current/prepare.js
 ExecStart=/usr/bin/node /var/opt/marku-kaluga-cameras/current/marku-kaluga-cameras.js
 Restart=on-failure
 RestartSec=5
 NoNewPrivileges=true
-PrivateTmp=true
-ProtectSystem=strict
-ProtectHome=true
-ReadWritePaths=/var/opt/marku-kaluga-cameras /dev/shm
+# Match the known MGU account/runtime used by cluster-render and Waze.
+# Mount-namespace hardening is not assumed to work on this firmware.
+LimitCORE=1
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target

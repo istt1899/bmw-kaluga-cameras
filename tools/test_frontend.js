@@ -45,7 +45,7 @@ check('RHMI identity and action components match implementation', () => {
     const ui = JSON.parse(fs.readFileSync(path.join(APP, m.tree, 'rhmiData', 'uiDescriptions', 'ID7', 'uiDescription.json'), 'utf8'));
     assert.strictEqual(m.id, 'marku_kaluga_cameras');
     assert.strictEqual(p.name, m.id); assert.strictEqual(p.version, m.version);
-    const names = Object.keys(ui.containers['1'].components).map((k) => ui.containers['1'].components[k].name);
+    const names = Object.keys(ui.containers['3'].components).map((k) => ui.containers['3'].components[k].name);
     ['cameraCluster', 'cameraHud', 'cameraUpdate', 'cameraDiagnostics', 'cameraAlert'].forEach((n) => assert(names.indexOf(n) >= 0));
     assert.strictEqual(p.mguLocalOnly, true);
 });
@@ -54,8 +54,23 @@ check('settings use non-focusable iDrive section headers', () => {
     const ui = JSON.parse(fs.readFileSync(path.join(APP, m.tree, 'rhmiData', 'uiDescriptions', 'ID7', 'uiDescription.json'), 'utf8'));
     const xml = fs.readFileSync(path.join(APP, m.tree, 'rhmiData', 'uiDescriptions', 'ID7', 'application.xml'), 'utf8');
     ['90', '91', '92'].forEach((id) => {
-        assert.strictEqual(ui.containers['1'].components[id].properties.Focusable.value, 0);
+        assert.strictEqual(ui.containers['3'].components[id].properties.Focusable.value, 0);
         assert(xml.includes('<component id="' + id + '" type="label" widget="LT_Label_Header_1Row">'));
     });
+});
+check('full Waze controls retained with separate camera child and confirmed opacity slider', () => {
+    const m = JSON.parse(fs.readFileSync(path.join(APP, 'mgu-app.json'), 'utf8'));
+    const rhmi = path.join(APP, m.tree, 'rhmiData');
+    const desc = JSON.parse(fs.readFileSync(path.join(rhmi, 'application.json'), 'utf8')).application;
+    const texts = JSON.parse(fs.readFileSync(path.join(rhmi, 'variantGroups', 'Common', 'texts', 'en_GB.json'), 'utf8'));
+    const ui = JSON.parse(fs.readFileSync(path.join(rhmi, 'uiDescriptions', 'ID7', 'uiDescription.json'), 'utf8'));
+    assert.strictEqual(texts.SID_WOC_TITLE, 'Waze Стрелка');
+    assert.strictEqual(desc.uuid, 'd6f38d91-828f-47a0-8bb4-305b8f7e9a42');
+    assert.strictEqual(desc.entryPoints[0].uuid, '3de1f32c-d4f4-4574-ae8f-0f37e83dabf3');
+    const names = Object.values(ui.containers['1'].components).map((c) => c.name);
+    ['wocShowOn', 'wocHudSize', 'wocHudOpacity', 'wocEnable', 'wocDisable', 'wocAaEnable', 'wocAaDisable',
+        'wocAaZoomIn', 'wocAaCard', 'wocLogs', 'wocRestart', 'wocCameras'].forEach((name) => assert(names.includes(name), name));
+    assert.strictEqual(ui.containers['3'].properties.ParentState.value, 1);
+    assert.strictEqual(ui.containers['1'].components['64'].rows[0].NumberOfSteps.value, 18);
 });
 console.log('PASS: ' + count + ' frontend checks');

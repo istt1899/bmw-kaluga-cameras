@@ -1,0 +1,304 @@
+[
+  {
+    "id": "cluster-render",
+    "kind": "tool",
+    "title": "Cluster renderer",
+    "description": "Draws every app's layers on the instrument cluster and the HUD, sharing the display slots and one upload budget",
+    "version": "0.4.0",
+    "artifact": {
+      "name": "cluster-render@0.4.0.tgz",
+      "size": 7406328,
+      "sha256": "653a471e6dc69325f20e33dc9d641541b95fcde0f5a4421e7e5906cb763be575",
+      "url": "https://github.com/robertnisipeanu/idrive-apps/releases/download/cluster-render%400.4.0/cluster-render%400.4.0.tgz"
+    },
+    "requires": {
+      "mgu-deploy": "0.4.0"
+    },
+    "mguHmi": [
+      "ID7",
+      "ID8"
+    ],
+    "uninstallable": true,
+    "texts": {
+      "ar": {
+        "title": "عارض لوحة العدادات",
+        "description": "يرسم طبقات جميع التطبيقات على لوحة العدادات وشاشة HUD، مع مشاركة خانات العرض وحصة رفع واحدة"
+      },
+      "cs": {
+        "title": "Renderer přístrojového štítu",
+        "description": "Kreslí vrstvy všech aplikací na přístrojový štít a HUD a sdílí přitom pozice na displeji a jeden společný rozpočet nahrávání"
+      },
+      "da": {
+        "title": "Instrumentpanel-renderer",
+        "description": "Tegner alle apps' lag på instrumentpanelet og HUD'en og deler visningspladserne og ét fælles uploadbudget"
+      },
+      "de": {
+        "title": "Kombi-Renderer",
+        "description": "Zeichnet die Ebenen aller Apps im Kombiinstrument und im HUD und teilt dabei die Anzeigeplätze und ein gemeinsames Upload-Budget auf"
+      },
+      "el": {
+        "title": "Μηχανή απόδοσης πίνακα οργάνων",
+        "description": "Σχεδιάζει τα επίπεδα όλων των εφαρμογών στον πίνακα οργάνων και στο HUD, μοιράζοντας τις θέσεις της οθόνης και ένα κοινό όριο μεταφόρτωσης"
+      },
+      "es-US": {
+        "title": "Renderizador del tablero",
+        "description": "Dibuja las capas de todas las apps en el tablero de instrumentos y el HUD, compartiendo los espacios de pantalla y un único presupuesto de carga"
+      },
+      "es": {
+        "title": "Renderizador del cuadro",
+        "description": "Dibuja las capas de todas las apps en el cuadro de instrumentos y el HUD, compartiendo los espacios de pantalla y un único presupuesto de carga"
+      },
+      "fi": {
+        "title": "Mittariston piirtäjä",
+        "description": "Piirtää kaikkien sovellusten tasot mittaristoon ja HUD-näyttöön ja jakaa näyttöpaikat ja yhteisen latausbudjetin"
+      },
+      "fr-CA": {
+        "title": "Rendu du combiné",
+        "description": "Dessine les calques de toutes les apps sur le combiné d'instruments et le HUD, en partageant les emplacements d'affichage et un budget de transfert commun"
+      },
+      "fr": {
+        "title": "Rendu du combiné",
+        "description": "Dessine les calques de toutes les apps sur le combiné d'instruments et le HUD, en partageant les emplacements d'affichage et un budget de transfert commun"
+      },
+      "he": {
+        "title": "מנוע התצוגה של לוח המחוונים",
+        "description": "מצייר את השכבות של כל האפליקציות בלוח המחוונים וב-HUD, תוך שיתוף משבצות התצוגה ומכסת העלאה אחת"
+      },
+      "hu": {
+        "title": "Műszerfal-megjelenítő",
+        "description": "Minden alkalmazás rétegeit megjeleníti a műszerfalon és a HUD-on, közösen használva a megjelenítési helyeket és egyetlen feltöltési keretet"
+      },
+      "id": {
+        "title": "Perender panel instrumen",
+        "description": "Menggambar lapisan setiap aplikasi di panel instrumen dan HUD, berbagi slot layar dan satu kuota unggahan"
+      },
+      "it": {
+        "title": "Renderer del quadro",
+        "description": "Disegna i livelli di tutte le app sul quadro strumenti e sull'HUD, condividendo gli slot di visualizzazione e un unico budget di trasferimento"
+      },
+      "ja": {
+        "title": "メーターレンダラー",
+        "description": "すべてのアプリのレイヤーをメーターとHUDに描画し、表示スロットと共通のアップロード枠を共有します"
+      },
+      "ko": {
+        "title": "계기판 렌더러",
+        "description": "모든 앱의 레이어를 계기판과 HUD에 그리며, 디스플레이 슬롯과 하나의 업로드 예산을 공유합니다"
+      },
+      "nb": {
+        "title": "Instrumentpanel-renderer",
+        "description": "Tegner alle appers lag i instrumentpanelet og på HUD-en og deler visningsplassene og ett felles opplastingsbudsjett"
+      },
+      "nl": {
+        "title": "Instrumentpaneel-renderer",
+        "description": "Tekent de lagen van alle apps op het instrumentpaneel en de HUD en verdeelt de weergaveplaatsen en één gedeeld uploadbudget"
+      },
+      "pl": {
+        "title": "Renderer zestawu wskaźników",
+        "description": "Rysuje warstwy wszystkich aplikacji na zestawie wskaźników i wyświetlaczu HUD, dzieląc miejsca na ekranie i jeden wspólny budżet przesyłania"
+      },
+      "pt-BR": {
+        "title": "Renderizador do painel",
+        "description": "Desenha as camadas de todos os apps no painel de instrumentos e no HUD, compartilhando as posições da tela e um único orçamento de envio"
+      },
+      "pt": {
+        "title": "Renderizador do quadrante",
+        "description": "Desenha as camadas de todas as apps no quadrante de instrumentos e no HUD, partilhando as posições do ecrã e um único orçamento de carregamento"
+      },
+      "ro": {
+        "title": "Randare bord",
+        "description": "Desenează straturile tuturor aplicațiilor pe bordul digital și pe HUD, împărțind pozițiile de afișare și un singur buget de transfer"
+      },
+      "ru": {
+        "title": "Рендерер приборной панели",
+        "description": "Отрисовывает слои всех приложений на приборной панели и HUD, распределяя места на экране и общий лимит загрузки"
+      },
+      "sk": {
+        "title": "Vykresľovanie prístrojovej dosky",
+        "description": "Vykresľuje vrstvy všetkých aplikácií na prístrojovej doske a HUD, so spoločnými zobrazovacími pozíciami a jedným spoločným limitom prenosu"
+      },
+      "sl": {
+        "title": "Izris na armaturi",
+        "description": "Izriše plasti vseh aplikacij na armaturni plošči in HUD ter si deli mesta prikaza in en skupni proračun prenosa"
+      },
+      "sv": {
+        "title": "Kombiinstrumentets renderare",
+        "description": "Ritar alla appars lager i kombiinstrumentet och på HUD:en och delar på visningsplatserna och en gemensam uppladdningsbudget"
+      },
+      "th": {
+        "title": "ตัวเรนเดอร์หน้าปัด",
+        "description": "วาดเลเยอร์ของทุกแอปบนหน้าปัดและ HUD โดยใช้ช่องแสดงผลและโควตาการอัปโหลดร่วมกัน"
+      },
+      "tr": {
+        "title": "Gösterge oluşturucu",
+        "description": "Tüm uygulamaların katmanlarını gösterge panelinde ve HUD'da çizer; ekran yuvalarını ve tek bir aktarım bütçesini paylaşır"
+      },
+      "uk": {
+        "title": "Рендерер панелі приладів",
+        "description": "Відображає шари всіх програм на панелі приладів і HUD, розподіляючи місця на екрані та спільний ліміт завантаження"
+      },
+      "vi": {
+        "title": "Trình hiển thị bảng đồng hồ",
+        "description": "Vẽ các lớp của mọi ứng dụng trên bảng đồng hồ và HUD, dùng chung các vị trí hiển thị và một hạn mức tải lên"
+      },
+      "zh-CN": {
+        "title": "仪表盘渲染器",
+        "description": "在仪表盘和 HUD 上绘制所有应用的图层，共享显示槽位和同一上传额度"
+      },
+      "zh-TW": {
+        "title": "儀表板繪製器",
+        "description": "在儀表板與 HUD 上繪製所有應用程式的圖層，共用顯示欄位與同一份上傳額度"
+      }
+    }
+  },
+  {
+    "id": "waze-on-cluster",
+    "kind": "tool",
+    "title": "Waze on cluster",
+    "description": "Shows the CarPlay or Android Auto map on the instrument cluster: a root helper applies the reversible carplay and aapd patches where each is supported, and the capture, running from boot, decodes the map's H.264 and draws it through the cluster renderer whenever the stream flows",
+    "version": "0.9.0",
+    "artifact": {
+      "name": "waze-on-cluster@0.9.0.tgz",
+      "size": 2183446,
+      "sha256": "8403fffc1c842cd228602c19ebd3481eb55b5f85ecf919b3534e3a213b325c4c",
+      "url": "https://github.com/robertnisipeanu/idrive-apps/releases/download/waze-on-cluster%400.9.0/waze-on-cluster%400.9.0.tgz"
+    },
+    "requires": {
+      "mgu-deploy": "0.7.11",
+      "cluster-render": "0.4.0"
+    },
+    "mguHmi": [
+      "ID7"
+    ],
+    "uninstallable": true,
+    "texts": {
+      "ar": {
+        "title": "Waze على لوحة العدادات",
+        "description": "يعرض خريطة CarPlay أو Android Auto على لوحة العدادات: يطبّق مساعد بصلاحيات root تصحيحَي carplay وaapd القابلين للتراجع حيثما كان كل منهما مدعومًا، ويفك الالتقاط، الذي يعمل منذ الإقلاع، ترميز H.264 للخريطة ويرسمها عبر عارض لوحة العدادات كلما تدفق البث"
+      },
+      "cs": {
+        "title": "Waze na přístrojovém štítu",
+        "description": "Zobrazuje mapu CarPlay nebo Android Auto na přístrojovém štítu: pomocník s právy root použije vratné opravy carplay a aapd tam, kde je každá podporována, a záznam běžící od spuštění dekóduje obraz H.264 mapy a kreslí jej přes renderer přístrojového štítu, kdykoli je datový proud aktivní"
+      },
+      "da": {
+        "title": "Waze i instrumentpanelet",
+        "description": "Viser CarPlay- eller Android Auto-kortet på instrumentpanelet: en root-hjælper anvender de reversible carplay- og aapd-patches, hvor hver af dem understøttes, og optagelsen, der kører fra opstart, afkoder kortets H.264-video og tegner det via instrumentpanel-rendereren, når streamen kører"
+      },
+      "de": {
+        "title": "Waze im Kombiinstrument",
+        "description": "Zeigt die CarPlay- oder Android-Auto-Karte im Kombiinstrument: Ein Root-Helfer wendet die umkehrbaren carplay- und aapd-Patches an, wo sie jeweils unterstützt werden, und die ab dem Start laufende Erfassung dekodiert das H.264-Video der Karte und zeichnet es über den Kombi-Renderer, sobald der Stream fließt"
+      },
+      "el": {
+        "title": "Waze στα όργανα",
+        "description": "Εμφανίζει τον χάρτη του CarPlay ή του Android Auto στον πίνακα οργάνων: ένα βοηθητικό πρόγραμμα με δικαιώματα root εφαρμόζει τις αναστρέψιμες διορθώσεις carplay και aapd όπου υποστηρίζεται η καθεμία, και η καταγραφή, ενεργή από την εκκίνηση, αποκωδικοποιεί το H.264 του χάρτη και τον σχεδιάζει μέσω της μηχανής απόδοσης πίνακα οργάνων όποτε υπάρχει ροή"
+      },
+      "es-US": {
+        "title": "Waze en el tablero",
+        "description": "Muestra el mapa de CarPlay o Android Auto en el tablero de instrumentos: un asistente con permisos root aplica los parches reversibles de carplay y aapd donde cada uno es compatible, y la captura, activa desde el arranque, decodifica el H.264 del mapa y lo dibuja mediante el renderizador del tablero siempre que llegue la señal"
+      },
+      "es": {
+        "title": "Waze en el cuadro",
+        "description": "Muestra el mapa de CarPlay o Android Auto en el cuadro de instrumentos: un asistente con permisos root aplica los parches reversibles de carplay y aapd donde cada uno es compatible, y la captura, activa desde el arranque, decodifica el H.264 del mapa y lo dibuja mediante el renderizador del cuadro siempre que llegue la señal"
+      },
+      "fi": {
+        "title": "Waze mittaristossa",
+        "description": "Näyttää CarPlay- tai Android Auto -kartan mittaristossa: root-apuohjelma asentaa palautettavat carplay- ja aapd-korjaukset, missä kumpikin on tuettu, ja käynnistyksestä asti toimiva kaappaus purkaa kartan H.264-videon ja piirtää sen mittariston piirtäjän kautta aina, kun videovirtaa vastaanotetaan"
+      },
+      "fr-CA": {
+        "title": "Waze au combiné",
+        "description": "Affiche la carte CarPlay ou Android Auto sur le combiné d'instruments : un assistant root applique les correctifs réversibles carplay et aapd là où chacun est pris en charge, et la capture, active dès le démarrage, décode le flux H.264 de la carte et l'affiche via le rendu du combiné dès que le flux arrive"
+      },
+      "fr": {
+        "title": "Waze au combiné",
+        "description": "Affiche la carte CarPlay ou Android Auto sur le combiné d'instruments : un assistant root applique les correctifs réversibles carplay et aapd là où chacun est pris en charge, et la capture, active dès le démarrage, décode le flux H.264 de la carte et l'affiche via le rendu du combiné dès que le flux arrive"
+      },
+      "he": {
+        "title": "Waze בלוח המחוונים",
+        "description": "מציג את מפת CarPlay או Android Auto בלוח המחוונים: רכיב עזר עם הרשאות root מחיל את תיקוני carplay ו-aapd הניתנים לביטול בכל מקום שבו כל אחד מהם נתמך, והלכידה, הפועלת מרגע האתחול, מפענחת את ה-H.264 של המפה ומציירת אותה דרך מנוע התצוגה של לוח המחוונים בכל פעם שהזרם פעיל"
+      },
+      "hu": {
+        "title": "Waze a műszerfalon",
+        "description": "A CarPlay vagy Android Auto térképét a műszerfalon jeleníti meg: egy root segédprogram alkalmazza a visszavonható carplay és aapd javítást ott, ahol támogatott, a rögzítés pedig a rendszerindítástól fut, dekódolja a térkép H.264 adatfolyamát, és a műszerfal-megjelenítőn keresztül rajzolja ki, amíg az adatfolyam érkezik"
+      },
+      "id": {
+        "title": "Waze di panel instrumen",
+        "description": "Menampilkan peta CarPlay atau Android Auto di panel instrumen: helper root menerapkan patch carplay dan aapd yang dapat dibatalkan di tempat masing-masing didukung, dan perekaman, yang berjalan sejak boot, mendekode H.264 peta lalu menggambarnya melalui perender panel instrumen selama stream mengalir"
+      },
+      "it": {
+        "title": "Waze sul quadro",
+        "description": "Mostra la mappa di CarPlay o Android Auto sul quadro strumenti: un helper root applica le patch reversibili carplay e aapd dove ciascuna è supportata, e l'acquisizione, attiva dall'avvio, decodifica il flusso H.264 della mappa e lo disegna tramite il renderer del quadro quando il flusso è attivo"
+      },
+      "ja": {
+        "title": "Waze メーター表示",
+        "description": "CarPlayまたはAndroid Autoの地図をメーターに表示します。rootヘルパーが元に戻せるcarplayとaapdのパッチをそれぞれ対応する環境で適用し、起動時から動作するキャプチャが地図のH.264をデコードして、ストリームが流れている間はメーターレンダラーで描画します"
+      },
+      "ko": {
+        "title": "Waze 계기판 표시",
+        "description": "CarPlay 또는 Android Auto 지도를 계기판에 표시합니다. root 도우미가 되돌릴 수 있는 carplay 및 aapd 패치를 각각 지원되는 곳에 적용하고, 부팅 시부터 실행되는 캡처가 지도의 H.264를 디코딩하여 스트림이 들어올 때마다 계기판 렌더러로 그립니다"
+      },
+      "nb": {
+        "title": "Waze i instrumentpanelet",
+        "description": "Viser CarPlay- eller Android Auto-kartet i instrumentpanelet: en root-hjelper bruker de reversible carplay- og aapd-patchene der hver av dem støttes, og opptaket, som kjører fra oppstart, dekoder kartets H.264-video og tegner det via instrumentpanel-rendereren så lenge strømmen går"
+      },
+      "nl": {
+        "title": "Waze in instrumentpaneel",
+        "description": "Toont de CarPlay- of Android Auto-kaart op het instrumentpaneel: een roothelper past de omkeerbare carplay- en aapd-patches toe waar elk wordt ondersteund, en de opname, die vanaf het opstarten draait, decodeert de H.264-video van de kaart en tekent die via de instrumentpaneel-renderer zodra de stream loopt"
+      },
+      "pl": {
+        "title": "Waze na zegarach",
+        "description": "Wyświetla mapę CarPlay lub Android Auto na zestawie wskaźników: pomocnik z uprawnieniami root stosuje odwracalne poprawki carplay i aapd tam, gdzie każda jest obsługiwana, a rejestracja działająca od uruchomienia dekoduje obraz H.264 mapy i rysuje go przez renderer zestawu wskaźników, gdy tylko płynie strumień"
+      },
+      "pt-BR": {
+        "title": "Waze no painel",
+        "description": "Mostra o mapa do CarPlay ou do Android Auto no painel de instrumentos: um auxiliar com permissões root aplica os patches reversíveis de carplay e aapd onde cada um é compatível, e a captura, ativa desde a inicialização, decodifica o H.264 do mapa e o desenha pelo renderizador do painel sempre que o fluxo chega"
+      },
+      "pt": {
+        "title": "Waze no quadrante",
+        "description": "Mostra o mapa do CarPlay ou do Android Auto no quadrante de instrumentos: um auxiliar com permissões root aplica as correções reversíveis de carplay e aapd onde cada uma é suportada, e a captura, ativa desde o arranque, descodifica o H.264 do mapa e desenha-o através do renderizador do quadrante sempre que o fluxo chega"
+      },
+      "ro": {
+        "title": "Waze pe bord",
+        "description": "Afișează harta CarPlay sau Android Auto pe bordul digital: un asistent root aplică patch-urile reversibile carplay și aapd acolo unde fiecare este acceptat, iar captura, pornită de la boot, decodează fluxul H.264 al hărții și îl desenează prin randarea bordului cât timp fluxul rulează"
+      },
+      "ru": {
+        "title": "Waze на приборах",
+        "description": "Показывает карту CarPlay или Android Auto на приборной панели: вспомогательная служба с правами root применяет обратимые патчи carplay и aapd там, где каждый поддерживается, а захват, работающий с момента загрузки, декодирует H.264 карты и выводит её через рендерер приборной панели, пока поступает поток"
+      },
+      "sk": {
+        "title": "Waze na prístrojovke",
+        "description": "Zobrazuje mapu CarPlay alebo Android Auto na prístrojovej doske: pomocník s právami root použije vratné opravy carplay a aapd tam, kde sú podporované, a zaznamenávanie spustené od štartu dekóduje H.264 mapy a vykresľuje ju cez vykresľovanie prístrojovej dosky, kým prichádza videostream"
+      },
+      "sl": {
+        "title": "Waze na armaturi",
+        "description": "Prikaže zemljevid CarPlay ali Android Auto na armaturni plošči: pomočnik s pravicami root uveljavi povratna popravka carplay in aapd, kjer je posamezni podprt, zajem, ki teče od zagona, pa dekodira H.264 zemljevida in ga izriše prek izrisa na armaturi, kadar tok teče"
+      },
+      "sv": {
+        "title": "Waze i kombiinstrumentet",
+        "description": "Visar CarPlay- eller Android Auto-kartan i kombiinstrumentet: en root-hjälpare tillämpar de reversibla carplay- och aapd-patcharna där var och en stöds, och inspelningen, som körs från start, avkodar kartans H.264-video och ritar den via kombiinstrumentets renderare så länge strömmen flödar"
+      },
+      "th": {
+        "title": "Waze บนหน้าปัด",
+        "description": "แสดงแผนที่ CarPlay หรือ Android Auto บนหน้าปัด: ตัวช่วยสิทธิ์ root จะใช้แพตช์ carplay และ aapd ที่ย้อนกลับได้ในที่ที่แต่ละตัวรองรับ และการจับภาพซึ่งทำงานตั้งแต่บูตจะถอดรหัส H.264 ของแผนที่และวาดผ่านตัวเรนเดอร์หน้าปัดทุกครั้งที่มีสตรีมเข้ามา"
+      },
+      "tr": {
+        "title": "Waze göstergede",
+        "description": "CarPlay veya Android Auto haritasını gösterge panelinde gösterir: bir root yardımcısı geri alınabilir carplay ve aapd yamalarını desteklendikleri yerde uygular; açılıştan itibaren çalışan kayıt, haritanın H.264 akışını çözer ve akış geldikçe gösterge oluşturucu üzerinden çizer"
+      },
+      "uk": {
+        "title": "Waze на приладах",
+        "description": "Показує карту CarPlay або Android Auto на панелі приладів: допоміжна служба з правами root застосовує оборотні патчі carplay і aapd там, де кожен підтримується, а захоплення, що працює від запуску системи, декодує H.264 карти й виводить її через рендерер панелі приладів, поки надходить потік"
+      },
+      "vi": {
+        "title": "Waze trên bảng đồng hồ",
+        "description": "Hiển thị bản đồ CarPlay hoặc Android Auto trên bảng đồng hồ: một trình trợ giúp root áp dụng các bản vá carplay và aapd có thể hoàn tác ở nơi mỗi bản vá được hỗ trợ, còn tiến trình thu hình chạy từ lúc khởi động sẽ giải mã H.264 của bản đồ và vẽ nó qua trình hiển thị bảng đồng hồ mỗi khi có luồng dữ liệu"
+      },
+      "zh-CN": {
+        "title": "Waze 仪表盘显示",
+        "description": "在仪表盘上显示 CarPlay 或 Android Auto 地图：root 辅助程序在各自支持的情况下应用可还原的 carplay 和 aapd 补丁，开机即运行的采集程序解码地图的 H.264，并在有视频流时通过仪表盘渲染器绘制"
+      },
+      "zh-TW": {
+        "title": "Waze 儀表板顯示",
+        "description": "在儀表板上顯示 CarPlay 或 Android Auto 地圖：root 輔助程式會在各自支援的情況下套用可還原的 carplay 與 aapd 修補，而開機即執行的擷取程式會解碼地圖的 H.264，並在串流傳入時透過儀表板繪製器繪製"
+      }
+    }
+  }
+]

@@ -1,0 +1,51 @@
+{
+  "name": "marku_kaluga_cameras",
+  "version": "0.2.0",
+  "description": "Waze on Cluster controls with a separate camera warning overlay",
+  "private": false,
+  "main": "javascript/runner.js",
+  "oapAppSettings": {
+    "maxDiskUsage": 26214400,
+    "cpuLimit": 50,
+    "memoryThresholdKB": 153600,
+    "priority": "PRIO_MEDIUM",
+    "visibility": "FOREGROUND",
+    "latencyClass": "FOREGROUND",
+    "loggingId": "WSTR",
+    "userLoginRequired": false,
+    "backgroundPriority": 150,
+    "someipManifest": "manifest.json"
+  },
+  "files": [
+    "config",
+    "rhmiData",
+    "package.json",
+    "npm-shrinkwrap.json",
+    "permissions.json",
+    "javascript",
+    "manifest.json",
+    "CHANGELOG.md",
+    "LICENSE",
+    "LICENSE-qrcodegen.txt",
+    "NOTICE"
+  ],
+  "dependencies": {
+    "oap-sdk": "24.10.2"
+  },
+  "engines": {
+    "node": ">=8.7.0"
+  },
+  "keywords": [
+    "node",
+    "BMW",
+    "Online",
+    "ConnectedDrive"
+  ],
+  "author": "Robert Nisipeanu; Waze Strelka integration by istt1899",
+  "license": "GPL-3.0-or-later",
+  "mguLocalOnly": true,
+  "productName": "Waze Стрелка",
+  "mguHmi": [
+    "ID7"
+  ]
+}

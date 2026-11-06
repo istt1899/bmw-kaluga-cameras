@@ -1,13 +1,15 @@
 {
   "name": "bmw-kaluga-cameras",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "private": true,
   "license": "GPL-3.0-or-later",
-  "description": "BMW iDrive 7 camera diagnostics and conditional HUD/cluster alerts for Kaluga",
+  "description": "Waze on Cluster fork with camera warnings for BMW iDrive 7",
   "scripts": {
     "build": "node tools/build.js",
-    "test": "node tools/test_control.js && node tools/test_frontend.js && node tools/service.test.js && node tools/test_guidance.js && node tools/test_layers.js && node tools/test_launch.js",
-    "test:packages": "node tools/test_packages.js"
+    "test": "node tools/test_control.js && node tools/test_frontend.js && npm run test:native && npm run test:waze",
+    "test:packages": "node tools/test_packages.js",
+    "test:native": "node tools/service.test.js && node tools/service_process.test.js && node tools/service_activation.test.js && node tools/service_prepare.test.js && node tools/test_guidance.js && node tools/test_layers.js && node tools/test_hud_dimmer.js",
+    "test:waze": "node apps/marku_kaluga_cameras/tools/test_control.js && node apps/marku_kaluga_cameras/tools/test_page.js && node apps/marku_kaluga_cameras/tools/test_i18n.js"
   },
   "devDependencies": {
     "osm-pbf-parser-node": "1.1.4"

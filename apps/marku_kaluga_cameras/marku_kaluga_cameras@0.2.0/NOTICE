@@ -1,0 +1,5 @@
+Waze Стрелка 0.2.0
+Based on robertnisipeanu/idrive-apps robertn_waze_cluster 0.6.0, GPL-3.0-or-later.
+Original Waze controls, localization, logs and QR functionality: Robert Nisipeanu.
+QR generator: Project Nayuki, MIT; see LICENSE-qrcodegen.txt.
+Camera integration: istt1899. No BMW SDK or firmware is redistributed.

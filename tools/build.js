@@ -61,8 +61,8 @@ function main() {
     });
     toolEntry.artifact = artifact(toolName);
     json(path.join(PUBLISH, 'catalog.json'), { schema: 2, components: [
-        { id: m.id, kind: 'app', version: m.version, title: 'Камеры • Калуга',
-            description: 'Стендовый кандидат ID7: офлайн-база Калужской области и диагностика положения',
+        { id: m.id, kind: 'app', version: m.version, title: 'Waze Стрелка',
+            description: 'Waze on Cluster с настройками карты, HUD, CarPlay, Android Auto и дополнительным разделом камер',
             build: 'unit', requires: release.requires, uninstallable: true, mguHmi: ['ID7'], artifact: artifact(appName) },
         toolEntry
     ] });

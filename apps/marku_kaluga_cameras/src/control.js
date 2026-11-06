@@ -10,8 +10,10 @@ class CameraControl extends EventEmitter {
         const o = options || {};
         this.path = o.path || '/dev/shm/marku-kaluga-cameras/ctl.sock';
         this.retryMs = o.retryMs || 1000;
+        this.statusTimeoutMs = o.statusTimeoutMs || 5000;
         this.state = null; this.link = 'down'; this.sock = null; this.lastError = null;
         this.opened = false; this.buffer = ''; this.timer = null;
+        this.statusTimer = null;
     }
     open() {
         if (this.opened) return;
@@ -21,6 +23,7 @@ class CameraControl extends EventEmitter {
     close() {
         this.opened = false;
         clearTimeout(this.timer); this.timer = null;
+        clearTimeout(this.statusTimer); this.statusTimer = null;
         const sock = this.sock;
         this.sock = null; this.state = null; this.link = 'down';
         if (sock) sock.destroy();
@@ -40,6 +43,11 @@ class CameraControl extends EventEmitter {
         sock.on('connect', () => {
             if (this.sock !== sock) return;
             this.lastError = null; this.link = 'up'; this.emit('change'); this.send({ cmd: 'status' });
+            this.statusTimer = setTimeout(() => {
+                this.statusTimer = null;
+                if (this.sock !== sock || this.state) return;
+                this.lastError = 'ETIMEDOUT'; this.emit('change'); sock.destroy();
+            }, this.statusTimeoutMs);
         });
         sock.on('data', (chunk) => {
             if (this.sock !== sock) return;
@@ -52,6 +60,7 @@ class CameraControl extends EventEmitter {
                 let msg;
                 try { msg = JSON.parse(line); } catch (err) { continue; }
                 if (msg.ev === 'status' && msg.state && typeof msg.state === 'object') {
+                    clearTimeout(this.statusTimer); this.statusTimer = null;
                     this.state = msg.state; this.emit('change');
                 }
             }
@@ -59,6 +68,7 @@ class CameraControl extends EventEmitter {
         sock.on('close', () => {
             if (this.sock !== sock) return;
             this.sock = null; this.state = null; this.link = 'down'; this.emit('change');
+            clearTimeout(this.statusTimer); this.statusTimer = null;
             if (this.opened) this.timer = setTimeout(() => { this.timer = null; this.connect(); }, this.retryMs);
         });
     }
@@ -69,7 +79,8 @@ class CameraControl extends EventEmitter {
     }
     diagnostic() {
         const reasons = { ENOENT: 'Сокет сервиса отсутствует', EACCES: 'Нет доступа к сокету сервиса',
-            ECONNREFUSED: 'Сервис не принимает соединение', ECONNRESET: 'Сервис разорвал соединение' };
+            ECONNREFUSED: 'Сервис не принимает соединение', ECONNRESET: 'Сервис разорвал соединение',
+            ETIMEDOUT: 'Сервис подключён, но не отвечает на запрос состояния' };
         return this.lastError ? (reasons[this.lastError] || 'Ошибка соединения') + ' (' + this.lastError + ')' :
             this.link === 'up' ? 'Соединение есть; ожидание ответа сервиса' : 'Ожидание соединения с сервисом';
     }

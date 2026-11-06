@@ -37,7 +37,7 @@ function inspectName(name) {
   assert(!/\.(?:pem|key|p12|pfx|bup|ncd|cafd|log|pbf|zip|exe|dll)$/i.test(name), 'Forbidden public file type: ' + name);
   assert(!/(?:^|\/)(?:\.env(?:\.|$)|known_hosts|id_rsa|id_ed25519|codex-clipboard)/i.test(name), 'Private file: ' + name);
   if (/\.(?:png|jpe?g|webp|gif|bmp)$/i.test(name)) {
-    assert(name.endsWith('/rhmiData/variantGroups/Common/images/kaluga_camera.png'), 'Only the app icon is allowed: ' + name);
+    assert(/\/rhmiData\/variantGroups\/Common\/images\/[a-z0-9_]+\.png$/.test(name), 'Only packaged app icons are allowed: ' + name);
   }
 }
 function inspectContent(name, bytes) {
@@ -121,7 +121,7 @@ function collectSource() {
     });
   }
   ['README.md', 'LICENSE'].forEach(add);
-  ['NOTICE', 'THIRD_PARTY_NOTICES.md', 'package.json', 'package-lock.json', '.gitignore'].forEach(name => {
+  ['NOTICE', 'THIRD_PARTY_NOTICES.md', 'package.json', 'package-lock.json', '.gitignore', 'catalog-providers.json'].forEach(name => {
     if (fs.existsSync(path.join(ROOT, name))) add(name);
   });
   ['apps', 'native', 'data'].forEach(tree);
@@ -160,6 +160,23 @@ function main() {
     compareSource(tarMembers(target, component.kind), component); archives.set(artifact.name, bytes); names.add(component.id);
     artifact.url = 'https://github.com/' + REPOSITORY + '/releases/download/' + component.id + '@' + version + '/' + artifact.name;
   });
+  const ownComponents = catalog.components.slice();
+  const appComponent = ownComponents.find(component => component.kind === 'app');
+  const appManifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'apps', appComponent.id, 'mgu-app.json'), 'utf8'));
+  const iconBytes = readPublicFile(path.join(ROOT, 'apps', appComponent.id, appManifest.tree,
+    'rhmiData', 'variantGroups', 'Common', 'images', 'kaluga_camera.png'),
+    'apps/' + appComponent.id + '/' + appManifest.tree + '/rhmiData/variantGroups/Common/images/kaluga_camera.png');
+  const iconName = appComponent.id + '.png';
+  appComponent.icon = 'https://github.com/' + REPOSITORY + '/releases/download/' + appComponent.id + '@' + version + '/' + iconName;
+  appComponent.iconSha256 = sha256(iconBytes);
+  const providers = JSON.parse(fs.readFileSync(path.join(ROOT, 'catalog-providers.json'), 'utf8'));
+  assert(providers.length === 2, 'Expected shared Waze service and cluster renderer');
+  providers.forEach(component => {
+    assert(['waze-on-cluster', 'cluster-render'].includes(component.id) && component.kind === 'tool', 'Unexpected shared component');
+    assert(component.artifact && component.artifact.url.startsWith('https://github.com/robertnisipeanu/idrive-apps/releases/download/'), 'Shared tool must retain its official release');
+    assert(!catalog.components.some(c => c.id === component.id), 'Duplicate shared component');
+    catalog.components.push(component);
+  });
   const source = collectSource();
   // A fresh HTTPS path can be used when a car cannot refresh its GitHub
   // release source. Artifact URLs above already point at immutable releases.
@@ -178,10 +195,11 @@ function main() {
     const destination = path.join(exported, name); fs.mkdirSync(path.dirname(destination), { recursive: true }); fs.writeFileSync(destination, bytes);
   });
   archives.forEach((bytes, name) => fs.writeFileSync(path.join(assets, name), bytes));
+  fs.writeFileSync(path.join(assets, iconName), iconBytes);
   fs.writeFileSync(path.join(assets, 'catalog.json'), JSON.stringify(catalog, null, 2) + '\n');
   fs.writeFileSync(path.join(exported, '.gitignore'), 'dist/\nnode_modules/\n*.pbf\n*.osm.pbf\n.env\n.env.*\n');
-  const notes = '# Камеры • Калуга ' + version + '\n\n' +
-    'Экспериментальный кандидат для BMW MGU iDrive 7. Реальный автомобиль ещё не испытан.\n\n' +
+  const notes = '# Waze Стрелка ' + version + '\n\n' +
+    'Клон открытого Waze on Cluster с полным меню карты, HUD, CarPlay, Android Auto и журналов плюс раздел камер. Проверено на компьютере; systemd, GPS и отображение на реальном автомобиле ещё не подтверждены.\n\n' +
     'Офлайн-снимок OSM Калужской области: ' + dataCounts.total + ' точек, ' + dataCounts.city + ' в Калуге, ' + dataCounts.withLimit + ' с числовым лимитом. ' +
     dataCounts.zones + ' дорожных зон допускают условные предупреждения при достоверном GPS и однозначном сопоставлении. ' +
     'Это не полная база камер. Оба выхода изначально выключены.\n\n' +
@@ -202,9 +220,10 @@ function main() {
     'gh repo create ' + quotePowerShell(REPOSITORY) + ' --public --source $source --remote origin --push',
     ''
   ];
-  catalog.components.forEach(component => {
+  ownComponents.forEach(component => {
     commands.push('gh release create ' + quotePowerShell(component.id + '@' + version) +
-      ' (Join-Path $assets ' + quotePowerShell(component.artifact.name) + ') --repo ' + quotePowerShell(REPOSITORY) +
+      ' (Join-Path $assets ' + quotePowerShell(component.artifact.name) + ')' +
+      (component.kind === 'app' ? ' (Join-Path $assets ' + quotePowerShell(iconName) + ')' : '') + ' --repo ' + quotePowerShell(REPOSITORY) +
       ' --target main --title ' + quotePowerShell(component.id + ' ' + version) + ' --notes-file $notes');
   });
   commands.push('', '# Publish catalog LAST, after both version assets exist.',
@@ -219,7 +238,8 @@ function main() {
   });
   fs.writeFileSync(path.join(output, 'commands.ps1'), checkedCommands.join('\n'));
   const manifest = { repository: REPOSITORY, version, dataCounts, sourceTimestamp: snapshot.sourceTimestamp, sourceFiles: Array.from(source.keys()).sort(),
-    assets: catalog.components.map(component => ({ name: component.artifact.name, size: component.artifact.size, sha256: component.artifact.sha256 })),
+    assets: ownComponents.map(component => ({ name: component.artifact.name, size: component.artifact.size, sha256: component.artifact.sha256 })),
+    icon: { name: iconName, size: iconBytes.length, sha256: sha256(iconBytes) },
     catalogSha256: sha256(fs.readFileSync(path.join(assets, 'catalog.json'))), published: false };
   fs.writeFileSync(path.join(output, 'prepared.json'), JSON.stringify(manifest, null, 2) + '\n');
   process.stdout.write('Prepared only; nothing published or authenticated.\n' + output + '\n' +

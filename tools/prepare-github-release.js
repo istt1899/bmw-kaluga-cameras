@@ -125,9 +125,9 @@ function collectSource() {
   ['NOTICE', 'THIRD_PARTY_NOTICES.md', 'package.json', 'package-lock.json', '.gitignore', '.gitattributes', 'catalog-providers.json', 'tools/canonical-bytes.js'].forEach(name => {
     if (fs.existsSync(path.join(ROOT, name))) add(name);
   });
-  ['apps', 'native', 'data', 'docs', 'tools/fixtures'].forEach(tree);
+  ['apps', 'native', 'data', 'docs', 'tools/fixtures', '.github'].forEach(tree);
   fs.readdirSync(path.join(ROOT, 'tools')).sort().forEach(name => {
-    if (/^(?:build\.js|build-road-zones\.mjs|build-enforcement-relations\.mjs|build-camera-database\.js|build-camera-font\.py|prepare-github-release\.js|test[-_][A-Za-z0-9_-]+\.js|[A-Za-z0-9_-]+\.test\.js)$/.test(name)) add('tools/' + name);
+    if (/^(?:build\.js|build-road-zones\.mjs|build-enforcement-relations\.mjs|build-osm-camera-snapshot\.mjs|build-camera-database\.js|build-camera-font\.py|camera-source-policy\.js|import-gibdd-kaluga\.py|check-camera-source-updates\.py|test_[A-Za-z0-9_]+\.py|prepare-github-release\.js|test[-_][A-Za-z0-9_-]+\.js|[A-Za-z0-9_-]+\.test\.js)$/.test(name)) add('tools/' + name);
   });
   ['oap_link.js', 'oap_pack.js', 'mgu-install.js', 'mgu-deploy.js', 'LICENSE'].forEach(name => add('tools/upstream/' + name));
   if (fs.existsSync(path.join(ROOT, 'tools', 'upstream', 'UPSTREAM.json'))) add('tools/upstream/UPSTREAM.json');
@@ -192,7 +192,7 @@ function main() {
   assert(reported.source === 'owner-report' && reported.region === snapshot.region && reported.basePbfMd5 === snapshot.pbfMd5, 'Reported reference must match base region');
   const relations = JSON.parse(fs.readFileSync(path.join(ROOT, 'native', 'marku-kaluga-cameras', 'files', 'enforcement-relations.json'), 'utf8'));
   const fullData = require('./build-camera-database').bundle();
-  const dataCounts = { total: fullData.records.length, relations: relations.records.length, osm: snapshot.records.length, reported: reported.records.length,
+  const dataCounts = { total: fullData.records.length, relations: relations.records.length, osm: snapshot.records.length, reported: reported.records.length, official: fullData.officialCount||0,
     city: snapshot.records.filter(record => record.inKalugaCity).length,
     withLimit: snapshot.records.filter(record => typeof record.limitKmh === 'number').length, zones: roadZones.zones.length };
   const assets = path.join(output, 'assets'); const exported = path.join(output, 'source');
@@ -205,14 +205,13 @@ function main() {
   fs.writeFileSync(path.join(assets, 'catalog.json'), JSON.stringify(catalog, null, 2) + '\n');
   fs.writeFileSync(path.join(exported, '.gitignore'), 'dist/\nnode_modules/\n*.pbf\n*.osm.pbf\n.env\n.env.*\n');
   const notes = '# Waze Стрелка ' + version + '\n\n' +
-    'Настройки уведомлений вынесены прямо на первую страницу «Камеры». Для проекции HUD и приборной панели сохраняются отдельные профили: положение, размер 75–150%, яркость 10–100%, прозрачность 0–90%.\n\n' +
-    'Тест закрепляется на выбранном экране до явного завершения. Стрелки перемещают карточку примерно на 10 пикселей реального холста; изменения сразу видны без пересоздания слоя. «Сохранить и завершить тест» скрывает образец и подтверждает сохранение либо явно сообщает о временных настройках. Сброс касается только выбранного экрана.\n\n' +
-    'Тест автоматически скрывается при движении, устаревшей скорости или выключении выбранного выхода. Данные теста не становятся реальным обнаружением камеры. Все настройки применяются и к реальным предупреждениям. Карта телефона, её прозрачность и штатные показания BMW не изменяются.\n\n' +
-    'Геометрия ограничивается фактическими размерами renderer. Неизвестный холст не заменяется предположением; слишком маленький холст явно отклоняется. Граница холста не является подтверждённой безопасной областью HUD. Физическое размещение и читаемость требуют проверки на автомобиле.\n\n' +
-    'База: ' + dataCounts.total + ' записей = ' + dataCounts.osm + ' исходных OSM-точек + ' + dataCounts.relations + ' дополнительных устройств из enforcement relations + ' + dataCounts.reported + ' сообщение владельца. Тульское шоссе — Генерала Попова учтено через relation 10391645. Исходные ' + dataCounts.zones + ' дорожных зон сохранены. Это неполный набор открытых данных.\n\n' +
-    'Добавлены независимая проверка базы по опубликованному источнику, валидация размера/SHA/региона/связей, атомарная активация и откат. Ошибка сети не очищает рабочие данные. GPS в интернет не отправляется.\n\n' +
-    'Добавлено необязательное чтение улицы BMW; отсутствие интерфейса обрабатывается явно. Безопасные параметры штатного звука и канал BMW Traffic Camera Information пока не подтверждены: воспроизведение gong и переключение радио не включены. Видимость новых карточек, дополнительная улица и размеры требуют проверки на автомобиле.\n\n' +
-    'Обновить приложение и сервис до ' + version + '. Проекция карты, прозрачность и идентификаторы сохранены. © OpenStreetMap contributors, ODbL 1.0. Подробности и приёмка — в README и docs/.\n';
+    'Расширена база открытых источников Калуги и Калужской области. В комплекте ' + dataCounts.total + ' координатных записей источников: ' + dataCounts.official + ' официальные позиции Госавтоинспекции + ' + (dataCounts.osm + dataCounts.relations) + ' OSM-записей (' + dataCounts.osm + ' узлов и ' + dataCounts.relations + ' устройств из enforcement relations) + ' + dataCounts.reported + ' сообщение владельца. Это число записей источников, а не физических комплексов: сведения о том же рубеже сохраняют разное происхождение.\n\n' +
+    'Официальный перечень опубликован на 01.10.2026. Из 155 нормализованных позиций три исключены из рабочих предупреждений для географической проверки; две дополнительные исходные строки имеют неразбираемую долготу. 184 мобильных парковочных маршрута остаются отдельным аудитом и не превращаются в неподвижные камеры. Сохранены адреса, условия работы и опубликованные виды контроля; первичный XLSX и SHA доступны в исходниках.\n\n' +
+    'Для Плеханова — Суворова и Тульского шоссе — Генерала Попова добавлен проверенный контекст официального места контроля. Лимиты скорости, азимут и фиксация спереди/сзади остаются неизвестными, если источник их не сообщает. Условия встречного/попутного движения и тип оборудования не подменяют эти поля. Покрытие неполное; базы Яндекса, Стрелки, RadarBase, Mapcam и Radarbot не скопированы.\n\n' +
+    'Добавлены реестр прав и происхождения данных и ручная проверка источников на компьютере/GitHub Actions. По умолчанию загружаются официальный XLSX и небольшие OSM state/MD5; загрузка PBF и нормализация включаются отдельно. Изменение хэша регионального архива не объявляется изменением камер. Новый источник сохраняется кандидатом для ручной проверки; неизвестная дата публикации не угадывается. Расписание и автоматическая публикация не включены. GPS автомобиля не передаётся.\n\n' +
+    'Новый сервис использует отдельный канал данных data/manifest-v2.json. Старый data/manifest.json сохранён для прежних клиентов. Обновить приложение и сервис до ' + version + ', затем использовать «Проверить базу» для соответствующего канала. Размер, SHA-256, регион и связи проверяются до активации; при ошибке сохраняется рабочая база, доступен откат.\n\n' +
+    'Сохранены ' + dataCounts.zones + ' дорожных зон, проекция карты и её прозрачность, отдельная калибровка HUD и приборов на первой странице «Камеры». Данные теста остаются тестовыми; физическое размещение, читаемость и подъезды к камерам требуют проверки на автомобиле. Штатный gong и канал BMW Traffic Camera Information не объявляются подключёнными.\n\n' +
+    '© OpenStreetMap contributors, ODbL 1.0. Официальные материалы: Госавтоинспекция МВД России, Калужская область, https://госавтоинспекция.рф/r/40; воспроизведение со ссылкой по условиям сайта МВД. Подробности источников, ограничений и обновления — в README и docs/camera-source-*.md.\n';
   fs.writeFileSync(path.join(output, 'release-notes.md'), notes);
   const commands = [
     '# Review source/ and assets/ before running. This file has NOT been executed.',

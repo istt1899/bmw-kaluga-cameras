@@ -1,0 +1,122 @@
+{
+  "schema": 1,
+  "checkedAt": "2026-11-07T09:21:57Z",
+  "region": "RU-KLU",
+  "official": {
+    "sourceUrl": "https://xn--80aebkobnwfcnsfk1e0h.xn--p1ai/upload/site40/report/publication/file/sayt_oktyabr.xlsx",
+    "publishedAt": "2026-10-01",
+    "sha256": "a62b2858aecdbeb63e43445b556c9db9d6c628e674c9e96fb5a5a01074d16089",
+    "sourceRows": 155,
+    "parsedRows": 153,
+    "positions": 155,
+    "rejectedCoordinateRows": [
+      {
+        "sourceRow": 110,
+        "address": "Калужская область, г. Калуга ул. Московская км. 8+475 (в районе д. 313 по ул. Московской)",
+        "coordinatesRaw": "54.583501, 36253101",
+        "reason": "COORDINATE_UNPARSEABLE_NO_INFERRED_DECIMAL"
+      },
+      {
+        "sourceRow": 111,
+        "address": "Калужская область, г. Калуга ул. Кутузова км. 0+567 (в районе пешеходного перехода по ул. Кутузова д.27)",
+        "coordinatesRaw": "54.502791, 36259826",
+        "reason": "COORDINATE_UNPARSEABLE_NO_INFERRED_DECIMAL"
+      }
+    ],
+    "geographicExclusions": [
+      {
+        "id": "gibdd:ru-klu:b66b02d12f089fad",
+        "reason": "SOURCE_ROW_135_OUTSIDE_RU_KLU_BOUNDARY_81995",
+        "sourceUrl": "https://www.openstreetmap.org/relation/81995"
+      },
+      {
+        "id": "gibdd:ru-klu:c4db9268f4dea2a9",
+        "reason": "SOURCE_ROW_138_OUTSIDE_RU_KLU_BOUNDARY_81995",
+        "sourceUrl": "https://www.openstreetmap.org/relation/81995"
+      },
+      {
+        "id": "gibdd:ru-klu:14519163cb406f36",
+        "reason": "SOURCE_ROW_155_M3_ADDRESS_COORDINATES_REQUIRE_REVIEW",
+        "sourceUrl": "https://xn--80aebkobnwfcnsfk1e0h.xn--p1ai/upload/site40/report/publication/file/sayt_oktyabr.xlsx"
+      }
+    ],
+    "runtimePositions": 152,
+    "mobileParkingRoutesExcluded": 184,
+    "mobileRoutePointMentions": 553
+  },
+  "osm": {
+    "sourceUrl": "https://download.openstreetmap.fr/extracts/russia/central_federal_district/kaluga_oblast.osm.pbf",
+    "snapshotAt": "2026-11-07T00:07:21.000Z",
+    "sha256": "e91bb43834e2130bd1c1f13b7e51a827f2ac69e4e49a215f98a82ed7d29d59bb",
+    "md5": "b9f2d2dc703146be0e54a324907bf7e3",
+    "counts": {
+      "mappedEnforcementPoints": 155,
+      "mappedSpeedCameraPoints": 150,
+      "relationDeviceOnlyPoints": 5,
+      "enforcementRelations": 5,
+      "reviewCandidates": 55,
+      "inactiveRecords": 0,
+      "excludedOutsideBoundary": 5
+    },
+    "cameraFactChangesSince20261105": 0,
+    "matchedBoundary": 81995
+  },
+  "manualSiteLinks": [
+    {
+      "osmId": "osm:node:11980400006",
+      "officialId": "gibdd:ru-klu:fc2bb7199a68c7be",
+      "scope": "enforcement-location"
+    },
+    {
+      "osmId": "osm:node:12157150894",
+      "officialId": "gibdd:ru-klu:fc2bb7199a68c7be",
+      "scope": "enforcement-location"
+    },
+    {
+      "osmId": "osm:node:12157150895",
+      "officialId": "gibdd:ru-klu:fc2bb7199a68c7be",
+      "scope": "enforcement-location"
+    },
+    {
+      "osmId": "osm:node:3199757952",
+      "officialId": "gibdd:ru-klu:879442e4478e4722",
+      "scope": "enforcement-location"
+    }
+  ],
+  "m3DiscrepancyEvidence": [
+    {
+      "id": "gibdd:ru-klu:14519163cb406f36",
+      "sourceRow": 155,
+      "address": "Калужская обл., Бабынинский район, автомобильная дорога М3 \"Украина \"Москва-Калуга-Брянск-граница с Украиной\" 195+600",
+      "sourcePosition": {
+        "lat": 54.451335,
+        "lon": 34.82765
+      },
+      "matchedM3WayCount": 614,
+      "nearestMappedM3": {
+        "distanceM": 44482.86678338037,
+        "wayId": 996578007,
+        "ref": "М-3",
+        "waySourceUrl": "https://www.openstreetmap.org/way/996578007",
+        "segmentNodeIds": [
+          374105000,
+          85249038
+        ],
+        "projectionForDistanceOnly": {
+          "lat": 54.1653849,
+          "lon": 35.3077385
+        }
+      },
+      "note": "This projection measures discrepancy, not a proposed replacement coordinate."
+    }
+  ],
+  "countUnit": "source position records; not deduplicated physical devices",
+  "completeness": "not established",
+  "unknowns": [
+    "numeric limits in police workbook",
+    "camera hardware models in police workbook",
+    "capture side and travel bearings in police workbook",
+    "current operating status",
+    "unlisted/new/mobile installations"
+  ]
+}

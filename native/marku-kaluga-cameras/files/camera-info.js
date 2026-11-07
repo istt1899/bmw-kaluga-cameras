@@ -3,27 +3,37 @@
 // enforcement or of a particular hardware model.
 const fs = require('fs');
 const LABELS = { speed: 'Контроль скорости', redlight: 'Контроль светофора', average: 'Средняя скорость',
-    stopline: 'Стоп-линия', belt: 'Контроль ремня', pedestrian: 'Пешеходный переход', lane: 'Контроль полосы', phone: 'Контроль телефона' };
+    stopline: 'Стоп-линия', belt: 'Контроль ремня', pedestrian: 'Пешеходный переход', lane: 'Контроль полосы', phone: 'Контроль телефона',
+    signs_marking: 'Знаки и разметка', road_position: 'Расположение ТС / встречный разъезд / обгон' };
 function controls(camera) {
-    const source = camera && camera.controls || [camera && camera.type];
+    const context = camera && camera.officialSiteContext;
+    const source = (camera && camera.controls || [camera && camera.type]).concat(
+        context && context.scope === 'enforcement-location' && Array.isArray(context.controls) ? context.controls : []);
     return source.filter((c, i) => LABELS[c] && source.indexOf(c) === i);
 }
 function title(camera) {
     if (camera && camera.provenance === 'owner-report') return 'Камера: тип не подтверждён';
     const c = controls(camera);
-    if (c.indexOf('redlight') >= 0 && c.indexOf('speed') >= 0) return 'Светофор и скорость';
+    if (c.length === 2 && c.indexOf('redlight') >= 0 && c.indexOf('speed') >= 0) return 'Светофор и скорость';
     return c.map(k => LABELS[k]).join(' / ') || 'Камера';
 }
 function describe(camera) {
+    const context = camera.officialSiteContext && camera.officialSiteContext.scope === 'enforcement-location' ? camera.officialSiteContext : null;
     const side = ['front','rear'].indexOf(camera.captureSide)>=0 && typeof camera.captureSideSourceUrl==='string' &&
         /^https:\/\/(?:www\.)?openstreetmap\.org\/(?:node|way|relation)\/\d+$/.test(camera.captureSideSourceUrl) &&
         Number.isFinite(Date.parse(camera.captureSideVerifiedAt)) ? camera.captureSide : null;
-    return { type: controls(camera).indexOf('redlight') >= 0 ? 'redlight' : camera.type || 'speed', controls: controls(camera), title: title(camera),
+    return { type: controls(camera).indexOf('redlight') >= 0 ? 'redlight' : camera.type || 'speed', controls: controls(camera), controlLabels: controls(camera).map(k=>LABELS[k]), title: title(camera),
         cameraLimitKmh: camera.limitKmh === undefined ? null : camera.limitKmh,
         description: camera.description || null, sourceUrl: camera.sourceUrl || null,
         provenance: camera.provenance || 'OpenStreetMap', positionKind: camera.positionKind || 'camera-node',
         positionSourceUrl: camera.positionSourceUrl || camera.sourceUrl || null,
         reportStatus: camera.reportStatus || null,
+        sourcePublishedAt: context && context.sourcePublishedAt || camera.sourcePublishedAt || null, sourceRow: context && context.sourceRow || camera.sourceRow || null,
+        operatingConditions: context && context.operatingConditions || camera.operatingConditions || null, rawControls: context && context.rawControls || camera.rawControls || null,
+        unmappedControls: camera.unmappedControls || null,
+        controlScope: context || camera.positionKind === 'official-location' ? 'enforcement-location' : 'mapped-source-object',
+        officialSourceUrl: context && context.sourceUrl || (camera.provenance === 'Госавтоинспекция' ? camera.sourceUrl : null),
+        officialSourceRecordId: context && context.sourceRecordId || (camera.provenance === 'Госавтоинспекция' ? camera.id : null),
         captureDirection: side,
         captureDirectionVerified: !!side,
         captureDirectionSource: side ? camera.captureSideSourceUrl : null,

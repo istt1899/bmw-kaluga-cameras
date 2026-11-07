@@ -39,14 +39,18 @@ function model(state) {
     const fresh=Number.isFinite(fixAge)&&fixAge>=-500&&fixAge<=3000;
     const limit=Number.isFinite(c.cameraLimitKmh)?c.cameraLimitKmh:Number.isFinite(c.limitKmh)?c.limitKmh:c.limit;
     const capture={front:'спереди',rear:'сзади',both:'спереди и сзади'}[c.captureDirection]||'направление неизвестно';
+    const providers=db.sourceMetadata&&Array.isArray(db.sourceMetadata.providers)?db.sourceMetadata.providers:[],
+        official=providers.find(p=>p.id==='gibdd-official');
     const text = {
         cameraStatus: connected ? (s.enabled ? 'Предупреждения включены' : 'Предупреждения выключены') : 'Сервис недоступен',
         cameraAlert: a ? clean(a.title || TYPES[a.type] || a.type, 'Камера') + ' • ' + distance(a.distanceM===undefined?a.distance:a.distanceM) +
             (a.positionKind === 'intersection' ? ' • до перекрёстка' : a.confidence === 'nearby' ? ' • рядом' : ' • по дороге') + (a.limit ? ' • лимит ' + a.limit : '') :
             s.nearest ? clean(s.nearest.title || TYPES[s.nearest.type], 'Камера') + ' • ' + distance(s.nearest.distanceM) + (s.nearest.positionKind === 'intersection' ? ' • до перекрёстка' : ' • рядом') : 'Активных предупреждений нет',
         cameraDescription: 'Описание камеры: ' + clean((a || s.nearest || {}).description, 'не указано в базе'),
-        cameraDatabase: connected ? 'База: ' + clean(db.source, 'нет источника') + ' • ' + count + ' объектов' : 'База: ожидание ответа сервиса',
-        cameraDate: connected ? 'Дата базы: ' + date(db.updated || db.generatedAt || db.sourceUpdated) : 'Дата базы: ожидание ответа сервиса',
+        cameraDatabase: connected ? db.officialCount?'База: OSM '+((db.osmCount||0)+(db.relationCount||0))+' • ГИБДД '+db.officialCount+' • всего '+count+' записей':
+            'База: ' + clean(db.source, 'нет источника') + ' • ' + count + ' объектов' : 'База: ожидание ответа сервиса',
+        cameraDate: connected ? official?'Сборка: '+date(db.generatedAt)+' • перечень ГИБДД: '+date(official.publishedAt):
+            'Дата базы: ' + date(db.updated || db.generatedAt || db.sourceUpdated) : 'Дата базы: ожидание ответа сервиса',
         cameraGps: 'Положение: ' + clean(s.gps, 'нет подтверждённых координат'),
         cameraMotion:'Скорость: '+(fresh&&Number.isFinite(fix.speedKmh)?Math.round(fix.speedKmh)+' км/ч':'нет свежих данных'),
         cameraStreet:street.name?'Улица: '+clean(street.name,'—')+' • '+clean(street.source,'BMW'):

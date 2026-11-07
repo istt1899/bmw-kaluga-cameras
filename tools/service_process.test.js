@@ -28,7 +28,7 @@ async function delayedStartup() {
   var start = setTimeout(function () { child = launch(socket, path.join(root, 'normal')); }, 150);
   try {
     var state = await pending;
-    assert.strictEqual(state.database.count, 156);
+    assert.strictEqual(state.database.count, 308);
     assert.strictEqual(state.database.osmCount, 150); assert.strictEqual(state.database.reportedCount, 1);
     assert.strictEqual(state.gpsFix, null);
     assert.strictEqual(state.hudOpacityPct, 100);
@@ -40,7 +40,7 @@ async function badStorage() {
   var socket = socketPath(), child = launch(socket, obstacle);
   try {
     var state = await probe({ socket: socket, checkPermissions: false, version: VERSION, timeoutMs: 5000, retryMs: 30 });
-    assert.strictEqual(state.database.count, 156);
+    assert.strictEqual(state.database.count, 308);
     assert.strictEqual(state.database.osmCount, 150); assert.strictEqual(state.database.reportedCount, 1);
     assert.strictEqual(state.storage.persistent, false);
     console.log('PASS real child unavailable storage: status and database remain reachable');
@@ -70,7 +70,7 @@ async function staleSocket() {
   var child = launch(socket, path.join(root, 'stale'));
   try {
     var state = await probe({ socket: socket, checkPermissions: false, version: VERSION, timeoutMs: 5000, retryMs: 30 });
-    assert.strictEqual(state.database.count, 156);
+    assert.strictEqual(state.database.count, 308);
     assert.strictEqual(state.database.osmCount, 150); assert.strictEqual(state.database.reportedCount, 1);
     console.log('PASS stale Unix socket is replaced after a refused connection');
   } finally { await stop(child); }

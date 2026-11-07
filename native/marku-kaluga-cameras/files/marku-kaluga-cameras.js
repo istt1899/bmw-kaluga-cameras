@@ -4,6 +4,7 @@ var GpsProvider = require('./gps-source').GpsProvider;
 var cameraInfo = require('./camera-info');
 var actionPolicy = require('./action-policy'), dataModule = require('./database-store');
 var cardLayout = require('./card-layout');
+var officialData = require('./official-camera-data'), databaseVersion = require('./database-version.json');
 var crypto = require('crypto');
 function validPosition(f, now) {
   return f && [f.timeMs, f.lat, f.lon, f.accuracyM, now].every(Number.isFinite) && Math.abs(f.lat) <= 90 &&
@@ -57,7 +58,7 @@ function start(options) {
   var settingsPath = path.join(dataDir, 'settings.json'), settings;
   try { settings = readSettings(settingsPath); }
   catch (e) { storageError = e.message; settings = { enabled: true, outputs: { cluster: false, hud: false }, hudOpacityPct: 100, cardLayout: cardLayout.defaultLayouts() }; }
-  var state = { serviceVersion: '0.4.2', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
+  var state = { serviceVersion: '0.5.0', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
     cardLayout: settings.cardLayout,
     street: { name: null, source: 'BMW', state: 'unavailable', reason: 'Название улицы BMW ещё не получено', observedAtMs: null },
     audio: { available: false, reason: 'Безопасный звуковой канал BMW не подтверждён' },
@@ -68,18 +69,36 @@ function start(options) {
     gpsBridge: { state: 'stopped', errorCode: null, ageMs: null },
     gpsInput: { source: 'bmw-nmea', packets: 0, badPackets: 0, checksumErrors: 0, sentences: { RMC: 0, GGA: 0, GST: 0 }, lastPacketAgeMs: null, fixUtcAgeMs: null },
     database: { state: 'error', source: 'OpenStreetMap', count: 0, error: null },
+    sourceAssembly: { state: 'loading', wantedVersion: databaseVersion.version, selectedVersion: null, activeVersion: null, errorCode: null, reason: null },
     renderer: 'off', alert: null, nearest: null, error: null, diagnostic: 'No confirmed road; nearby points are diagnostic only',
     storage: { persistent: !storageError, settingsSaved: false, error: storageError } };
   var database = null, guidance = null, display = null, dimmer = null, store = null, audio = null, commandCounter = 0, clients = [], lastStatus = '', closed = false, ownsSocket = false, server;
+  var selectedVersion = databaseVersion;
   try {
-    database = loadDatabase(options.database || path.join(__dirname, 'kaluga-speed.json'));
-    cameraInfo.enrich(database, options.cameraDetails || path.join(__dirname, 'camera-details.json'));
-    cameraInfo.supplement(database, options.reportedCameras || path.join(__dirname, 'reported-cameras.json'));
-    database = dataModule.mergeRelations(database, JSON.parse(fs.readFileSync(options.enforcementRelations || path.join(__dirname, 'enforcement-relations.json'), 'utf8')));
-    state.database = { state: 'ready', source: database.displaySource || database.source, baseSource: database.source,
-      osmCount: database.osmCount, reportedCount: database.reportedCount, updated: database.sourceTimestamp, count: database.records.length,
-      version: database.version, error: null, licence: database.licence, metadataRetrievedAt: database.metadataRetrievedAt };
-  } catch (e) { state.database.error = e.message; }
+    // Assemble independently; a failed optional source must never acquire the
+    // latest version stamp or replace a complete stored database.
+    var candidate = loadDatabase(options.database || path.join(__dirname, 'kaluga-speed.json'));
+    cameraInfo.enrich(candidate, options.cameraDetails || path.join(__dirname, 'camera-details.json'));
+    cameraInfo.supplement(candidate, options.reportedCameras || path.join(__dirname, 'reported-cameras.json'));
+    candidate = dataModule.mergeRelations(candidate, JSON.parse(fs.readFileSync(options.enforcementRelations || path.join(__dirname, 'enforcement-relations.json'), 'utf8')));
+    try {
+      database = officialData.augment(candidate,
+        JSON.parse(fs.readFileSync(options.officialCatalog || path.join(__dirname, 'gibdd-kaluga.json'), 'utf8')),
+        JSON.parse(fs.readFileSync(options.officialQuality || path.join(__dirname, 'official-camera-quality.json'), 'utf8')));
+      state.sourceAssembly.state = 'complete';
+    } catch (sourceError) {
+      database = candidate; selectedVersion = databaseVersion.legacy;
+      if (!selectedVersion) throw sourceError;
+      state.sourceAssembly.state = 'legacy-fallback';
+      state.sourceAssembly.errorCode = 'OFFICIAL_SOURCE_ASSEMBLY_FAILED';
+      state.sourceAssembly.reason = String(sourceError.code || sourceError.message).slice(0,300);
+    }
+    state.sourceAssembly.selectedVersion = selectedVersion.version;
+  } catch (e) {
+    database = null; state.database.error = e.message;
+    state.sourceAssembly.state = 'unavailable'; state.sourceAssembly.errorCode = 'BUNDLED_SOURCE_ASSEMBLY_FAILED';
+    state.sourceAssembly.reason = String(e.code || e.message).slice(0,300);
+  }
   try {
     if (!options.guidance) {
       var zones = JSON.parse(fs.readFileSync(path.join(__dirname, 'road-zones.json'), 'utf8'));
@@ -105,7 +124,8 @@ function start(options) {
   }
   function describeDatabase(bundle) {
     return { state: 'ready', source: bundle.displaySource || bundle.source, baseSource: bundle.source,
-      osmCount: bundle.osmCount, reportedCount: bundle.reportedCount, relationCount: bundle.relationCount || 0,
+      osmCount: bundle.osmCount, reportedCount: bundle.reportedCount, relationCount: bundle.relationCount || 0, officialCount: bundle.officialCount || 0,
+      sourceMetadata: bundle.sourceMetadata || null, countUnit: 'source-position-records',
       updated: bundle.sourceTimestamp, generatedAt: bundle.generatedAt, count: bundle.records.length, version: bundle.version,
       sha256: crypto.createHash('sha256').update(JSON.stringify(bundle)).digest('hex'), digestKind: 'canonical-json',
       licence: bundle.licence, region: bundle.region, coverage: 'Неполное покрытие открытых источников',
@@ -115,6 +135,7 @@ function start(options) {
   function activateDatabase(bundle) {
     var nextGuidance = options.guidance || require('./vehicle-guidance').createGuidance({ zones: bundle.zones, records: bundle.records });
     database = bundle; guidance = nextGuidance; state.database = describeDatabase(bundle);
+    state.sourceAssembly.activeVersion = bundle.version;
   }
   function updateStatus(value) {
     state.databaseUpdate = Object.assign({}, value, { source: dataModule.SOURCE_URL, busy: ['checking','downloading','installing'].indexOf(value.phase) >= 0 });
@@ -122,16 +143,20 @@ function start(options) {
       installing: 'Проверяю и сохраняю новую базу', current: 'База актуальна', updated: 'База обновлена', 'rolled-back': 'Предыдущая база восстановлена',
       'recovered-from-previous': 'Повреждение активной базы: загружена предыдущая версия',
       'recovered-from-packaged': 'Локальная база недоступна: загружена база из пакета',
+      'bundled-upgraded': 'База из нового пакета применена; предыдущая сохранена',
+      'bundled-upgrade-error': 'Не удалось применить базу нового пакета; проверьте хранилище',
+      'rollback-pinned': 'Выбранный откат сохранён; проверка обновлений снимет закрепление',
       error: 'Не удалось обновить базу; рабочие данные сохранены' };
     state.databaseUpdate.message = messages[value.phase] || value.phase;
     if (value.errorCode === 'UPDATE_RESTORE_FAILED') state.databaseUpdate.message = 'Ошибка носителя: восстановление базы на диске не подтверждено';
+    if (value.errorCode === 'ROLLBACK_PIN_RESTORE_FAILED') state.databaseUpdate.message = 'Восстановление отметки отката не подтверждено; проверьте диагностику базы';
     if (value.errorCode) state.databaseUpdate.message += ' (' + value.errorCode + ')';
   }
   try {
     if (database) {
-      var initialBundle = Object.assign({}, database, { schema: 1, version: '2026.11.6.1', generatedAt: '2026-11-06T00:00:00.000Z',
+      var initialBundle = Object.assign({}, database, { schema: 1, version: selectedVersion.version, generatedAt: selectedVersion.generatedAt,
         source: database.displaySource || database.source, zones: zones && zones.zones || [] });
-      initialBundle.records = initialBundle.records.map(function (record) { return Object.assign({}, record, { controls: cameraInfo.controls(record) }); });
+      initialBundle.records = initialBundle.records.map(function (record) { return Object.assign({}, record, { controls: cameraInfo.controls(Object.assign({},record,{officialSiteContext:null})) }); });
       store = (options.storeFactory || dataModule.createStore)({ dataDir: dataDir, initial: initialBundle, onChange: activateDatabase, onStatus: updateStatus });
       activateDatabase(store.current()); updateStatus(store.status()); state.capabilities.update = true;
     }

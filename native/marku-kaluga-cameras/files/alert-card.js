@@ -4,7 +4,7 @@ const fonts = require('./camera-font.json').sizes.map(s => Object.assign({}, s, 
 const width = 320, height = 96;
 const types = {
     speed:'Скор.', lane:'Полоса', redlight:'Свет.', average:'Средн.', belt:'Ремень',
-    stopline:'Стоп', pedestrian:'Пешех.', phone:'Телеф.', camera:'Камера'
+    stopline:'Стоп', pedestrian:'Пешех.', phone:'Телеф.', signs_marking:'Размет.', road_position:'Расп.ТС', camera:'Камера'
 };
 function presentation(alert) {
     alert = alert || {};
@@ -14,9 +14,9 @@ function presentation(alert) {
     const limit = alert.roadConfirmed === true && Number.isFinite(alert.limitKmh) && alert.limitKmh > 0 && alert.limitKmh <= 300 ? Math.round(alert.limitKmh) : null;
     const speed = Number.isFinite(alert.speedKmh) && alert.speedKmh >= 0 && alert.speedKmh <= 400 ? Math.round(alert.speedKmh) : null;
     const direction = alert.captureDirectionVerified === true && ['front','rear'].indexOf(alert.captureDirection) >= 0 ? alert.captureDirection : 'unknown';
-    return { controls, limit, speed, direction,
+    return { controls, extraControls: Math.max(0,known.length-controls.length), limit, speed, direction,
         distance: Number.isFinite(alert.distanceM) && alert.distanceM >= 0 ? Math.round(alert.distanceM/10)*10 : null,
-        mode: alert.positionKind === 'intersection' ? 'Ориентир' : alert.roadConfirmed === true ? 'По дороге' : 'Рядом',
+        mode: alert.positionKind === 'intersection' ? 'Ориентир' : alert.roadConfirmed === true ? (alert.controlScope === 'enforcement-location' ? 'Рубеж' : 'По дороге') : 'Рядом',
         test: alert.test === true, calibration: alert.calibration === true,
         overspeed: alert.overspeed === true && limit !== null && speed !== null && speed > limit };
 }
@@ -69,6 +69,7 @@ function card(alert, target) {
     text(model.speed === null ? '— км/ч' : model.speed+' км/ч',231,42,18,model.overspeed?red:white,86);
     model.controls.forEach((type,index)=>{const x=6+index*106;icon(type,x,53);text(types[type],x+27,71,18,white,73);});
     text(model.test||model.calibration?'ТЕСТ':model.mode,7,90,18,muted,150);
+    if(model.extraControls)text('+'+model.extraControls,158,90,18,amber,38);
     text(model.direction==='front'?'В лоб':model.direction==='rear'?'Сзади':'Напр. ?',202,90,18,muted,111);
     if(model.calibration) {
         // Mark only this card's boundary. It cannot obscure the whole panel.

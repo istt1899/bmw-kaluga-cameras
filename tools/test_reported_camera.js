@@ -61,9 +61,10 @@ async function main() {
             display: { update: () => {}, status: () => 'off', close: () => {} },
             dimmer: { update: () => {}, status: () => 'off', close: () => {} } }); });
         const publicDb = app.state().database;
-        assert.strictEqual(publicDb.state, 'ready'); assert.strictEqual(publicDb.count, 156);
+        assert.strictEqual(publicDb.state, 'ready'); assert.strictEqual(publicDb.count, 308);
         assert.strictEqual(publicDb.osmCount, 150); assert.strictEqual(publicDb.reportedCount, 1);
-        assert.strictEqual(publicDb.source, 'OpenStreetMap + сообщения владельца + enforcement relations');
+        assert.strictEqual(publicDb.source, 'Mixed OSM + Госавтоинспекция + сообщения владельца');
+        assert.strictEqual(publicDb.officialCount,152);
         console.log('PASS real daemon startup advertises mixed-source database and separate OSM/reported counts');
     } finally {
         if (app) app.close();

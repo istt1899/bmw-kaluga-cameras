@@ -143,7 +143,11 @@ function reportPage(report, live, version, pageIndex, blockIndex, localResult, c
             existing.bridge,'GPS: '+clean(s.gps),existing.rejectReason],
         ['Объект: '+clean(c.id), 'Расстояние: '+n(c.distanceM===undefined?c.distance:c.distanceM,0)+' м • '+clean(c.positionKind),
             'Источник: '+clean(c.provenance||c.source)+' • '+clean(c.sourceUrl||c.positionSourceUrl),
-            'Типы: '+clean(Array.isArray(c.controls)&&c.controls.length?c.controls.join(', '):c.title||c.type||'тип не подтверждён'),
+            'Типы: '+clean(Array.isArray(c.controlLabels)&&c.controlLabels.length?c.controlLabels.join(', '):Array.isArray(c.controls)&&c.controls.length?c.controls.join(', '):c.title||c.type||'тип не подтверждён'),
+            'Область сведений: '+(c.controlScope==='enforcement-location'?'официальный рубеж; не параметры отдельного устройства':'объект карты'),
+            'Официальный источник: '+clean(c.officialSourceUrl)+' • строка '+clean(c.sourceRow)+' • дата '+clean(c.sourcePublishedAt),
+            'Условия из перечня: '+clean(c.operatingConditions), 'Нарушения из перечня: '+clean(c.rawControls),
+            'Не классифицировано: '+clean(c.unmappedControls),
             'Описание: '+clean(c.description),existing.limit,
             'Контроль: '+clean(c.captureDirectionVerified?{front:'спереди',rear:'сзади',both:'спереди и сзади'}[c.captureDirection]||'направление неизвестно':'направление неизвестно')+' • источник '+clean(c.captureDirectionSource),
             existing.mode,existing.reason,existing.way,existing.samples].concat(candidates.map((v,i)=>
@@ -164,19 +168,33 @@ function reportPage(report, live, version, pageIndex, blockIndex, localResult, c
             existing.dimmer,'Калибровка: '+clean(layout.calibration||layout.calibrationState||'не подтверждена'),
             'Размеры viewport логические; физический размер экрана не измерен'],
         [existing.database,'Версия: '+clean(db.version)+' • регион '+clean(db.region),
+            'Сборка источников: '+clean((s.sourceAssembly||{}).state)+' • выбрана '+clean((s.sourceAssembly||{}).selectedVersion)+' • нужна '+clean((s.sourceAssembly||{}).wantedVersion),
+            'Ошибка сборки источников: '+clean((s.sourceAssembly||{}).errorCode)+' • '+clean((s.sourceAssembly||{}).reason),
             'UTC базы: '+clean(db.updated||db.generatedAt||db.sourceTimestamp),
             'Хеш: '+clean(db.sha256||db.digest||db.pbfMd5),
-            'OSM '+clean(db.osmCount)+' • сообщения владельца '+clean(db.reportedCount)+' • отношения '+clean(db.relationCount),
+            'OSM '+clean(db.osmCount)+' • сообщения владельца '+clean(db.reportedCount)+' • отношения '+clean(db.relationCount)+' • ГИБДД '+clean(db.officialCount),
+            'Количество — записи источников, не число физических камер; совпадения автоматически не склеиваются',
             'Проверка: '+clean((s.databaseUpdate||{}).phase)+' • '+clean((s.databaseUpdate||{}).message),
             'Источник обновления: '+clean((s.databaseUpdate||{}).source||(s.databaseUpdate||{}).url),
             'Предыдущая база: '+clean(db.previousVersion||(s.databaseUpdate||{}).previousVersion),
             'Восстановление базы: '+clean(recovery.source||recovery.mode||update.phase)+' • причина '+clean(recovery.reasonCode),
             'До восстановления: '+clean(recovery.originalVersion)+' • загружена '+clean(recovery.recoveredVersion),
+            'База нового пакета: '+clean(update.bundledUpgrade&&update.bundledUpgrade.phase)+' • '+
+                clean(update.bundledUpgrade&&update.bundledUpgrade.fromVersion)+' → '+clean(update.bundledUpgrade&&update.bundledUpgrade.toVersion),
+            'Закреплённый откат: '+clean(update.rollbackPin&&update.rollbackPin.state)+' • версия '+clean(update.rollbackPin&&update.rollbackPin.pinnedVersion)+
+                ' • ошибка '+clean(update.rollbackPin&&update.rollbackPin.errorCode),
             'Сохранность записи: '+clean(durability.mode)+' • каталог '+
                 (durability.directorySynced===true?'синхронизирован':durability.directorySynced===false?'не синхронизирован':'не проверен')+
                 ' • '+clean(durability.reasonCode),
             'Пропущено: '+clean(db.skippedCount)+' • '+clean(db.coverageReason),
-            'Экспорт JSON — отдельное действие; данные GPS не отправляются автоматически']
+            'Экспорт JSON — отдельное действие; данные GPS не отправляются автоматически'].concat(
+                db.sourceMetadata&&Array.isArray(db.sourceMetadata.providers)?db.sourceMetadata.providers.reduce((rows,provider)=>rows.concat([
+                    'Поставщик: '+clean(provider.title||provider.id)+' • дата публикации '+clean(provider.publishedAt),
+                    'Позиции источника: '+clean(provider.positionRecords)+' • включено '+clean(provider.acceptedPositionRecords)+' • строк с ошибками '+clean(provider.rejectedRows),
+                    'Маршрутов парковочных патрулей вне стационарных предупреждений: '+clean(provider.mobileRoutesExcluded),
+                    'Отложено геопроверкой: '+clean(provider.qualityExclusions&&provider.qualityExclusions.length)+' • '+clean(provider.countUnit),
+                    'Ссылка поставщика: '+clean(provider.sourceUrl)+' • SHA исходника '+clean(provider.sourceSha256||provider.pbfMd5)
+                ]),[]):[])
     ];
     const lines=[]; pages[p].forEach(line=>parts(line).forEach(row=>lines.push(row)));
     const blocks=Math.max(1,Math.ceil(lines.length/PAGE_ROWS)), block=Math.max(0,Math.min(blocks-1,blockIndex||0));

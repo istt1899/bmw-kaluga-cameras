@@ -1,0 +1,65 @@
+name: Manual camera source check
+
+# No scheduled run or publication. Cadence needs a separate owner decision.
+on:
+  workflow_dispatch:
+    inputs:
+      download_osm:
+        description: Download and normalize the regional OSM PBF (up to 128 MiB)
+        type: boolean
+        required: false
+        default: false
+      published_at:
+        description: Verified official publication date for a new workbook (YYYY-MM-DD)
+        type: string
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  source-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # v6 references verified against the official GitHub API, 2026-11-07.
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.22.2'
+      - name: Test source-check boundaries offline
+        run: python3 -m unittest discover -s tools -p test_source_refresh.py
+      - name: Install pinned PBF parser only when requested
+        if: inputs.download_osm
+        run: npm ci --ignore-scripts
+      - name: Check approved sources and prepare review candidates
+        env:
+          DOWNLOAD_OSM: ${{ inputs.download_osm }}
+          OFFICIAL_PUBLICATION_DATE: ${{ inputs.published_at }}
+        shell: bash
+        run: |
+          args=(--output-dir source-check-output --download-osm "$DOWNLOAD_OSM")
+          if [ -n "$OFFICIAL_PUBLICATION_DATE" ]; then
+            args+=(--published-at "$OFFICIAL_PUBLICATION_DATE")
+          fi
+          python3 tools/check-camera-source-updates.py "${args[@]}"
+      - name: Confirm no runtime or published-data mutation
+        if: always()
+        run: git diff --exit-code -- apps native data catalog.json
+      - name: Upload public source candidates for manual review
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: camera-source-review-${{ github.run_id }}
+          if-no-files-found: ignore
+          retention-days: 14
+          path: |
+            source-check-output/source-report.json
+            source-check-output/official-source.xlsx
+            source-check-output/official-normalized.json
+            source-check-output/osm-candidate/source-artifacts.json
+            source-check-output/osm-candidate/osm-camera-source.json
+            source-check-output/osm-candidate/kaluga-boundary.geojson

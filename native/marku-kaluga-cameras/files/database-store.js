@@ -2,9 +2,10 @@
 // Local, explicit camera-data updates. Code/firmware is never downloaded or run.
 var fs = require('fs'), path = require('path'), https = require('https'), crypto = require('crypto');
 var URL = require('url').URL;
-var SOURCE = 'https://raw.githubusercontent.com/istt1899/bmw-kaluga-cameras/main/data/manifest.json';
+// Separate data channel: older clients only understand the OSM/owner schema.
+var SOURCE = 'https://raw.githubusercontent.com/istt1899/bmw-kaluga-cameras/main/data/manifest-v2.json';
 var MAX_BUNDLE = 8 * 1024 * 1024, MAX_MANIFEST = 64 * 1024, MAX_RECORDS = 20000, TIMEOUT = 15000;
-var CONTROLS = ['speed', 'redlight', 'average', 'stopline', 'belt', 'phone', 'lane', 'pedestrian'];
+var CONTROLS = ['speed', 'redlight', 'average', 'stopline', 'belt', 'phone', 'lane', 'pedestrian', 'signs_marking', 'road_position'];
 var TYPES = ['speed', 'average', 'redlight', 'camera'];
 function fail(code, message) { var e = new Error(message || code); e.code = code; throw e; }
 function object(o) { return !!o && typeof o === 'object' && !Array.isArray(o); }
@@ -18,7 +19,8 @@ function compare(a, b) {
 }
 function text(s, max) { return typeof s === 'string' && s.length <= max && !/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(s); }
 function position(p) { return object(p) && number(p.lat) && number(p.lon) && p.lat >= 53 && p.lat <= 56 && p.lon >= 33 && p.lon <= 38; }
-function sourceUrl(s) { return typeof s === 'string' && /^https:\/\/(?:www\.)?openstreetmap\.org\/(?:node|way|relation)\/\d+$/.test(s); }
+function officialSource(s) { return typeof s === 'string' && /^https:\/\/xn--80aebkobnwfcnsfk1e0h\.xn--p1ai\/upload\/site40\/report\/publication\/file\/[A-Za-z0-9_-]+\.xlsx$/.test(s); }
+function sourceUrl(s) { return typeof s === 'string' && (/^https:\/\/(?:www\.)?openstreetmap\.org\/(?:node|way|relation)\/\d+$/.test(s) || officialSource(s)); }
 function inspect(o, depth, budget) {
   if (++budget.count > 350000 || depth > 24) fail('DATA_COMPLEXITY', 'Database is too complex');
   if (typeof o === 'string' && !text(o, 4096)) fail('DATA_TEXT', 'Invalid database text');
@@ -31,7 +33,7 @@ function inspect(o, depth, budget) {
 }
 function clone(o) { return JSON.parse(JSON.stringify(o)); }
 function record(r, ids) {
-  if (!object(r) || !text(r.id, 128) || !/^(?:osm:(?:node|way|relation):\d+|reported:[a-z0-9][a-z0-9:-]{0,90})$/.test(r.id) || ids[r.id]) fail('DATA_ID');
+  if (!object(r) || !text(r.id, 128) || !/^(?:osm:(?:node|way|relation):\d+|reported:[a-z0-9][a-z0-9:-]{0,90}|gibdd:ru-klu:[a-f0-9]{16})$/.test(r.id) || ids[r.id]) fail('DATA_ID');
   ids[r.id] = true;
   if (TYPES.indexOf(r.type) < 0 || !position(r.position)) fail('DATA_POSITION');
   if (!Array.isArray(r.controls) || r.controls.length > CONTROLS.length || r.controls.some(function (c, i) { return CONTROLS.indexOf(c) < 0 || r.controls.indexOf(c) !== i; })) fail('DATA_CONTROLS');
@@ -42,6 +44,17 @@ function record(r, ids) {
   if (r.captureSide !== undefined && ['front', 'rear', 'both', 'unknown'].indexOf(r.captureSide) < 0) fail('DATA_CAPTURE_SIDE');
   if (r.captureSide && r.captureSide !== 'unknown' && (!sourceUrl(r.captureSideSourceUrl) || !date(r.captureSideVerifiedAt))) fail('DATA_CAPTURE_EVIDENCE');
   if (r.provenance === 'owner-report' && (r.reportStatus !== 'unverified' || r.controls.length || r.type !== 'camera' || r.limitKmh != null || r.positionKind !== 'intersection')) fail('DATA_REPORT_CLAIM');
+  if (r.id.indexOf('gibdd:') === 0) {
+    if (r.provenance !== 'Госавтоинспекция' || r.positionKind !== 'official-location' || !officialSource(r.sourceUrl) ||
+        !Number.isInteger(r.sourceRow) || r.sourceRow < 3 || r.sourceRow > 100000 ||
+        typeof r.sourcePublishedAt !== 'string' || !date(r.sourcePublishedAt + 'T00:00:00Z') ||
+        r.limitKmh !== null || r.captureSide !== 'unknown' || r.bearingDeg !== null || r.hardwareModel !== null)
+      fail('DATA_OFFICIAL_CLAIM', 'Official list does not establish a numeric speed limit, bearing, model or capture side');
+    if (!text(r.rawControls, 4000) || !r.rawControls || !Array.isArray(r.controlEvidence) || r.controlEvidence.length > 32 ||
+        r.controlEvidence.some(function (e) { return !object(e) || r.controls.indexOf(e.control) < 0 || !text(e.matchedText, 2000) || !e.matchedText || r.rawControls.indexOf(e.matchedText) < 0; }) ||
+        r.controls.some(function (control) { return !r.controlEvidence.some(function (e) { return e.control === control; }); })) fail('DATA_OFFICIAL_EVIDENCE');
+  }
+  if (r.provenance === 'Госавтоинспекция' && r.id.indexOf('gibdd:') !== 0) fail('DATA_OFFICIAL_CLAIM');
   if (r.enforcementRelations !== undefined) {
     if (!Array.isArray(r.enforcementRelations) || r.enforcementRelations.length > 32) fail('DATA_RELATIONS');
     r.enforcementRelations.forEach(validateRelation);
@@ -81,6 +94,38 @@ function validateZones(zones, records) {
     if (!anchored) fail('DATA_ZONE_CAMERA_ANCHOR');
   });
 }
+function validateOfficialMetadata(bundle) {
+  var official = bundle.records.filter(function (r) { return r.id.indexOf('gibdd:') === 0; });
+  var providers = object(bundle.sourceMetadata) ? bundle.sourceMetadata.providers : undefined;
+  if (providers !== undefined && (!Array.isArray(providers) || providers.length > 32 || providers.some(function (p) { return !object(p); }))) fail('DATA_OFFICIAL_METADATA');
+  var declared = (providers || []).filter(function (p) { return p.id === 'gibdd-official'; });
+  // Legacy OSM-only bundles have no official layer or provider metadata. Once
+  // that layer is present, all counts describe source positions, not devices.
+  if (!official.length && !declared.length) {
+    if (bundle.officialCount !== undefined && bundle.officialCount !== 0) fail('DATA_OFFICIAL_COUNTS');
+    return;
+  }
+  if (declared.length !== 1) fail('DATA_OFFICIAL_METADATA');
+  var provider = declared[0], ids = Object.create(null), excluded = Object.create(null);
+  official.forEach(function (r) { ids[r.id] = true; });
+  if (!Array.isArray(provider.qualityExclusions) || provider.qualityExclusions.length > MAX_RECORDS) fail('DATA_OFFICIAL_EXCLUSION');
+  provider.qualityExclusions.forEach(function (entry) {
+    if (!object(entry) || !/^gibdd:ru-klu:[a-f0-9]{16}$/.test(entry.id || '') || excluded[entry.id] || ids[entry.id] ||
+        !text(entry.reason, 500) || !entry.reason.trim() ||
+        !(sourceUrl(entry.sourceUrl) || entry.sourceUrl === 'https://xn--80aebkobnwfcnsfk1e0h.xn--p1ai/r/40'))
+      fail('DATA_OFFICIAL_EXCLUSION');
+    excluded[entry.id] = true;
+  });
+  if (bundle.officialCount !== official.length || provider.acceptedPositionRecords !== official.length ||
+      !Number.isInteger(provider.positionRecords) || provider.positionRecords < 1 || provider.positionRecords > MAX_RECORDS ||
+      provider.positionRecords !== official.length + provider.qualityExclusions.length)
+    fail('DATA_OFFICIAL_COUNTS');
+  if (!officialSource(provider.sourceUrl) || !date(provider.publishedAt + 'T00:00:00Z') || !date(provider.retrievedAt) ||
+      !date(provider.qualityReviewedAt) || Date.parse(provider.publishedAt) > Date.parse(provider.retrievedAt) ||
+      Date.parse(provider.qualityReviewedAt) < Date.parse(provider.retrievedAt) || !/^[a-f0-9]{64}$/.test(provider.sourceSha256 || '') ||
+      official.some(function (r) { return r.sourceUrl !== provider.sourceUrl || r.sourcePublishedAt !== provider.publishedAt; }))
+    fail('DATA_OFFICIAL_METADATA');
+}
 function validateBundle(bundle) {
   if (!object(bundle)) fail('DATA_SCHEMA');
   var bytes = Buffer.from(JSON.stringify(bundle), 'utf8'); if (bytes.length > MAX_BUNDLE) fail('DATA_SIZE');
@@ -88,10 +133,24 @@ function validateBundle(bundle) {
   if (bundle.schema !== 1 || bundle.region !== 'RU-KLU' || !version(bundle.version) || !date(bundle.generatedAt) || !date(bundle.sourceTimestamp) || !text(bundle.source, 150)) fail('DATA_SCHEMA');
   if (!Array.isArray(bundle.records) || !bundle.records.length || bundle.records.length > MAX_RECORDS) fail('DATA_RECORDS');
   var ids = Object.create(null); bundle.records.forEach(function (r) { record(r, ids); });
+  var byId = Object.create(null); bundle.records.forEach(function (r) { byId[r.id] = r; });
+  bundle.records.forEach(function (r) {
+    if (!r.officialSiteContext) return;
+    var c = r.officialSiteContext, target = byId[c.sourceRecordId];
+    if (r.id.indexOf('osm:') !== 0 || c.scope !== 'enforcement-location' || !target || target.id.indexOf('gibdd:') !== 0 ||
+        c.sourceUrl !== target.sourceUrl || c.sourcePublishedAt !== target.sourcePublishedAt || c.sourceRow !== target.sourceRow ||
+        JSON.stringify(c.controls) !== JSON.stringify(target.controls) || c.address !== target.address || c.rawControls !== target.rawControls ||
+        c.operatingConditions !== target.operatingConditions || JSON.stringify(c.controlEvidence) !== JSON.stringify(target.controlEvidence))
+      fail('DATA_SITE_CONTEXT');
+    var dy = (r.position.lat - target.position.lat) * 111320,
+        dx = (r.position.lon - target.position.lon) * 111320 * Math.cos(r.position.lat * Math.PI / 180);
+    if (dx * dx + dy * dy > 2500) fail('DATA_SITE_CONTEXT_DISTANCE');
+  });
   validateZones(bundle.zones, bundle.records);
   if (bundle.pbfMd5 !== undefined && !/^[a-f0-9]{32}$/.test(bundle.pbfMd5)) fail('DATA_BASE_HASH');
   if (bundle.licence !== undefined && !text(bundle.licence, 200)) fail('DATA_LICENCE');
-  ['osmCount', 'reportedCount', 'relationCount'].forEach(function (k) { if (bundle[k] !== undefined && (!Number.isInteger(bundle[k]) || bundle[k] < 0 || bundle[k] > bundle.records.length)) fail('DATA_COUNTS'); });
+  ['osmCount', 'reportedCount', 'relationCount', 'officialCount'].forEach(function (k) { if (bundle[k] !== undefined && (!Number.isInteger(bundle[k]) || bundle[k] < 0 || bundle[k] > bundle.records.length)) fail('DATA_COUNTS'); });
+  validateOfficialMetadata(bundle);
   return clone(bundle);
 }
 function mergeRelations(database, supplement) {
@@ -212,6 +271,41 @@ function writeAtomic(file, bytes) {
   } catch (e) { e.renamedFile = renamed ? file : null; throw e; }
   finally { if (fd !== undefined && fd !== null) try { fs.closeSync(fd); } catch (e) {} try { fs.unlinkSync(temp); } catch (e) { if (e.code !== 'ENOENT') throw e; } }
 }
+function bundleHash(bundle) { return crypto.createHash('sha256').update(JSON.stringify(bundle)).digest('hex'); }
+function rollbackPinFile(dataDir) { return path.join(dataDir, 'camera-database-rollback-pin.json'); }
+function readRollbackPin(file, initial, active) {
+  var result = { state: 'none', errorCode: null, value: null, raw: null, exists: false, safe: true };
+  try {
+    var stat = fs.lstatSync(file); result.exists = true;
+    if (!stat.isFile() || stat.isSymbolicLink()) { result.safe = false; fail('ROLLBACK_PIN_FILE'); }
+    if (stat.size > 4096) { result.safe = false; fail('ROLLBACK_PIN_SIZE'); }
+    result.raw = fs.readFileSync(file);
+    var pin; try { pin = JSON.parse(result.raw.toString('utf8')); } catch (e) { fail('ROLLBACK_PIN_JSON'); }
+    var keys = ['schema','source','region','pinnedVersion','pinnedSha256','bundledVersion','bundledSha256','createdAt'];
+    if (!object(pin) || Object.keys(pin).some(function(k) { return keys.indexOf(k) < 0; }) || pin.schema !== 1 ||
+        pin.region !== 'RU-KLU' || typeof pin.source !== 'string' || !version(pin.pinnedVersion) || !version(pin.bundledVersion) ||
+        !/^[a-f0-9]{64}$/.test(pin.pinnedSha256 || '') || !/^[a-f0-9]{64}$/.test(pin.bundledSha256 || '') || !date(pin.createdAt)) fail('ROLLBACK_PIN_SCHEMA');
+    result.value = pin;
+    if (pin.source !== SOURCE || pin.bundledVersion !== initial.version || pin.bundledSha256 !== bundleHash(initial)) {
+      result.state = 'stale'; result.errorCode = 'ROLLBACK_PIN_BUNDLE_CHANGED';
+    } else if (pin.pinnedVersion !== active.version || pin.pinnedSha256 !== bundleHash(active)) {
+      result.state = 'stale'; result.errorCode = 'ROLLBACK_PIN_TARGET_CHANGED';
+    } else result.state = 'valid';
+  } catch (e) {
+    if (e.code === 'ENOENT') return result;
+    result.state = 'invalid'; result.errorCode = /^[A-Z0-9_]{1,64}$/.test(e.code || '') ? e.code : 'ROLLBACK_PIN_READ';
+  }
+  return result;
+}
+function publicRollbackPin(pin) {
+  return { state: pin.state, errorCode: pin.errorCode, pinnedVersion: pin.value ? pin.value.pinnedVersion : null,
+    bundledVersion: pin.value ? pin.value.bundledVersion : null };
+}
+function removeRollbackPin(file) {
+  var stat; try { stat = fs.lstatSync(file); } catch (e) { if (e.code === 'ENOENT') return null; throw e; }
+  if (!stat.isFile() || stat.isSymbolicLink()) fail('ROLLBACK_PIN_FILE');
+  fs.unlinkSync(file); return syncDirectory(path.dirname(file));
+}
 function createStore(options) {
   options = options || {}; if (!text(options.dataDir, 1024) || !options.dataDir) fail('STORE_DIRECTORY');
   if (options.sourceUrl !== undefined) allowed(options.sourceUrl, true);
@@ -220,40 +314,62 @@ function createStore(options) {
   var test = options._test && options._test.explicit === true ? options._test : null;
   var transport = test && test.transport || function (url, limit) { return fetchBounded(url, limit, requests); };
   var now = test && test.now || Date.now;
+  var pinFile = rollbackPinFile(options.dataDir), startupPin = readRollbackPin(pinFile, initial, active);
   var writable = true; try { fs.accessSync(options.dataDir, fs.constants.W_OK); } catch (e) { writable = false; }
   var state = { phase: loaded.recovery ? loaded.recovery.phase : 'idle', currentVersion: active.version, availableVersion: null, lastCheckedAt: null,
     errorCode: loaded.recovery ? loaded.recovery.reasonCode : null, recovery: loaded.recovery,
     durability: { mode: 'not-written-this-session', directorySynced: null, reasonCode: process.platform === 'win32' ? 'DIRECTORY_FSYNC_UNSUPPORTED_WINDOWS' : null },
-    persistent: writable, canCheck: true, canRollback: fs.existsSync(names.previous) };
+    persistent: writable, canCheck: true, canRollback: fs.existsSync(names.previous), rollbackPin: publicRollbackPin(startupPin),
+    bundledVersion: initial.version, bundledUpgrade: { phase: 'not-needed', fromVersion: active.version, toVersion: initial.version } };
+  if (startupPin.state === 'invalid' && !state.errorCode) state.errorCode = startupPin.errorCode;
   function status() { return clone(state); }
   function ensureOpen() { if (closed) fail('UPDATE_CLOSED', 'Store is closed'); }
   function update(change) { if (closed) return; Object.assign(state, change); if (typeof options.onStatus === 'function') try { options.onStatus(status()); } catch (e) {} }
-  function activate(next) {
+  function activate(next, transaction) {
     ensureOpen();
-    var before = active, saved = Buffer.from(JSON.stringify(before));
+    transaction = transaction || {};
+    var before = active, saved = Buffer.from(JSON.stringify(before)), activeWritten = false, pinTouched = false;
+    var pinBefore = readRollbackPin(pinFile, initial, active);
+    if (transaction.pin && !pinBefore.safe) fail('ROLLBACK_PIN_FILE', 'Rollback metadata is not a safe regular file');
     // The consumer prepares/replaces its guidance transactionally. A thrown
     // callback prevents disk activation; disk errors ask it to restore old data.
-    if (typeof options.onChange === 'function') options.onChange(clone(next));
+    if (!transaction.skipConsumer && typeof options.onChange === 'function') options.onChange(clone(next));
     ensureOpen(); // A consumer may close the store synchronously in its callback.
     try {
+      if (transaction.pin) {
+        var pinBytes = Buffer.from(JSON.stringify(transaction.pin));
+        if (pinBytes.length > 4096) fail('ROLLBACK_PIN_SIZE');
+        pinTouched = true; state.durability = writeAtomic(pinFile, pinBytes);
+      }
+      ensureOpen();
       state.durability = writeAtomic(names.previous, saved);
       ensureOpen();
       state.durability = writeAtomic(names.active, Buffer.from(JSON.stringify(next)));
+      activeWritten = true;
+      ensureOpen();
+      if (transaction.clearPin && pinBefore.exists && pinBefore.safe) {
+        pinTouched = true; var cleared = removeRollbackPin(pinFile); if (cleared) state.durability = cleared;
+      }
     } catch (e) {
       // rename already changed the visible file when its directory fsync fails.
       // Restore the old validated bytes as well as the in-memory consumer. This
       // makes a recoverable flush failure leave one consistent active version.
-      if (e.renamedFile === names.active) {
+      if (!closed && (activeWritten || e.renamedFile === names.active)) {
         try { state.durability = writeAtomic(names.active, saved); }
         catch (restoreError) {
           state.durability = { mode: 'restore-unconfirmed', directorySynced: false, reasonCode: restoreError.code || 'UPDATE_RESTORE_FAILED' };
           e.code = 'UPDATE_RESTORE_FAILED';
         }
       }
-      if (!closed && typeof options.onChange === 'function') try { options.onChange(clone(before)); } catch (ignored) {}
+      if (!closed && pinTouched) {
+        try { if (pinBefore.raw !== null) writeAtomic(pinFile, pinBefore.raw); else removeRollbackPin(pinFile); }
+        catch (pinRestoreError) { state.rollbackPin = { state: 'restore-unconfirmed', errorCode: pinRestoreError.code || 'ROLLBACK_PIN_RESTORE_FAILED', pinnedVersion: null, bundledVersion: initial.version }; if (e.code !== 'UPDATE_RESTORE_FAILED') e.code = 'ROLLBACK_PIN_RESTORE_FAILED'; }
+      }
+      if (!closed && !transaction.skipConsumer && typeof options.onChange === 'function') try { options.onChange(clone(before)); } catch (ignored) {}
       throw e;
     }
     active = next; state.currentVersion = active.version;
+    state.rollbackPin = publicRollbackPin(readRollbackPin(pinFile, initial, active));
   }
   function check() {
     if (closed) return Promise.reject(Object.assign(new Error('Store is closed'), { code: 'UPDATE_CLOSED' }));
@@ -264,7 +380,21 @@ function createStore(options) {
       var m = manifest(parse(bytes, MAX_MANIFEST));
       update({ availableVersion: m.version });
       ensureOpen();
-      if (compare(m.version, active.version) <= 0) return { unchanged: true };
+      if (compare(m.version, active.version) <= 0) {
+        var pin = readRollbackPin(pinFile, initial, active);
+        if (pin.exists && pin.safe) {
+          try { removeRollbackPin(pinFile); }
+          catch (clearError) {
+            if (!closed && pin.raw !== null) {
+              try { writeAtomic(pinFile, pin.raw); }
+              catch (restoreError) { state.rollbackPin = { state: 'restore-unconfirmed', errorCode: restoreError.code || 'ROLLBACK_PIN_RESTORE_FAILED', pinnedVersion: null, bundledVersion: initial.version }; clearError.code = 'ROLLBACK_PIN_RESTORE_FAILED'; }
+            }
+            throw clearError;
+          }
+        }
+        ensureOpen(); state.rollbackPin = publicRollbackPin(readRollbackPin(pinFile, initial, active));
+        return { unchanged: true };
+      }
       update({ phase: 'downloading' });
       ensureOpen();
       return transport(m.artifact.url, Math.min(m.artifact.size, MAX_BUNDLE)).then(function (payload) {
@@ -272,7 +402,7 @@ function createStore(options) {
         if (!Buffer.isBuffer(payload) || payload.length !== m.artifact.size || crypto.createHash('sha256').update(payload).digest('hex') !== m.artifact.sha256) fail('UPDATE_CHECKSUM');
         var next = validateBundle(parse(payload, MAX_BUNDLE));
         if (next.version !== m.version || next.generatedAt !== m.generatedAt) fail('UPDATE_VERSION');
-        update({ phase: 'installing' }); activate(next); return { unchanged: false };
+        update({ phase: 'installing' }); activate(next, { clearPin: true }); return { unchanged: false };
       });
     }).then(function (result) {
       update({ phase: result.unchanged ? 'current' : 'updated', currentVersion: active.version, canCheck: true, canRollback: fs.existsSync(names.previous), persistent: true }); return status();
@@ -284,11 +414,31 @@ function createStore(options) {
   function rollback() {
     if (closed || pending) return Promise.resolve(status());
     pending = Promise.resolve().then(function () {
-      ensureOpen(); var next = read(names.previous); activate(next);
+      ensureOpen(); var next = read(names.previous);
+      var pin = { schema: 1, source: SOURCE, region: 'RU-KLU', pinnedVersion: next.version, pinnedSha256: bundleHash(next),
+        bundledVersion: initial.version, bundledSha256: bundleHash(initial), createdAt: new Date(now()).toISOString() };
+      activate(next, { pin: pin });
       update({ phase: 'rolled-back', currentVersion: active.version, errorCode: null, canRollback: true }); return status();
     }).catch(function (e) { update({ phase: 'error', errorCode: e.code || 'ROLLBACK_FAILED' }); return status();
     }).then(function (result) { pending = null; return result; });
     return pending;
+  }
+  // A trusted shipped database can update an older local snapshot without a
+  // network request. A matching explicit rollback survives the same bundle.
+  if (startupPin.state === 'valid') {
+    if (!loaded.recovery) state.phase = 'rollback-pinned';
+    state.availableVersion = compare(initial.version, active.version) > 0 ? initial.version : null;
+    state.bundledUpgrade.phase = 'suppressed-by-rollback';
+  } else if (compare(initial.version, active.version) > 0) {
+    state.bundledUpgrade.phase = 'installing';
+    try {
+      if (!writable) fail('BUNDLED_UPGRADE_STORAGE', 'Storage unavailable for the bundled database upgrade');
+      activate(initial, { clearPin: true, skipConsumer: true });
+      state.phase = 'bundled-upgraded'; state.errorCode = null; state.canRollback = fs.existsSync(names.previous); state.bundledUpgrade.phase = 'upgraded';
+    } catch (e) {
+      state.phase = 'bundled-upgrade-error'; state.errorCode = /^[A-Z0-9_]{1,64}$/.test(e.code || '') ? e.code : 'BUNDLED_UPGRADE_FAILED';
+      state.availableVersion = initial.version; state.bundledUpgrade.phase = 'error';
+    }
   }
   return { current: function () { return clone(active); }, status: status, check: check, rollback: rollback,
     close: function () { if (closed) return; closed = true; Object.assign(state, { phase: 'closed', errorCode: 'UPDATE_CLOSED', canCheck: false, canRollback: false }); requests.slice().forEach(function (r) { r.destroy(Object.assign(new Error('Store closed'), { code: 'UPDATE_CLOSED' })); }); } };

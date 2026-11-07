@@ -1,0 +1,131 @@
+{
+  "schema": 1,
+  "region": "RU-KLU",
+  "checkedAt": "2026-11-07T00:00:00.000Z",
+  "sources": [
+    {
+      "id": "osm",
+      "family": "openstreetmap",
+      "redistribution": "approved",
+      "rightsBasis": "OpenStreetMap database is available under ODbL 1.0; preserve attribution and applicable database share-alike obligations.",
+      "attribution": "© OpenStreetMap contributors, ODbL 1.0",
+      "obligations": ["attribution", "odbl-database-obligations"],
+      "urls": ["https://www.openstreetmap.org/copyright", "https://www.openstreetmap.org/"],
+      "access": { "status": "public-data", "checkedAt": "2026-11-07T00:00:00.000Z" }
+    },
+    {
+      "id": "owner-report",
+      "family": "owner-observations",
+      "redistribution": "approved",
+      "requiresConsent": true,
+      "rightsBasis": "Owner-supplied observations authorized for this public project; each future field still requires explicit consentToRedistribute evidence. No third-party copied database is covered.",
+      "attribution": "Owner report; verification state and original observation retained",
+      "obligations": ["per-observation-consent", "provenance"],
+      "urls": ["https://github.com/istt1899/bmw-kaluga-cameras"],
+      "access": { "status": "owner-supplied", "checkedAt": "2026-11-07T00:00:00.000Z" }
+    },
+    {
+      "id": "gibdd-official",
+      "family": "mvd-gibdd-official",
+      "redistribution": "approved",
+      "rightsBasis": "The information-use footer on the official MVD/Gosavtoinspektsiya regional page explicitly permits reproducing its site materials on internet servers and other media with a source link, without prior agreement. This is source-specific permission, not a public-domain claim for all government data.",
+      "attribution": "Госавтоинспекция МВД России, Калужская область; ссылка на официальный первоисточник обязательна",
+      "obligations": ["source-link", "source-date", "do-not-imply-official-endorsement"],
+      "urls": [
+        "https://xn--80aebkobnwfcnsfk1e0h.xn--p1ai/r/40",
+        "https://xn--80aebkobnwfcnsfk1e0h.xn--p1ai/upload/site40/report/publication/file/sayt_oktyabr.xlsx"
+      ],
+      "access": { "status": "public-data", "checkedAt": "2026-11-07T00:00:00.000Z", "note": "Regional page HTTP 200; official XLSX hyperlink present. Dataset counts and coordinates require separate import validation." }
+    },
+    {
+      "id": "cbdd-official",
+      "family": "kaluga-cbdd-official",
+      "redistribution": "reference-only",
+      "rightsBasis": "Regional official announcements and address lists are reference leads. Coordinate accuracy and permission for the particular source document must be checked separately before promoting its fields.",
+      "attribution": "ГКУ КО «ЦБДД», исходная публикация и дата",
+      "urls": ["https://vk.com/board198579588"],
+      "access": { "status": "public-reference", "checkedAt": "2026-11-07T00:00:00.000Z" }
+    },
+    {
+      "id": "yandex",
+      "family": "yandex",
+      "redistribution": "reference-only",
+      "rightsBasis": "Yandex Maps API terms restrict exporting, storing and modifying service data except permitted SDK caching; no agreement authorizing a public camera database has been established.",
+      "attribution": "Яндекс; SDK/service terms apply",
+      "urls": ["https://yandex.ru/legal/maps_api/ru/", "https://yandex.ru/maps-api/docs/mapkit/com/yandex/mapkit/navigation/automotive/UpcomingRoadEvent.html"],
+      "access": { "status": "restricted-service", "checkedAt": "2026-11-07T00:00:00.000Z", "note": "Yandex search returned SmartCaptcha; no bypass attempted. API documentation is a reference, not a bulk feed." }
+    },
+    {
+      "id": "mapcam",
+      "family": "mapcam",
+      "redistribution": "reference-only",
+      "rightsBasis": "Mapcam project rules section 9.3 require agreement for redistribution of the database or any part; section 1.8 prohibits bots. A normal application subscription is not a redistribution agreement.",
+      "attribution": "Mapcam.info; separate agreement required for data reuse",
+      "urls": ["https://mapcam.info/help/agreement.php?language=russian-utf8", "https://mapcam.info/api/v4i/help/ru/index.php"],
+      "access": { "status": "restricted-service", "checkedAt": "2026-11-07T00:00:00.000Z" }
+    },
+    {
+      "id": "radarbase",
+      "family": "radarbase-airbits",
+      "redistribution": "not-established",
+      "rightsBasis": "Airbits identifies RadarBase as its source. An open bulk-export API and permission to republish the database were not established; no blanket prohibition is inferred from this absence.",
+      "attribution": "RadarBase.info / Airbits; obtain an appropriate data agreement",
+      "urls": ["https://airbits.ru/", "https://radarbase.info/"],
+      "access": { "status": "javascript-required", "checkedAt": "2026-11-07T00:00:00.000Z" }
+    },
+    {
+      "id": "hud-speed",
+      "family": "radarbase-airbits",
+      "redistribution": "not-established",
+      "rightsBasis": "HUD Speed is a consumer of RadarBase, not an independent corroborating database. No public redistribution agreement has been established.",
+      "attribution": "Airbits / RadarBase.info",
+      "urls": ["https://airbits.ru/", "https://airbits.ru/hud_speed/promo.htm"],
+      "access": { "status": "public-documentation", "checkedAt": "2026-11-07T00:00:00.000Z" }
+    },
+    {
+      "id": "gps-antiradar",
+      "family": "radarbase-airbits",
+      "redistribution": "not-established",
+      "rightsBasis": "GPS Antiradar is a consumer of RadarBase, not an independent corroborating database. No public redistribution agreement has been established.",
+      "attribution": "Airbits / RadarBase.info",
+      "urls": ["https://airbits.ru/"],
+      "access": { "status": "public-documentation", "checkedAt": "2026-11-07T00:00:00.000Z" }
+    },
+    {
+      "id": "radarbot",
+      "family": "radarbot-iteration",
+      "redistribution": "reference-only",
+      "rightsBasis": "Radarbot terms dated 2026-02-04 section 12 restrict extracting, reusing or reproducing its radar database outside the application. A limited-partner SDK is offered, but no agreement for this project exists.",
+      "attribution": "Radarbot / Iteration Mobile; partner terms required",
+      "urls": ["https://www.radarbot.com/terminos-y-condiciones-de-uso/", "https://www.radarbot.com/desarrolladores/"],
+      "access": { "status": "partner-sdk", "checkedAt": "2026-11-07T00:00:00.000Z" }
+    },
+    {
+      "id": "speedcamonline",
+      "family": "ivolk-speedcam-rd-community",
+      "redistribution": "not-established",
+      "rightsBasis": "Indexed Speedcamonline pages require attribution and agreement for commercial use. Current permission for this project's public database redistribution is not established; this is not classified as an explicit universal redistribution ban.",
+      "attribution": "Speedcamonline.ru and original curator/source; confirm applicable agreement",
+      "urls": ["https://speedcamonline.ru/", "https://speedcamonline.ru/map/Rus/1333/", "https://www.rd-forum.ru/threads/izmenenie-suschestvujuschix-tochek-speedcamonline-ru.6046/page-56"],
+      "access": { "status": "unavailable", "checkedAt": "2026-11-07T00:00:00.000Z", "note": "Direct root HTTPS returned HTTP 503 during this research. Cached search results are not a verified current export." }
+    },
+    {
+      "id": "strelka",
+      "family": "ivolk-speedcam-rd-community",
+      "redistribution": "not-established",
+      "rightsBasis": "The official consumer app documentation describes a collection including Speedcamonline/RD-forum and checked user reports. Overlapping app/feed evidence is conservatively one source family; a public redistribution agreement is not established.",
+      "attribution": "ivolk / original database sources",
+      "urls": ["https://www.ivolk.ru/istrelka.htm", "https://ivolk.ru/a113.htm?mob=1"],
+      "access": { "status": "public-documentation", "checkedAt": "2026-11-07T00:00:00.000Z" }
+    },
+    {
+      "id": "estrelka",
+      "family": "ivolk-speedcam-rd-community",
+      "redistribution": "not-established",
+      "rightsBasis": "eStrelka shares a collection of sources with Strelka/Speedcamonline; its text import feature does not establish a license to redistribute the underlying collection.",
+      "attribution": "ivolk / original database sources",
+      "urls": ["https://www.ivolk.ru/a163.htm"],
+      "access": { "status": "public-documentation", "checkedAt": "2026-11-07T00:00:00.000Z" }
+    }
+  ]
+}

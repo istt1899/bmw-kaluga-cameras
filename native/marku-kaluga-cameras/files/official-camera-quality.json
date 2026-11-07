@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "sourceSha256": "a62b2858aecdbeb63e43445b556c9db9d6c628e674c9e96fb5a5a01074d16089",
+  "reviewedAt": "2026-11-07T09:08:32.000Z",
+  "links": [
+    {"osmId":"osm:node:11980400006","officialId":"gibdd:ru-klu:fc2bb7199a68c7be","scope":"enforcement-location"},
+    {"osmId":"osm:node:12157150894","officialId":"gibdd:ru-klu:fc2bb7199a68c7be","scope":"enforcement-location"},
+    {"osmId":"osm:node:12157150895","officialId":"gibdd:ru-klu:fc2bb7199a68c7be","scope":"enforcement-location"},
+    {"osmId":"osm:node:3199757952","officialId":"gibdd:ru-klu:879442e4478e4722","scope":"enforcement-location"}
+  ],
+  "excluded": [
+    {
+      "id": "gibdd:ru-klu:b66b02d12f089fad",
+      "reason": "SOURCE_ROW_135_OUTSIDE_RU_KLU_BOUNDARY_81995",
+      "sourceUrl": "https://www.openstreetmap.org/relation/81995"
+    },
+    {
+      "id": "gibdd:ru-klu:c4db9268f4dea2a9",
+      "reason": "SOURCE_ROW_138_OUTSIDE_RU_KLU_BOUNDARY_81995",
+      "sourceUrl": "https://www.openstreetmap.org/relation/81995"
+    },
+    {
+      "id": "gibdd:ru-klu:14519163cb406f36",
+      "reason": "SOURCE_ROW_155_M3_ADDRESS_COORDINATES_REQUIRE_REVIEW",
+      "sourceUrl": "https://xn--80aebkobnwfcnsfk1e0h.xn--p1ai/upload/site40/report/publication/file/sayt_oktyabr.xlsx"
+    }
+  ]
+}

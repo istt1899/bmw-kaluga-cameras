@@ -11,14 +11,18 @@ function presentation(alert) {
     const supported = value => typeof value === 'string' && Object.prototype.hasOwnProperty.call(types,value);
     const known = Array.isArray(alert.controls) ? alert.controls.filter((v,i,a) => supported(v) && a.indexOf(v) === i) : [];
     const controls = known.length ? known.slice(0,3) : [supported(alert.type) ? alert.type : 'camera'];
-    const limit = alert.roadConfirmed === true && Number.isFinite(alert.limitKmh) && alert.limitKmh > 0 && alert.limitKmh <= 300 ? Math.round(alert.limitKmh) : null;
+    const validLimit = value => Number.isFinite(value) && value > 0 && value <= 300;
+    const roadLimit = alert.roadConfirmed === true && validLimit(alert.limitKmh) ? Math.round(alert.limitKmh) : null;
+    const reference = alert.limitReference && alert.limitReference.state === 'known' ? alert.limitReference.valueKmh : null;
+    const databaseLimit = validLimit(alert.cameraLimitKmh) ? Math.round(alert.cameraLimitKmh) : validLimit(reference) ? Math.round(reference) : null;
+    const limit = roadLimit === null ? databaseLimit : roadLimit, limitScope = roadLimit !== null ? 'road' : databaseLimit !== null ? 'reference' : 'unknown';
     const speed = Number.isFinite(alert.speedKmh) && alert.speedKmh >= 0 && alert.speedKmh <= 400 ? Math.round(alert.speedKmh) : null;
     const direction = alert.captureDirectionVerified === true && ['front','rear'].indexOf(alert.captureDirection) >= 0 ? alert.captureDirection : 'unknown';
-    return { controls, extraControls: Math.max(0,known.length-controls.length), limit, speed, direction,
+    return { controls, extraControls: Math.max(0,known.length-controls.length), limit, limitScope, speed, direction,
         distance: Number.isFinite(alert.distanceM) && alert.distanceM >= 0 ? Math.round(alert.distanceM/10)*10 : null,
         mode: alert.positionKind === 'intersection' ? 'Ориентир' : alert.roadConfirmed === true ? (alert.controlScope === 'enforcement-location' ? 'Рубеж' : 'По дороге') : 'Рядом',
         test: alert.test === true, calibration: alert.calibration === true,
-        overspeed: alert.overspeed === true && limit !== null && speed !== null && speed > limit };
+        overspeed: alert.roadConfirmed === true && alert.overspeed === true && roadLimit !== null && speed !== null && speed > roadLimit };
 }
 function card(alert, target) {
     const model=presentation(alert), px=Buffer.alloc(width*height*4);
@@ -60,15 +64,15 @@ function card(alert, target) {
     // A fixed intrinsic raster is fitted to the actual runtime target by the
     // layer adapter. No blur, animated glass or full-screen takeover.
     if(target==='map')rect(0,0,width,height,[10,16,24],232);
-    circle(28,27,23,model.limit === null ? muted : red);
+    circle(28,27,23,model.limitScope === 'road' ? red : model.limitScope === 'reference' ? amber : muted);
     circle(28,27,19,white);
-    centered(model.limit === null ? '?' : model.limit,28,34,18,ink,48);
+    centered(model.limit === null ? '—' : model.limit,28,34,18,ink,48);
     if(model.test || model.calibration)text(model.calibration?'КАЛИБРОВКА':'ТЕСТ',63,17,18,amber,244);
     const distanceText=model.distance === null ? '— м' : model.distance >= 1000 ? (model.distance/1000).toFixed(1)+' км' : model.distance+' м';
     text(distanceText,63,46,32,white,166);
     text(model.speed === null ? '— км/ч' : model.speed+' км/ч',231,42,18,model.overspeed?red:white,86);
     model.controls.forEach((type,index)=>{const x=6+index*106;icon(type,x,53);text(types[type],x+27,71,18,white,73);});
-    text(model.test||model.calibration?'ТЕСТ':model.mode,7,90,18,muted,150);
+    text(model.test||model.calibration?'ТЕСТ':model.limitScope==='reference'?model.mode+' • база':model.mode,7,90,18,muted,150);
     if(model.extraControls)text('+'+model.extraControls,158,90,18,amber,38);
     text(model.direction==='front'?'В лоб':model.direction==='rear'?'Сзади':'Напр. ?',202,90,18,muted,111);
     if(model.calibration) {

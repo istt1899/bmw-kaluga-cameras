@@ -39,6 +39,34 @@ function describe(camera) {
         captureDirectionSource: side ? camera.captureSideSourceUrl : null,
         enforcementRelations: camera.enforcementRelations ? camera.enforcementRelations.map(r => ({id:r.id,sourceUrl:r.sourceUrl})) : null };
 }
+function validLimit(value) { return Number.isFinite(value) && value > 0 && value <= 300; }
+function limitEvidence(record) {
+    return record && /^osm:(?:node|way|relation):[0-9]+$/.test(record.id || '') &&
+        typeof record.sourceUrl === 'string' && /^https:\/\/(?:www\.)?openstreetmap\.org\/(?:node|way|relation)\/[0-9]+$/.test(record.sourceUrl) && validLimit(record.limitKmh) ?
+        { id: record.id, url: record.sourceUrl, valueKmh: record.limitKmh } : null;
+}
+function createDescriber(records) {
+    // Only explicit, already reviewed location links can share a reference.
+    // No radius merge, city default, or mutation of an official camera record.
+    const links = Object.create(null);
+    records.forEach(record => {
+        const context = record.officialSiteContext, evidence = limitEvidence(record);
+        if (evidence && context && context.scope === 'enforcement-location' &&
+            /^gibdd:ru-klu:[a-f0-9]{16}$/.test(context.sourceRecordId || '')) {
+            (links[context.sourceRecordId] || (links[context.sourceRecordId] = [])).push(evidence);
+        }
+    });
+    return camera => {
+        const result = describe(camera), own = limitEvidence(camera);
+        if (own) result.limitReference = { valueKmh: own.valueKmh, state: 'known', kind: 'camera-record', source: 'OpenStreetMap', records: [own] };
+        else if (camera.providerId === 'gibdd-official' && links[camera.id]) {
+            const evidence = links[camera.id], value = evidence[0].valueKmh, consistent = evidence.every(e => e.valueKmh === value);
+            result.limitReference = { valueKmh: consistent ? value : null, state: consistent ? 'known' : 'conflict',
+                kind: 'reviewed-location-links', source: 'OpenStreetMap', records: evidence.map(e => Object.assign({},e)) };
+        } else result.limitReference = null;
+        return result;
+    };
+}
 function enrich(database, file) {
     const meta = JSON.parse(fs.readFileSync(file, 'utf8'));
     if (meta.schema !== 1 || meta.source !== 'OpenStreetMap' || meta.region !== database.region ||
@@ -86,4 +114,4 @@ function supplement(database, file) {
     database.displaySource = database.reportedCount ? 'OpenStreetMap + сообщения владельца' : 'OpenStreetMap';
     return database;
 }
-module.exports = { controls, title, describe, enrich, supplement };
+module.exports = { controls, title, describe, createDescriber, enrich, supplement };

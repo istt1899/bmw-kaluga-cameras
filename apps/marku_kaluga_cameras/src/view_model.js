@@ -37,7 +37,8 @@ function model(state) {
     const fix=s.gpsFix||{}, street=s.street||{}, c=a||s.nearest||{}, result=s.commandResult||{}, update=s.databaseUpdate||{};
     const fixAge=Number.isFinite(s.observedAtMs)&&Number.isFinite(fix.timeMs)?s.observedAtMs-fix.timeMs:null;
     const fresh=Number.isFinite(fixAge)&&fixAge>=-500&&fixAge<=3000;
-    const limit=Number.isFinite(c.cameraLimitKmh)?c.cameraLimitKmh:Number.isFinite(c.limitKmh)?c.limitKmh:c.limit;
+    const reference=c.limitReference&&c.limitReference.state==='known'?c.limitReference.valueKmh:null;
+    const limit=a&&a.roadConfirmed&&Number.isFinite(a.limitKmh)?a.limitKmh:Number.isFinite(c.cameraLimitKmh)?c.cameraLimitKmh:Number.isFinite(reference)?reference:Number.isFinite(c.limitKmh)?c.limitKmh:c.limit;
     const capture={front:'спереди',rear:'сзади',both:'спереди и сзади'}[c.captureDirection]||'направление неизвестно';
     const providers=db.sourceMetadata&&Array.isArray(db.sourceMetadata.providers)?db.sourceMetadata.providers:[],
         official=providers.find(p=>p.id==='gibdd-official');
@@ -57,7 +58,7 @@ function model(state) {
             'Улица BMW: '+clean(street.reason,'недоступна'),
         cameraCommand:result.message?'Команда: '+clean(result.message,'—'):'Команды: ожидают действия',
         cameraCommandMore:' ',
-        cameraLimit:'Лимит объекта: '+(Number.isFinite(limit)?limit+' км/ч':'неизвестен')+
+        cameraLimit:(a&&a.roadConfirmed&&Number.isFinite(a.limitKmh)?'Лимит по дороге: ':'Лимит по базе: ')+(Number.isFinite(limit)?limit+' км/ч':'неизвестен')+
             (a&&a.roadConfirmed?' • дорога подтверждена':' • применимость к дороге не подтверждена'),
         cameraDirection:'Контроль: '+capture,
         cameraEnable:!connected?'Предупреждения: сервис недоступен':s.enabled?'Выключить предупреждения':'Включить предупреждения',

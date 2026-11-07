@@ -37,13 +37,13 @@ function loadDatabase(file) {
   });
   return p;
 }
-function nearest(records, fix) {
+function nearest(records, fix, describeCamera) {
   if (!fix) return null;
   var best = null, rad = Math.PI / 180;
   records.forEach(function (r) {
     var x = (r.position.lon - fix.lon) * Math.cos((r.position.lat + fix.lat) * rad / 2), y = r.position.lat - fix.lat;
     var d = Math.sqrt(x * x + y * y) * rad * 6371008.8;
-    if (d <= 2000 && (!best || d < best.distanceM)) best = Object.assign({}, cameraInfo.describe(r), { id: r.id, distanceM: Math.round(d), limitKmh: r.limitKmh, confidence: 'unconfirmed' });
+    if (d <= 2000 && (!best || d < best.distanceM)) best = Object.assign({}, (describeCamera || cameraInfo.describe)(r), { id: r.id, distanceM: Math.round(d), limitKmh: r.limitKmh, confidence: 'unconfirmed' });
   });
   return best;
 }
@@ -58,7 +58,7 @@ function start(options) {
   var settingsPath = path.join(dataDir, 'settings.json'), settings;
   try { settings = readSettings(settingsPath); }
   catch (e) { storageError = e.message; settings = { enabled: true, outputs: { cluster: false, hud: false }, hudOpacityPct: 100, cardLayout: cardLayout.defaultLayouts() }; }
-  var state = { serviceVersion: '0.5.0', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
+  var state = { serviceVersion: '0.5.1', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
     cardLayout: settings.cardLayout,
     street: { name: null, source: 'BMW', state: 'unavailable', reason: 'Название улицы BMW ещё не получено', observedAtMs: null },
     audio: { available: false, reason: 'Безопасный звуковой канал BMW не подтверждён' },
@@ -73,6 +73,7 @@ function start(options) {
     renderer: 'off', alert: null, nearest: null, error: null, diagnostic: 'No confirmed road; nearby points are diagnostic only',
     storage: { persistent: !storageError, settingsSaved: false, error: storageError } };
   var database = null, guidance = null, display = null, dimmer = null, store = null, audio = null, commandCounter = 0, clients = [], lastStatus = '', closed = false, ownsSocket = false, server;
+  var describeCamera = cameraInfo.describe;
   var selectedVersion = databaseVersion;
   try {
     // Assemble independently; a failed optional source must never acquire the
@@ -134,7 +135,7 @@ function start(options) {
   }
   function activateDatabase(bundle) {
     var nextGuidance = options.guidance || require('./vehicle-guidance').createGuidance({ zones: bundle.zones, records: bundle.records });
-    database = bundle; guidance = nextGuidance; state.database = describeDatabase(bundle);
+    database = bundle; guidance = nextGuidance; describeCamera = cameraInfo.createDescriber(bundle.records); state.database = describeDatabase(bundle);
     state.sourceAssembly.activeVersion = bundle.version;
   }
   function updateStatus(value) {
@@ -227,7 +228,7 @@ function start(options) {
     }
     state.gps = typeof gps.description === 'function' ? gps.description(fix, now) : !fix ? 'Нет свежих подтверждённых координат UTC (максимум 3 с)' :
       !valid ? 'Координаты есть; точность, скорость или курс не подтверждены' : 'Свежие координаты, скорость, курс и точность получены';
-    state.nearestCandidates = database && fix ? database.records.map(function(r) { return nearest([r],fix); }).filter(Boolean).sort(function(a,b){return a.distanceM-b.distanceM;}).slice(0,3) : [];
+    state.nearestCandidates = database && fix ? database.records.map(function(r) { return nearest([r],fix,describeCamera); }).filter(Boolean).sort(function(a,b){return a.distanceM-b.distanceM;}).slice(0,3) : [];
     state.nearest = state.nearestCandidates[0] || null;
     var alert = null;
     try { if (guidance) alert = guidance.evaluate(database && validPosition(fix, now) ? fix : null, now, settings.enabled); }

@@ -149,6 +149,9 @@ function reportPage(report, live, version, pageIndex, blockIndex, localResult, c
             'Условия из перечня: '+clean(c.operatingConditions), 'Нарушения из перечня: '+clean(c.rawControls),
             'Не классифицировано: '+clean(c.unmappedControls),
             'Описание: '+clean(c.description),existing.limit,
+            'Справочный лимит: '+n((c.limitReference||{}).valueKmh,0)+' км/ч • '+clean((c.limitReference||{}).state)+' • '+clean((c.limitReference||{}).kind),
+            'Лимит по подтверждённой дороге: '+n(c.roadConfirmed?c.limitKmh:null,0)+' км/ч',
+            'Источники справочного лимита: '+(Array.isArray((c.limitReference||{}).records)?c.limitReference.records.map(e=>clean(e.id)+' = '+n(e.valueKmh,0)+' • '+clean(e.url)).join('; '):'—'),
             'Контроль: '+clean(c.captureDirectionVerified?{front:'спереди',rear:'сзади',both:'спереди и сзади'}[c.captureDirection]||'направление неизвестно':'направление неизвестно')+' • источник '+clean(c.captureDirectionSource),
             existing.mode,existing.reason,existing.way,existing.samples].concat(candidates.map((v,i)=>
                 'Кандидат '+(i+1)+': '+clean(v.id)+' • '+n(v.distanceM,0)+' м • '+clean(v.reason))),

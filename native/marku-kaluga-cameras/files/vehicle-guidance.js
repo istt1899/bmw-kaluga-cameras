@@ -57,6 +57,7 @@ function createGuidance(data) {
     const records = data && data.records || (data ? data.zones.map(z => ({ id: z.id, position: { lat: z.lat, lon: z.lon },
         type: 'speed', controls: ['speed'], limitKmh: z.limit })) : database.records);
     const byId = {}; records.forEach(r => { byId[r.id] = r; });
+    const describeCamera = info.createDescriber(records);
     let prior = null, priorNearby = null, active = null, anchor = null, lastTime = 0;
     let state = { mode: 'none', reason: 'WAITING_GPS', zoneCount: zones.length, cameraCount: records.length };
     function reset(reason) {
@@ -119,7 +120,7 @@ function createGuidance(data) {
         });
         priorNearby = tracking ? { id: tracking.record.id, distanceM: tracking.distanceM } : null;
         if (!selected && vicinity && (!data || data.nearby !== false)) selected = Object.assign({}, vicinity, { confidence: 'nearby', roadConfirmed: false, limitKmh: null });
-        active = selected ? Object.assign({}, info.describe(byId[selected.id]), selected) : null;
+        active = selected ? Object.assign({}, describeCamera(byId[selected.id]), selected) : null;
         if (active) {
             state.mode = active.roadConfirmed ? 'road' : 'nearby';
             state.reason = active.stopped ? 'STOPPED_APPROACH' : active.roadConfirmed ? 'ROAD_APPROACH' : 'NEARBY_ONLY';

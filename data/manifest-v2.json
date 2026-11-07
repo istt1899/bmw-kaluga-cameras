@@ -1,11 +1,11 @@
 {
   "schema": 1,
   "region": "RU-KLU",
-  "version": "2026.11.7.1",
-  "generatedAt": "2026-11-07T09:08:32.000Z",
+  "version": "2026.11.7.2",
+  "generatedAt": "2026-11-07T11:05:00.000Z",
   "artifact": {
-    "url": "https://raw.githubusercontent.com/istt1899/bmw-kaluga-cameras/d92ea70fa9948314078af74f353eba88ae56d653/data/camera-database-2026.11.7.1.json",
-    "size": 1685543,
-    "sha256": "d094c399802c2952332bbedbb5db6b22a0de87e3450205579cb541edba9a1e67"
+    "url": "https://raw.githubusercontent.com/istt1899/bmw-kaluga-cameras/f17448370d29634ad29dfaf32ba2ac1162112c17/data/camera-database-2026.11.7.2.json",
+    "size": 1781306,
+    "sha256": "b44bc6dd54e6601d4142e0fb9e255dc34604d56022455b9a828a562c834fa9c4"
   }
 }

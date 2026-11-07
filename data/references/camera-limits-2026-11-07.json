@@ -1,0 +1,6948 @@
+{
+  "schema": 1,
+  "region": "RU-KLU",
+  "source": "OpenStreetMap",
+  "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+  "inputSha256": "e91bb43834e2130bd1c1f13b7e51a827f2ac69e4e49a215f98a82ed7d29d59bb",
+  "inputMd5": "b9f2d2dc703146be0e54a324907bf7e3",
+  "basePbfMd5": "bd360458900c604d889f78d73ef66f64",
+  "reviewedAt": "2026-11-07T11:05:00.000Z",
+  "definition": "https://wiki.openstreetmap.org/wiki/RU:Key:maxspeed",
+  "counts": {
+    "existingNumeric": 52,
+    "cameraTag": 49,
+    "enforcementRelation": 5,
+    "sharedRoadNode": 38,
+    "addressRoad": 57,
+    "unresolved": 107
+  },
+  "records": [
+    {
+      "schema": 1,
+      "id": "osm:node:11075733660",
+      "position": {
+        "lat": 54.3955252,
+        "lon": 34.190028
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 441355155,
+          "sourceUrl": "https://www.openstreetmap.org/way/441355155",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:urban",
+            "maxspeed:practical": "100",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              6329851203,
+              11075733660
+            ],
+            "positions": [
+              {
+                "lat": 54.3975054,
+                "lon": 34.1933891
+              },
+              {
+                "lat": 54.3955252,
+                "lon": 34.190028
+              }
+            ]
+          },
+          "version": 4,
+          "timestamp": "2023-07-29T19:42:45.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:11075733662",
+      "position": {
+        "lat": 54.4834006,
+        "lon": 34.4170421
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 441706482,
+          "sourceUrl": "https://www.openstreetmap.org/way/441706482",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:urban",
+            "maxspeed:practical": "100",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              431394894,
+              11075733662
+            ],
+            "positions": [
+              {
+                "lat": 54.4835701,
+                "lon": 34.4175203
+              },
+              {
+                "lat": 54.4834006,
+                "lon": 34.4170421
+              }
+            ]
+          },
+          "version": 5,
+          "timestamp": "2026-05-18T07:28:54.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:11075733663",
+      "position": {
+        "lat": 54.5877888,
+        "lon": 34.6739768
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 984491267,
+          "sourceUrl": "https://www.openstreetmap.org/way/984491267",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:urban",
+            "maxspeed:practical": "100",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              2653607508,
+              11075733663
+            ],
+            "positions": [
+              {
+                "lat": 54.5879011,
+                "lon": 34.6743833
+              },
+              {
+                "lat": 54.5877888,
+                "lon": 34.6739768
+              }
+            ]
+          },
+          "version": 2,
+          "timestamp": "2023-07-29T19:42:45.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:12533688403",
+      "position": {
+        "lat": 54.4928399,
+        "lon": 34.4439829
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 1172819841,
+          "sourceUrl": "https://www.openstreetmap.org/way/1172819841",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:urban",
+            "maxspeed:practical": "100",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              2658514446,
+              12533688403
+            ],
+            "positions": [
+              {
+                "lat": 54.4930465,
+                "lon": 34.4445703
+              },
+              {
+                "lat": 54.4928399,
+                "lon": 34.4439829
+              }
+            ]
+          },
+          "version": 2,
+          "timestamp": "2025-01-26T10:02:38.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:12533688404",
+      "position": {
+        "lat": 54.5119005,
+        "lon": 34.4873672
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 442079875,
+          "sourceUrl": "https://www.openstreetmap.org/way/442079875",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:urban",
+            "maxspeed:practical": "100",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              3103363387,
+              12533688404
+            ],
+            "positions": [
+              {
+                "lat": 54.5119903,
+                "lon": 34.487469
+              },
+              {
+                "lat": 54.5119005,
+                "lon": 34.4873672
+              }
+            ]
+          },
+          "version": 4,
+          "timestamp": "2025-01-26T10:02:38.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:12960088574",
+      "position": {
+        "lat": 54.6197786,
+        "lon": 36.2844134
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 12960088574,
+          "sourceUrl": "https://www.openstreetmap.org/node/12960088574",
+          "position": {
+            "lat": 54.6197786,
+            "lon": 36.2844134
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2862421/"
+          },
+          "version": 1,
+          "timestamp": "2025-06-28T21:20:23.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:13947831811",
+      "position": {
+        "lat": 54.7610308,
+        "lon": 35.2835233
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 13947831811,
+          "sourceUrl": "https://www.openstreetmap.org/node/13947831811",
+          "position": {
+            "lat": 54.7610308,
+            "lon": 35.2835233
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban"
+          },
+          "version": 1,
+          "timestamp": "2026-06-17T14:10:48.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:1719934165",
+      "position": {
+        "lat": 54.400617,
+        "lon": 35.727934
+      },
+      "valueKmh": 90,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 1719934165,
+          "sourceUrl": "https://www.openstreetmap.org/node/1719934165",
+          "position": {
+            "lat": 54.400617,
+            "lon": 35.727934
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:rural",
+            "source": "http://speedcamonline.ru/point/Rus/43151;http://speedcamonline.ru/point/Rus/43150"
+          },
+          "version": 3,
+          "timestamp": "2019-12-24T13:13:32.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:1839817421",
+      "position": {
+        "lat": 54.5506474,
+        "lon": 36.2795341
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 1839817421,
+          "sourceUrl": "https://www.openstreetmap.org/node/1839817421",
+          "position": {
+            "lat": 54.5506474,
+            "lon": 36.2795341
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/35629;https://гибдд.рф/milestones/2861012/;http://speedcamonline.ru/point/Rus/35630"
+          },
+          "version": 2,
+          "timestamp": "2019-12-09T21:21:30.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:3672969290",
+      "position": {
+        "lat": 55.2082268,
+        "lon": 36.945437
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 3672969290,
+          "sourceUrl": "https://www.openstreetmap.org/node/3672969290",
+          "position": {
+            "lat": 55.2082268,
+            "lon": 36.945437
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban"
+          },
+          "version": 4,
+          "timestamp": "2023-11-03T17:59:01.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:4859646576",
+      "position": {
+        "lat": 55.1183014,
+        "lon": 36.6472881
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 4859646576,
+          "sourceUrl": "https://www.openstreetmap.org/node/4859646576",
+          "position": {
+            "lat": 55.1183014,
+            "lon": 36.6472881
+          },
+          "tags": {
+            "camera:type": "Кордон",
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban"
+          },
+          "version": 5,
+          "timestamp": "2026-09-28T21:04:46.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:6618635447",
+      "position": {
+        "lat": 54.5411719,
+        "lon": 36.5575517
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 6618635447,
+          "sourceUrl": "https://www.openstreetmap.org/node/6618635447",
+          "position": {
+            "lat": 54.5411719,
+            "lon": 36.5575517
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "man_made": "surveillance",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/32917;https://гибдд.рф/milestones/2863316/"
+          },
+          "version": 3,
+          "timestamp": "2026-03-12T06:46:22.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:6653023362",
+      "position": {
+        "lat": 55.0724724,
+        "lon": 36.6152557
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 573595080,
+          "sourceUrl": "https://www.openstreetmap.org/way/573595080",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "RU:urban",
+            "name": "Варшавское шоссе",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              11271644473,
+              6653023362
+            ],
+            "positions": [
+              {
+                "lat": 55.0719178,
+                "lon": 36.6139099
+              },
+              {
+                "lat": 55.0724724,
+                "lon": 36.6152557
+              }
+            ]
+          },
+          "version": 13,
+          "timestamp": "2023-10-18T12:07:12.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:6795168747",
+      "position": {
+        "lat": 54.9829647,
+        "lon": 36.4993423
+      },
+      "valueKmh": 90,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 6795168747,
+          "sourceUrl": "https://www.openstreetmap.org/node/6795168747",
+          "position": {
+            "lat": 54.9829647,
+            "lon": 36.4993423
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:rural",
+            "source": "https://гибдд.рф/milestones/2860256/;http://speedcamonline.ru/point/Rus/36333"
+          },
+          "version": 2,
+          "timestamp": "2019-12-09T12:21:38.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:6795168748",
+      "position": {
+        "lat": 54.982892,
+        "lon": 36.4994694
+      },
+      "valueKmh": 90,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 6795168748,
+          "sourceUrl": "https://www.openstreetmap.org/node/6795168748",
+          "position": {
+            "lat": 54.982892,
+            "lon": 36.4994694
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:rural",
+            "source": "https://гибдд.рф/milestones/2860256/;http://speedcamonline.ru/point/Rus/36334"
+          },
+          "version": 2,
+          "timestamp": "2019-12-09T12:21:38.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:6925414141",
+      "position": {
+        "lat": 54.5174687,
+        "lon": 35.8624866
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 6925414141,
+          "sourceUrl": "https://www.openstreetmap.org/node/6925414141",
+          "position": {
+            "lat": 54.5174687,
+            "lon": 35.8624866
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/27479;https://гибдд.рф/milestones/2860528/;http://speedcamonline.ru/point/Rus/27478"
+          },
+          "version": 2,
+          "timestamp": "2019-12-09T21:29:23.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7043823140",
+      "position": {
+        "lat": 54.9859797,
+        "lon": 36.2575199
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 448497217,
+          "sourceUrl": "https://www.openstreetmap.org/way/448497217",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:urban",
+            "maxspeed:practical": "80",
+            "name": "Варшавское шоссе",
+            "ref": "А-130",
+            "source:maxspeed": "RU:urban"
+          },
+          "segment": {
+            "nodeIds": [
+              1123263781,
+              7043823140
+            ],
+            "positions": [
+              {
+                "lat": 54.9860159,
+                "lon": 36.2578315
+              },
+              {
+                "lat": 54.9859797,
+                "lon": 36.2575199
+              }
+            ]
+          },
+          "version": 21,
+          "timestamp": "2024-09-10T13:39:12.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7043832492",
+      "position": {
+        "lat": 54.9294963,
+        "lon": 35.7504361
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7043832492,
+          "sourceUrl": "https://www.openstreetmap.org/node/7043832492",
+          "position": {
+            "lat": 54.9294963,
+            "lon": 35.7504361
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/36722;http://speedcamonline.ru/point/Rus/36721"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T12:19:23.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7043840320",
+      "position": {
+        "lat": 54.6031139,
+        "lon": 36.0495994
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7043840320,
+          "sourceUrl": "https://www.openstreetmap.org/node/7043840320",
+          "position": {
+            "lat": 54.6031139,
+            "lon": 36.0495994
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/33907;https://гибдд.рф/milestones/2863339/"
+          },
+          "version": 2,
+          "timestamp": "2023-11-17T15:15:32.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7043840329",
+      "position": {
+        "lat": 55.0589936,
+        "lon": 35.9076896
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7043840329,
+          "sourceUrl": "https://www.openstreetmap.org/node/7043840329",
+          "position": {
+            "lat": 55.0589936,
+            "lon": 35.9076896
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/32431"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T12:31:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7043841294",
+      "position": {
+        "lat": 54.7949677,
+        "lon": 35.9537147
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7043841294,
+          "sourceUrl": "https://www.openstreetmap.org/node/7043841294",
+          "position": {
+            "lat": 54.7949677,
+            "lon": 35.9537147
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2863368/;http://speedcamonline.ru/point/Rus/33904"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T12:29:43.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7043843796",
+      "position": {
+        "lat": 54.9656974,
+        "lon": 35.8954055
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 1227750181,
+          "sourceUrl": "https://www.openstreetmap.org/way/1227750181",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Бурвикова",
+            "ref": "А-130",
+            "source:maxspeed": "RU:urban"
+          },
+          "segment": {
+            "nodeIds": [
+              11385297165,
+              7043843796
+            ],
+            "positions": [
+              {
+                "lat": 54.9657029,
+                "lon": 35.8955517
+              },
+              {
+                "lat": 54.9656974,
+                "lon": 35.8954055
+              }
+            ]
+          },
+          "version": 1,
+          "timestamp": "2023-11-30T10:03:09.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7043843810",
+      "position": {
+        "lat": 54.6136691,
+        "lon": 36.0383611
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7043843810,
+          "sourceUrl": "https://www.openstreetmap.org/node/7043843810",
+          "position": {
+            "lat": 54.6136691,
+            "lon": 36.0383611
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/26583;https://гибдд.рф/milestones/2860576/;http://speedcamonline.ru/point/Rus/26584"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T12:27:17.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7043844223",
+      "position": {
+        "lat": 55.0524229,
+        "lon": 36.5673375
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 291790388,
+          "sourceUrl": "https://www.openstreetmap.org/way/291790388",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "RU:urban",
+            "name": "Центральная улица",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              3103364371,
+              7043844223
+            ],
+            "positions": [
+              {
+                "lat": 55.0524006,
+                "lon": 36.567277
+              },
+              {
+                "lat": 55.0524229,
+                "lon": 36.5673375
+              }
+            ]
+          },
+          "version": 21,
+          "timestamp": "2025-09-12T14:30:26.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7043852108",
+      "position": {
+        "lat": 54.7314863,
+        "lon": 35.9872855
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 293975881,
+          "sourceUrl": "https://www.openstreetmap.org/way/293975881",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "RU:urban",
+            "ref": "29К-008"
+          },
+          "segment": {
+            "nodeIds": [
+              8250919570,
+              7043852108
+            ],
+            "positions": [
+              {
+                "lat": 54.7307699,
+                "lon": 35.9877225
+              },
+              {
+                "lat": 54.7314863,
+                "lon": 35.9872855
+              }
+            ]
+          },
+          "version": 13,
+          "timestamp": "2024-08-02T11:14:45.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7043857456",
+      "position": {
+        "lat": 54.6573172,
+        "lon": 36.0313563
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7043857456,
+          "sourceUrl": "https://www.openstreetmap.org/node/7043857456",
+          "position": {
+            "lat": 54.6573172,
+            "lon": 36.0313563
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/32004;https://гибдд.рф/milestones/2863354/"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T12:27:45.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7043870487",
+      "position": {
+        "lat": 55.0185338,
+        "lon": 35.8807683
+      },
+      "valueKmh": 90,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 705776225,
+          "sourceUrl": "https://www.openstreetmap.org/way/705776225",
+          "tags": {
+            "highway": "secondary",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "ref": "29К-020"
+          },
+          "segment": {
+            "nodeIds": [
+              1506209030,
+              7043870487
+            ],
+            "positions": [
+              {
+                "lat": 55.018601,
+                "lon": 35.8808024
+              },
+              {
+                "lat": 55.0185338,
+                "lon": 35.8807683
+              }
+            ]
+          },
+          "version": 5,
+          "timestamp": "2021-09-11T19:05:09.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044943461",
+      "position": {
+        "lat": 54.3304145,
+        "lon": 36.1806659
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 134122068,
+          "sourceUrl": "https://www.openstreetmap.org/way/134122068",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "Центральная улица",
+            "ref": "Р-92"
+          },
+          "segment": {
+            "nodeIds": [
+              1898564958,
+              7044943461
+            ],
+            "positions": [
+              {
+                "lat": 54.3294692,
+                "lon": 36.1803679
+              },
+              {
+                "lat": 54.3304145,
+                "lon": 36.1806659
+              }
+            ]
+          },
+          "version": 28,
+          "timestamp": "2026-07-21T14:17:23.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044945984",
+      "position": {
+        "lat": 54.4858833,
+        "lon": 36.200548
+      },
+      "valueKmh": 30,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 276757848,
+          "sourceUrl": "https://www.openstreetmap.org/way/276757848",
+          "tags": {
+            "highway": "tertiary",
+            "lanes": "4",
+            "maxspeed": "30",
+            "name": "Новоспасская улица"
+          },
+          "segment": {
+            "nodeIds": [
+              2324957190,
+              7044945984
+            ],
+            "positions": [
+              {
+                "lat": 54.4857526,
+                "lon": 36.2003339
+              },
+              {
+                "lat": 54.4858833,
+                "lon": 36.200548
+              }
+            ]
+          },
+          "version": 30,
+          "timestamp": "2023-09-30T23:57:35.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044951869",
+      "position": {
+        "lat": 54.3225268,
+        "lon": 36.1793877
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 134122068,
+          "sourceUrl": "https://www.openstreetmap.org/way/134122068",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "Центральная улица",
+            "ref": "Р-92"
+          },
+          "segment": {
+            "nodeIds": [
+              5085425237,
+              7044951869
+            ],
+            "positions": [
+              {
+                "lat": 54.3218699,
+                "lon": 36.1794536
+              },
+              {
+                "lat": 54.3225268,
+                "lon": 36.1793877
+              }
+            ]
+          },
+          "version": 28,
+          "timestamp": "2026-07-21T14:17:23.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044954248",
+      "position": {
+        "lat": 54.4639291,
+        "lon": 36.2362123
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7044954248,
+          "sourceUrl": "https://www.openstreetmap.org/node/7044954248",
+          "position": {
+            "lat": 54.4639291,
+            "lon": 36.2362123
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/20586;http://speedcamonline.ru/point/Rus/20585;https://гибдд.рф/milestones/1641167/"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T20:34:53.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044958024",
+      "position": {
+        "lat": 54.4900224,
+        "lon": 36.1883621
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7044958024,
+          "sourceUrl": "https://www.openstreetmap.org/node/7044958024",
+          "position": {
+            "lat": 54.4900224,
+            "lon": 36.1883621
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2862356/;http://speedcamonline.ru/point/Rus/4725"
+          },
+          "version": 2,
+          "timestamp": "2020-09-07T08:23:16.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044965830",
+      "position": {
+        "lat": 54.5079753,
+        "lon": 36.2364175
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7044965830,
+          "sourceUrl": "https://www.openstreetmap.org/node/7044965830",
+          "position": {
+            "lat": 54.5079753,
+            "lon": 36.2364175
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/35941;http://speedcamonline.ru/point/Rus/35942;https://гибдд.рф/milestones/2860998/"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T20:46:11.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044965884",
+      "position": {
+        "lat": 54.5598836,
+        "lon": 36.2622238
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7044965884,
+          "sourceUrl": "https://www.openstreetmap.org/node/7044965884",
+          "position": {
+            "lat": 54.5598836,
+            "lon": 36.2622238
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/20542;https://гибдд.рф/milestones/1638666/;http://speedcamonline.ru/point/Rus/20540"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T21:04:39.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044970608",
+      "position": {
+        "lat": 54.4751828,
+        "lon": 36.2362604
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7044970608,
+          "sourceUrl": "https://www.openstreetmap.org/node/7044970608",
+          "position": {
+            "lat": 54.4751828,
+            "lon": 36.2362604
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/36330;https://гибдд.рф/milestones/2860994/"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T20:38:50.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044970609",
+      "position": {
+        "lat": 54.4751877,
+        "lon": 36.2363996
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7044970609,
+          "sourceUrl": "https://www.openstreetmap.org/node/7044970609",
+          "position": {
+            "lat": 54.4751877,
+            "lon": 36.2363996
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/36757;https://гибдд.рф/milestones/2860994/"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T20:38:50.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044972797",
+      "position": {
+        "lat": 54.4976401,
+        "lon": 36.2286171
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7044972797,
+          "sourceUrl": "https://www.openstreetmap.org/node/7044972797",
+          "position": {
+            "lat": 54.4976401,
+            "lon": 36.2286171
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/1637393/;http://speedcamonline.ru/point/Rus/20537"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T20:45:28.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044972798",
+      "position": {
+        "lat": 54.4977372,
+        "lon": 36.2288065
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7044972798,
+          "sourceUrl": "https://www.openstreetmap.org/node/7044972798",
+          "position": {
+            "lat": 54.4977372,
+            "lon": 36.2288065
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/1637393/;http://speedcamonline.ru/point/Rus/20536"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T20:45:28.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044973016",
+      "position": {
+        "lat": 54.5143167,
+        "lon": 36.2821894
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7044973016,
+          "sourceUrl": "https://www.openstreetmap.org/node/7044973016",
+          "position": {
+            "lat": 54.5143167,
+            "lon": 36.2821894
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/38175;https://гибдд.рф/milestones/2861046/;http://speedcamonline.ru/point/Rus/38174"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T20:56:43.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044973350",
+      "position": {
+        "lat": 54.4893769,
+        "lon": 36.1907613
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7044973350,
+          "sourceUrl": "https://www.openstreetmap.org/node/7044973350",
+          "position": {
+            "lat": 54.4893769,
+            "lon": 36.1907613
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2862367/;http://speedcamonline.ru/point/Rus/33381"
+          },
+          "version": 2,
+          "timestamp": "2025-04-30T08:06:17.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044979963",
+      "position": {
+        "lat": 54.5111197,
+        "lon": 36.2344213
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7044979963,
+          "sourceUrl": "https://www.openstreetmap.org/node/7044979963",
+          "position": {
+            "lat": 54.5111197,
+            "lon": 36.2344213
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2862415/"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T20:46:59.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044979964",
+      "position": {
+        "lat": 54.511034,
+        "lon": 36.2345384
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7044979964,
+          "sourceUrl": "https://www.openstreetmap.org/node/7044979964",
+          "position": {
+            "lat": 54.511034,
+            "lon": 36.2345384
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2862415/"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T20:46:59.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044981767",
+      "position": {
+        "lat": 54.5467285,
+        "lon": 36.147198
+      },
+      "valueKmh": 90,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7044981767,
+          "sourceUrl": "https://www.openstreetmap.org/node/7044981767",
+          "position": {
+            "lat": 54.5467285,
+            "lon": 36.147198
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:rural",
+            "source": "https://гибдд.рф/milestones/1637261/;http://speedcamonline.ru/point/Rus/20309"
+          },
+          "version": 2,
+          "timestamp": "2021-01-19T09:19:58.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044981768",
+      "position": {
+        "lat": 54.5466715,
+        "lon": 36.1471033
+      },
+      "valueKmh": 90,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7044981768,
+          "sourceUrl": "https://www.openstreetmap.org/node/7044981768",
+          "position": {
+            "lat": 54.5466715,
+            "lon": 36.1471033
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:rural",
+            "source": "https://гибдд.рф/milestones/1637261/;http://speedcamonline.ru/point/Rus/20310"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T20:51:12.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044983768",
+      "position": {
+        "lat": 54.5283347,
+        "lon": 36.2950835
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7044983768,
+          "sourceUrl": "https://www.openstreetmap.org/node/7044983768",
+          "position": {
+            "lat": 54.5283347,
+            "lon": 36.2950835
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/20370;http://speedcamonline.ru/point/Rus/20371;https://гибдд.рф/milestones/1641144/"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T20:59:55.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044986016",
+      "position": {
+        "lat": 54.5699801,
+        "lon": 36.116973
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7044986016,
+          "sourceUrl": "https://www.openstreetmap.org/node/7044986016",
+          "position": {
+            "lat": 54.5699801,
+            "lon": 36.116973
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/1638385/;http://speedcamonline.ru/point/Rus/20592;http://speedcamonline.ru/point/Rus/20591"
+          },
+          "version": 2,
+          "timestamp": "2020-04-21T17:06:19.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044986914",
+      "position": {
+        "lat": 54.4865761,
+        "lon": 36.3092715
+      },
+      "valueKmh": 90,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 754362487,
+          "sourceUrl": "https://www.openstreetmap.org/way/754362487",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "90",
+            "name": "«Золотое кольцо»",
+            "oneway": "yes",
+            "ref": "Р-132"
+          },
+          "segment": {
+            "nodeIds": [
+              6877334733,
+              7044986914
+            ],
+            "positions": [
+              {
+                "lat": 54.4857401,
+                "lon": 36.3079369
+              },
+              {
+                "lat": 54.4865761,
+                "lon": 36.3092715
+              }
+            ]
+          },
+          "version": 11,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044986915",
+      "position": {
+        "lat": 54.4866198,
+        "lon": 36.3091684
+      },
+      "valueKmh": 90,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 417240064,
+          "sourceUrl": "https://www.openstreetmap.org/way/417240064",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "90",
+            "name": "«Золотое кольцо»",
+            "oneway": "yes",
+            "ref": "Р-132"
+          },
+          "segment": {
+            "nodeIds": [
+              3458639596,
+              7044986915
+            ],
+            "positions": [
+              {
+                "lat": 54.4866788,
+                "lon": 36.3092708
+              },
+              {
+                "lat": 54.4866198,
+                "lon": 36.3091684
+              }
+            ]
+          },
+          "version": 12,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044990370",
+      "position": {
+        "lat": 54.5437425,
+        "lon": 36.1513557
+      },
+      "valueKmh": 50,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 543695216,
+          "sourceUrl": "https://www.openstreetmap.org/way/543695216",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "50",
+            "name": "«Украина»",
+            "oneway": "yes",
+            "ref": "М-3",
+            "source:maxspeed": "sign"
+          },
+          "segment": {
+            "nodeIds": [
+              6094907076,
+              7044990370
+            ],
+            "positions": [
+              {
+                "lat": 54.5441664,
+                "lon": 36.1509311
+              },
+              {
+                "lat": 54.5437425,
+                "lon": 36.1513557
+              }
+            ]
+          },
+          "version": 21,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044990371",
+      "position": {
+        "lat": 54.5437619,
+        "lon": 36.151541
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 598722263,
+          "sourceUrl": "https://www.openstreetmap.org/way/598722263",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "«Украина»",
+            "oneway": "yes",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              5698417935,
+              7044990371
+            ],
+            "positions": [
+              {
+                "lat": 54.543446,
+                "lon": 36.1518189
+              },
+              {
+                "lat": 54.5437619,
+                "lon": 36.151541
+              }
+            ]
+          },
+          "version": 14,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7044990582",
+      "position": {
+        "lat": 54.5567251,
+        "lon": 36.2590665
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7044990582,
+          "sourceUrl": "https://www.openstreetmap.org/node/7044990582",
+          "position": {
+            "lat": 54.5567251,
+            "lon": 36.2590665
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2862512/"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T21:02:54.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045018369",
+      "position": {
+        "lat": 54.5518768,
+        "lon": 36.2762689
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7045018369,
+          "sourceUrl": "https://www.openstreetmap.org/node/7045018369",
+          "position": {
+            "lat": 54.5518768,
+            "lon": 36.2762689
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/20544;https://гибдд.рф/milestones/2860736/;http://speedcamonline.ru/point/Rus/20543"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T21:22:14.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045019057",
+      "position": {
+        "lat": 54.6198014,
+        "lon": 36.2842585
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7045019057,
+          "sourceUrl": "https://www.openstreetmap.org/node/7045019057",
+          "position": {
+            "lat": 54.6198014,
+            "lon": 36.2842585
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2862421/"
+          },
+          "version": 3,
+          "timestamp": "2025-06-28T21:20:23.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045019626",
+      "position": {
+        "lat": 54.5389916,
+        "lon": 36.3120276
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7045019626,
+          "sourceUrl": "https://www.openstreetmap.org/node/7045019626",
+          "position": {
+            "lat": 54.5389916,
+            "lon": 36.3120276
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/11774"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T21:15:04.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045020396",
+      "position": {
+        "lat": 54.5633673,
+        "lon": 36.2986724
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7045020396,
+          "sourceUrl": "https://www.openstreetmap.org/node/7045020396",
+          "position": {
+            "lat": 54.5633673,
+            "lon": 36.2986724
+          },
+          "tags": {
+            "direction": "210",
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/20539;https://гибдд.рф/milestones/1638292/;http://speedcamonline.ru/point/Rus/20538"
+          },
+          "version": 2,
+          "timestamp": "2025-02-05T12:55:47.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045025141",
+      "position": {
+        "lat": 54.5866317,
+        "lon": 36.2536076
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7045025141,
+          "sourceUrl": "https://www.openstreetmap.org/node/7045025141",
+          "position": {
+            "lat": 54.5866317,
+            "lon": 36.2536076
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2862429/"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T21:17:03.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045027073",
+      "position": {
+        "lat": 54.5404692,
+        "lon": 36.3040573
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7045027073,
+          "sourceUrl": "https://www.openstreetmap.org/node/7045027073",
+          "position": {
+            "lat": 54.5404692,
+            "lon": 36.3040573
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2862318/"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T21:15:38.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045029810",
+      "position": {
+        "lat": 54.5943824,
+        "lon": 36.2581041
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7045029810,
+          "sourceUrl": "https://www.openstreetmap.org/node/7045029810",
+          "position": {
+            "lat": 54.5943824,
+            "lon": 36.2581041
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2862330/"
+          },
+          "version": 2,
+          "timestamp": "2025-06-29T11:12:48.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045031623",
+      "position": {
+        "lat": 54.6007627,
+        "lon": 36.2628551
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7045031623,
+          "sourceUrl": "https://www.openstreetmap.org/node/7045031623",
+          "position": {
+            "lat": 54.6007627,
+            "lon": 36.2628551
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/20448;http://speedcamonline.ru/point/Rus/20447;https://гибдд.рф/milestones/1638602/"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T21:18:12.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045038100",
+      "position": {
+        "lat": 54.2145061,
+        "lon": 36.0094634
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 393572226,
+          "sourceUrl": "https://www.openstreetmap.org/way/393572226",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "ref": "29К-015"
+          },
+          "segment": {
+            "nodeIds": [
+              1326695194,
+              7045038100
+            ],
+            "positions": [
+              {
+                "lat": 54.2140887,
+                "lon": 36.0073539
+              },
+              {
+                "lat": 54.2145061,
+                "lon": 36.0094634
+              }
+            ]
+          },
+          "version": 7,
+          "timestamp": "2025-03-04T06:45:36.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045038509",
+      "position": {
+        "lat": 54.1147752,
+        "lon": 35.2549178
+      },
+      "valueKmh": 90,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 1529929939,
+          "sourceUrl": "https://www.openstreetmap.org/way/1529929939",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "4",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              734099854,
+              7045038509
+            ],
+            "positions": [
+              {
+                "lat": 54.1151293,
+                "lon": 35.2553805
+              },
+              {
+                "lat": 54.1147752,
+                "lon": 35.2549178
+              }
+            ]
+          },
+          "version": 1,
+          "timestamp": "2026-06-15T22:21:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045039084",
+      "position": {
+        "lat": 54.5221401,
+        "lon": 35.695433
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7045039084,
+          "sourceUrl": "https://www.openstreetmap.org/node/7045039084",
+          "position": {
+            "lat": 54.5221401,
+            "lon": 35.695433
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2862273/"
+          },
+          "version": 4,
+          "timestamp": "2023-12-12T14:19:12.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045045899",
+      "position": {
+        "lat": 54.6023425,
+        "lon": 36.3175345
+      },
+      "valueKmh": 90,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7045045899,
+          "sourceUrl": "https://www.openstreetmap.org/node/7045045899",
+          "position": {
+            "lat": 54.6023425,
+            "lon": 36.3175345
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:rural",
+            "source": "https://гибдд.рф/milestones/1638321/;http://speedcamonline.ru/point/Rus/20589"
+          },
+          "version": 2,
+          "timestamp": "2023-11-15T11:07:29.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045045900",
+      "position": {
+        "lat": 54.6024026,
+        "lon": 36.3176552
+      },
+      "valueKmh": 90,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7045045900,
+          "sourceUrl": "https://www.openstreetmap.org/node/7045045900",
+          "position": {
+            "lat": 54.6024026,
+            "lon": 36.3176552
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:rural",
+            "source": "http://speedcamonline.ru/point/Rus/20590;https://гибдд.рф/milestones/1638321/"
+          },
+          "version": 2,
+          "timestamp": "2023-11-15T11:07:29.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045050406",
+      "position": {
+        "lat": 54.0973951,
+        "lon": 35.3709911
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 314590256,
+          "sourceUrl": "https://www.openstreetmap.org/way/314590256",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Марченко",
+            "ref": "29К-017"
+          },
+          "segment": {
+            "nodeIds": [
+              9199676095,
+              7045050406
+            ],
+            "positions": [
+              {
+                "lat": 54.0973669,
+                "lon": 35.3711879
+              },
+              {
+                "lat": 54.0973951,
+                "lon": 35.3709911
+              }
+            ]
+          },
+          "version": 12,
+          "timestamp": "2023-08-25T08:49:37.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045058543",
+      "position": {
+        "lat": 54.4227955,
+        "lon": 35.7681908
+      },
+      "valueKmh": 90,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 602516711,
+          "sourceUrl": "https://www.openstreetmap.org/way/602516711",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              85249083,
+              7045058543
+            ],
+            "positions": [
+              {
+                "lat": 54.4243796,
+                "lon": 35.7710891
+              },
+              {
+                "lat": 54.4227955,
+                "lon": 35.7681908
+              }
+            ]
+          },
+          "version": 20,
+          "timestamp": "2026-02-18T13:10:37.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045058616",
+      "position": {
+        "lat": 54.3788213,
+        "lon": 35.6646347
+      },
+      "valueKmh": 90,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 310057746,
+          "sourceUrl": "https://www.openstreetmap.org/way/310057746",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              374089481,
+              7045058616
+            ],
+            "positions": [
+              {
+                "lat": 54.3794353,
+                "lon": 35.6661378
+              },
+              {
+                "lat": 54.3788213,
+                "lon": 35.6646347
+              }
+            ]
+          },
+          "version": 18,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045086922",
+      "position": {
+        "lat": 54.1317662,
+        "lon": 35.8742649
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 363081492,
+          "sourceUrl": "https://www.openstreetmap.org/way/363081492",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "ref": "29К-015"
+          },
+          "segment": {
+            "nodeIds": [
+              6316727824,
+              7045086922
+            ],
+            "positions": [
+              {
+                "lat": 54.1313054,
+                "lon": 35.873343
+              },
+              {
+                "lat": 54.1317662,
+                "lon": 35.8742649
+              }
+            ]
+          },
+          "version": 5,
+          "timestamp": "2026-03-02T13:41:06.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045096141",
+      "position": {
+        "lat": 54.1041198,
+        "lon": 35.3230083
+      },
+      "valueKmh": 40,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 497195375,
+          "sourceUrl": "https://www.openstreetmap.org/way/497195375",
+          "tags": {
+            "bridge": "yes",
+            "highway": "primary",
+            "lanes": "2",
+            "layer": "1",
+            "maxspeed": "40",
+            "ref": "29Н-411;29К-017"
+          },
+          "segment": {
+            "nodeIds": [
+              247516229,
+              7045096141
+            ],
+            "positions": [
+              {
+                "lat": 54.1039702,
+                "lon": 35.3234444
+              },
+              {
+                "lat": 54.1041198,
+                "lon": 35.3230083
+              }
+            ]
+          },
+          "version": 5,
+          "timestamp": "2025-07-25T17:23:24.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045098159",
+      "position": {
+        "lat": 54.1403621,
+        "lon": 35.8882759
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7045098159,
+          "sourceUrl": "https://www.openstreetmap.org/node/7045098159",
+          "position": {
+            "lat": 54.1403621,
+            "lon": 35.8882759
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "http://speedcamonline.ru/point/Rus/26581;https://гибдд.рф/milestones/2860556/;http://speedcamonline.ru/point/Rus/26582"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T21:40:39.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045103016",
+      "position": {
+        "lat": 54.1733032,
+        "lon": 35.3235474
+      },
+      "valueKmh": 90,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 996578010,
+          "sourceUrl": "https://www.openstreetmap.org/way/996578010",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "4",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              1282513413,
+              7045103016
+            ],
+            "positions": [
+              {
+                "lat": 54.1735258,
+                "lon": 35.3239989
+              },
+              {
+                "lat": 54.1733032,
+                "lon": 35.3235474
+              }
+            ]
+          },
+          "version": 8,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045104751",
+      "position": {
+        "lat": 54.1785722,
+        "lon": 35.9291263
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 303798981,
+          "sourceUrl": "https://www.openstreetmap.org/way/303798981",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Старая Деревня",
+            "ref": "29К-015"
+          },
+          "segment": {
+            "nodeIds": [
+              767475985,
+              7045104751
+            ],
+            "positions": [
+              {
+                "lat": 54.1784236,
+                "lon": 35.9287559
+              },
+              {
+                "lat": 54.1785722,
+                "lon": 35.9291263
+              }
+            ]
+          },
+          "version": 13,
+          "timestamp": "2025-03-11T12:16:59.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045107263",
+      "position": {
+        "lat": 54.3383139,
+        "lon": 35.5503505
+      },
+      "valueKmh": 90,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 310057746,
+          "sourceUrl": "https://www.openstreetmap.org/way/310057746",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              5336035259,
+              7045107263
+            ],
+            "positions": [
+              {
+                "lat": 54.3386122,
+                "lon": 35.5514493
+              },
+              {
+                "lat": 54.3383139,
+                "lon": 35.5503505
+              }
+            ]
+          },
+          "version": 18,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7045107340",
+      "position": {
+        "lat": 54.0835896,
+        "lon": 35.3426103
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 996276926,
+          "sourceUrl": "https://www.openstreetmap.org/way/996276926",
+          "tags": {
+            "highway": "secondary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Ленина"
+          },
+          "segment": {
+            "nodeIds": [
+              9199685474,
+              7045107340
+            ],
+            "positions": [
+              {
+                "lat": 54.0828199,
+                "lon": 35.3424997
+              },
+              {
+                "lat": 54.0835896,
+                "lon": 35.3426103
+              }
+            ]
+          },
+          "version": 10,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7082388046",
+      "position": {
+        "lat": 54.4028193,
+        "lon": 35.7327747
+      },
+      "valueKmh": 90,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7082388046,
+          "sourceUrl": "https://www.openstreetmap.org/node/7082388046",
+          "position": {
+            "lat": 54.4028193,
+            "lon": 35.7327747
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:rural",
+            "source": "http://speedcamonline.ru/point/Rus/26354;http://speedcamonline.ru/point/Rus/26355"
+          },
+          "version": 3,
+          "timestamp": "2025-09-09T08:18:15.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7355037497",
+      "position": {
+        "lat": 54.7112269,
+        "lon": 35.2498406
+      },
+      "valueKmh": 90,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 164641110,
+          "sourceUrl": "https://www.openstreetmap.org/way/164641110",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "maxspeed:practical": "110",
+            "name": "«Золотое кольцо»",
+            "ref": "Р-132"
+          },
+          "segment": {
+            "nodeIds": [
+              5555802585,
+              7355037497
+            ],
+            "positions": [
+              {
+                "lat": 54.7108522,
+                "lon": 35.2513042
+              },
+              {
+                "lat": 54.7112269,
+                "lon": 35.2498406
+              }
+            ]
+          },
+          "version": 29,
+          "timestamp": "2024-10-15T21:11:14.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:7430929084",
+      "position": {
+        "lat": 54.5699402,
+        "lon": 36.1168645
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 7430929084,
+          "sourceUrl": "https://www.openstreetmap.org/node/7430929084",
+          "position": {
+            "lat": 54.5699402,
+            "lon": 36.1168645
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/1638385/;http://speedcamonline.ru/point/Rus/20592;http://speedcamonline.ru/point/Rus/20591"
+          },
+          "version": 1,
+          "timestamp": "2020-04-21T17:06:18.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:85249051",
+      "position": {
+        "lat": 54.2527792,
+        "lon": 35.4436306
+      },
+      "valueKmh": 90,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 310057743,
+          "sourceUrl": "https://www.openstreetmap.org/way/310057743",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              85249052,
+              85249051
+            ],
+            "positions": [
+              {
+                "lat": 54.2659454,
+                "lon": 35.4578121
+              },
+              {
+                "lat": 54.2527792,
+                "lon": 35.4436306
+              }
+            ]
+          },
+          "version": 16,
+          "timestamp": "2025-09-04T12:25:31.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:8836910086",
+      "position": {
+        "lat": 55.0885785,
+        "lon": 36.6335009
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 8836910086,
+          "sourceUrl": "https://www.openstreetmap.org/node/8836910086",
+          "position": {
+            "lat": 55.0885785,
+            "lon": 36.6335009
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban"
+          },
+          "version": 3,
+          "timestamp": "2026-10-01T09:09:19.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:8836910087",
+      "position": {
+        "lat": 55.0933192,
+        "lon": 36.6356518
+      },
+      "valueKmh": 60,
+      "kind": "camera-tag",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "node",
+          "id": 8836910087,
+          "sourceUrl": "https://www.openstreetmap.org/node/8836910087",
+          "position": {
+            "lat": 55.0933192,
+            "lon": 36.6356518
+          },
+          "tags": {
+            "highway": "speed_camera",
+            "maxspeed": "RU:urban"
+          },
+          "version": 3,
+          "timestamp": "2026-10-01T09:09:20.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:90045447",
+      "position": {
+        "lat": 54.7633591,
+        "lon": 35.2883627
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 444475726,
+          "sourceUrl": "https://www.openstreetmap.org/way/444475726",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:urban",
+            "maxspeed:practical": "80",
+            "name": "Варшавская улица",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              5537234695,
+              90045447
+            ],
+            "positions": [
+              {
+                "lat": 54.7636885,
+                "lon": 35.2890574
+              },
+              {
+                "lat": 54.7633591,
+                "lon": 35.2883627
+              }
+            ]
+          },
+          "version": 18,
+          "timestamp": "2026-06-17T14:10:48.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:90128838",
+      "position": {
+        "lat": 54.3397438,
+        "lon": 36.1840662
+      },
+      "valueKmh": 60,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 134122068,
+          "sourceUrl": "https://www.openstreetmap.org/way/134122068",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "Центральная улица",
+            "ref": "Р-92"
+          },
+          "segment": {
+            "nodeIds": [
+              12655989131,
+              90128838
+            ],
+            "positions": [
+              {
+                "lat": 54.3396828,
+                "lon": 36.1839717
+              },
+              {
+                "lat": 54.3397438,
+                "lon": 36.1840662
+              }
+            ]
+          },
+          "version": 28,
+          "timestamp": "2026-07-21T14:17:23.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:9197861273",
+      "position": {
+        "lat": 54.1192761,
+        "lon": 35.2610629
+      },
+      "valueKmh": 90,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 996094086,
+          "sourceUrl": "https://www.openstreetmap.org/way/996094086",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "4",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              85249023,
+              9197861273
+            ],
+            "positions": [
+              {
+                "lat": 54.11976,
+                "lon": 35.2617294
+              },
+              {
+                "lat": 54.1192761,
+                "lon": 35.2610629
+              }
+            ]
+          },
+          "version": 9,
+          "timestamp": "2026-06-15T22:21:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:9197929340",
+      "position": {
+        "lat": 53.9089388,
+        "lon": 34.9601898
+      },
+      "valueKmh": 90,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 59346675,
+          "sourceUrl": "https://www.openstreetmap.org/way/59346675",
+          "tags": {
+            "highway": "trunk",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              5336035344,
+              9197929340
+            ],
+            "positions": [
+              {
+                "lat": 53.9094131,
+                "lon": 34.9608536
+              },
+              {
+                "lat": 53.9089388,
+                "lon": 34.9601898
+              }
+            ]
+          },
+          "version": 23,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:9199164920",
+      "position": {
+        "lat": 53.5674011,
+        "lon": 34.7166206
+      },
+      "valueKmh": 70,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 996222489,
+          "sourceUrl": "https://www.openstreetmap.org/way/996222489",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "4",
+            "maxspeed": "70",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              2928899087,
+              9199164920
+            ],
+            "positions": [
+              {
+                "lat": 53.5675483,
+                "lon": 34.7167081
+              },
+              {
+                "lat": 53.5674011,
+                "lon": 34.7166206
+              }
+            ]
+          },
+          "version": 8,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:9205201197",
+      "position": {
+        "lat": 54.0341881,
+        "lon": 35.8385177
+      },
+      "valueKmh": 90,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 31242649,
+          "sourceUrl": "https://www.openstreetmap.org/way/31242649",
+          "tags": {
+            "highway": "secondary",
+            "lanes": "2",
+            "maxspeed": "90",
+            "ref": "29Н-226"
+          },
+          "segment": {
+            "nodeIds": [
+              9205201198,
+              9205201197
+            ],
+            "positions": [
+              {
+                "lat": 54.0341788,
+                "lon": 35.8371922
+              },
+              {
+                "lat": 54.0341881,
+                "lon": 35.8385177
+              }
+            ]
+          },
+          "version": 15,
+          "timestamp": "2024-01-23T07:49:25.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:9205201207",
+      "position": {
+        "lat": 54.0477678,
+        "lon": 35.9372023
+      },
+      "valueKmh": 90,
+      "kind": "shared-road-node",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 31242649,
+          "sourceUrl": "https://www.openstreetmap.org/way/31242649",
+          "tags": {
+            "highway": "secondary",
+            "lanes": "2",
+            "maxspeed": "90",
+            "ref": "29Н-226"
+          },
+          "segment": {
+            "nodeIds": [
+              9205201203,
+              9205201207
+            ],
+            "positions": [
+              {
+                "lat": 54.04337,
+                "lon": 35.9117681
+              },
+              {
+                "lat": 54.0477678,
+                "lon": 35.9372023
+              }
+            ]
+          },
+          "version": 15,
+          "timestamp": "2024-01-23T07:49:25.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:259864146",
+      "position": {
+        "lat": 54.513889,
+        "lon": 36.2612607
+      },
+      "valueKmh": 60,
+      "kind": "enforcement-relation",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "relation",
+          "id": 10391681,
+          "sourceUrl": "https://www.openstreetmap.org/relation/10391681",
+          "tags": {
+            "enforcement": "maxspeed",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2860971/",
+            "type": "enforcement"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T20:59:13.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:277053780",
+      "position": {
+        "lat": 54.524378,
+        "lon": 36.2710889
+      },
+      "valueKmh": 60,
+      "kind": "enforcement-relation",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "relation",
+          "id": 10391799,
+          "sourceUrl": "https://www.openstreetmap.org/relation/10391799",
+          "tags": {
+            "enforcement": "maxspeed",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2860922/",
+            "type": "enforcement"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T21:14:10.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:277060623",
+      "position": {
+        "lat": 54.5648622,
+        "lon": 36.2594838
+      },
+      "valueKmh": 60,
+      "kind": "enforcement-relation",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "relation",
+          "id": 10391709,
+          "sourceUrl": "https://www.openstreetmap.org/relation/10391709",
+          "tags": {
+            "enforcement": "maxspeed",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2861269/",
+            "type": "enforcement"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T21:04:39.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:3199757952",
+      "position": {
+        "lat": 54.4932235,
+        "lon": 36.2283816
+      },
+      "valueKmh": 60,
+      "kind": "enforcement-relation",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "relation",
+          "id": 10391645,
+          "sourceUrl": "https://www.openstreetmap.org/relation/10391645",
+          "tags": {
+            "enforcement": "maxspeed",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2860857/",
+            "type": "enforcement"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T20:43:35.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "osm:node:343571619",
+      "position": {
+        "lat": 54.5135972,
+        "lon": 36.2638399
+      },
+      "valueKmh": 60,
+      "kind": "enforcement-relation",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "relation",
+          "id": 10391682,
+          "sourceUrl": "https://www.openstreetmap.org/relation/10391682",
+          "tags": {
+            "enforcement": "maxspeed",
+            "maxspeed": "RU:urban",
+            "source": "https://гибдд.рф/milestones/2860957/",
+            "type": "enforcement"
+          },
+          "version": 1,
+          "timestamp": "2019-12-09T20:59:13.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:04b758a1df876b22",
+      "position": {
+        "lat": 54.435201,
+        "lon": 36.460975
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 442753808,
+          "sourceUrl": "https://www.openstreetmap.org/way/442753808",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "90",
+            "name": "«Золотое кольцо»",
+            "ref": "Р-132"
+          },
+          "segment": {
+            "nodeIds": [
+              1293355561,
+              259306923
+            ],
+            "positions": [
+              {
+                "lat": 54.4350266,
+                "lon": 36.4598717
+              },
+              {
+                "lat": 54.4351055,
+                "lon": 36.4614053
+              }
+            ]
+          },
+          "version": 10,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:0a6b72d73f7b67e3",
+      "position": {
+        "lat": 54.03303,
+        "lon": 35.126148
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 172226898,
+          "sourceUrl": "https://www.openstreetmap.org/way/172226898",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "90",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              85249009,
+              1719944097
+            ],
+            "positions": [
+              {
+                "lat": 54.0332223,
+                "lon": 35.1265239
+              },
+              {
+                "lat": 54.0322133,
+                "lon": 35.1251654
+              }
+            ]
+          },
+          "version": 23,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:0b1d43003d04545c",
+      "position": {
+        "lat": 54.463963,
+        "lon": 36.236028
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 95514194,
+          "sourceUrl": "https://www.openstreetmap.org/way/95514194",
+          "tags": {
+            "highway": "primary",
+            "lanes": "4",
+            "maxspeed": "60",
+            "name": "Секиотовская улица",
+            "ref": "Р-92"
+          },
+          "segment": {
+            "nodeIds": [
+              7044954248,
+              90128867
+            ],
+            "positions": [
+              {
+                "lat": 54.4639291,
+                "lon": 36.2362123
+              },
+              {
+                "lat": 54.4641315,
+                "lon": 36.236276
+              }
+            ]
+          },
+          "version": 20,
+          "timestamp": "2023-08-25T08:49:37.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 313933153,
+          "sourceUrl": "https://www.openstreetmap.org/way/313933153",
+          "tags": {
+            "highway": "primary",
+            "lanes": "4",
+            "maxspeed": "60",
+            "name": "Секиотовская улица",
+            "ref": "Р-92"
+          },
+          "segment": {
+            "nodeIds": [
+              90128867,
+              3473162763
+            ],
+            "positions": [
+              {
+                "lat": 54.4641315,
+                "lon": 36.236276
+              },
+              {
+                "lat": 54.4644578,
+                "lon": 36.2364492
+              }
+            ]
+          },
+          "version": 11,
+          "timestamp": "2023-08-25T08:49:37.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:0da973f36d5d2655",
+      "position": {
+        "lat": 55.01477,
+        "lon": 36.482615
+      },
+      "valueKmh": 40,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 733049748,
+          "sourceUrl": "https://www.openstreetmap.org/way/733049748",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "40",
+            "name": "Московская улица",
+            "oneway": "no",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              1164971957,
+              2012002428
+            ],
+            "positions": [
+              {
+                "lat": 55.0146951,
+                "lon": 36.482131
+              },
+              {
+                "lat": 55.0152596,
+                "lon": 36.4837705
+              }
+            ]
+          },
+          "version": 14,
+          "timestamp": "2023-08-25T08:49:37.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:0f5cc882a417a264",
+      "position": {
+        "lat": 54.985642,
+        "lon": 36.253597
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 448497217,
+          "sourceUrl": "https://www.openstreetmap.org/way/448497217",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:urban",
+            "maxspeed:practical": "80",
+            "name": "Варшавское шоссе",
+            "ref": "А-130",
+            "source:maxspeed": "RU:urban"
+          },
+          "segment": {
+            "nodeIds": [
+              1981005998,
+              1123263467
+            ],
+            "positions": [
+              {
+                "lat": 54.985781,
+                "lon": 36.2557427
+              },
+              {
+                "lat": 54.9854889,
+                "lon": 36.2529662
+              }
+            ]
+          },
+          "version": 21,
+          "timestamp": "2024-09-10T13:39:12.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:1209d5ef7290b737",
+      "position": {
+        "lat": 53.910258,
+        "lon": 34.962081
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 59346675,
+          "sourceUrl": "https://www.openstreetmap.org/way/59346675",
+          "tags": {
+            "highway": "trunk",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              736068582,
+              9197929342
+            ],
+            "positions": [
+              {
+                "lat": 53.9108745,
+                "lon": 34.9629473
+              },
+              {
+                "lat": 53.9099406,
+                "lon": 34.9616094
+              }
+            ]
+          },
+          "version": 23,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:148d76cdb60ab01d",
+      "position": {
+        "lat": 54.1731,
+        "lon": 35.323022
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 996578010,
+          "sourceUrl": "https://www.openstreetmap.org/way/996578010",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "4",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              7045103016,
+              9202020058
+            ],
+            "positions": [
+              {
+                "lat": 54.1733032,
+                "lon": 35.3235474
+              },
+              {
+                "lat": 54.1729748,
+                "lon": 35.3228707
+              }
+            ]
+          },
+          "version": 8,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:1e151488fff189e3",
+      "position": {
+        "lat": 55.005046,
+        "lon": 36.43752
+      },
+      "valueKmh": 40,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 131570161,
+          "sourceUrl": "https://www.openstreetmap.org/way/131570161",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "40",
+            "name": "улица Подольских Курсантов",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              1201367483,
+              6060339057
+            ],
+            "positions": [
+              {
+                "lat": 55.0052301,
+                "lon": 36.4385457
+              },
+              {
+                "lat": 55.0050947,
+                "lon": 36.4372847
+              }
+            ]
+          },
+          "version": 27,
+          "timestamp": "2024-04-24T17:08:44.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:23ec588650e89b45",
+      "position": {
+        "lat": 54.381454,
+        "lon": 36.200267
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 208429563,
+          "sourceUrl": "https://www.openstreetmap.org/way/208429563",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "90",
+            "ref": "Р-92"
+          },
+          "segment": {
+            "nodeIds": [
+              6316820405,
+              2187225683
+            ],
+            "positions": [
+              {
+                "lat": 54.3812184,
+                "lon": 36.1999404
+              },
+              {
+                "lat": 54.3826856,
+                "lon": 36.2010186
+              }
+            ]
+          },
+          "version": 12,
+          "timestamp": "2025-10-06T16:28:52.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:2527f1ae97a69860",
+      "position": {
+        "lat": 54.743976,
+        "lon": 35.233861
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 62409862,
+          "sourceUrl": "https://www.openstreetmap.org/way/62409862",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:urban",
+            "name": "улица Ф. Энгельса",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              558787010,
+              846548439
+            ],
+            "positions": [
+              {
+                "lat": 54.7440401,
+                "lon": 35.2349419
+              },
+              {
+                "lat": 54.7440405,
+                "lon": 35.2346226
+              }
+            ]
+          },
+          "version": 29,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 71076876,
+          "sourceUrl": "https://www.openstreetmap.org/way/71076876",
+          "tags": {
+            "bridge": "yes",
+            "highway": "trunk",
+            "lanes": "2",
+            "layer": "1",
+            "maxspeed": "60",
+            "name": "улица Ф. Энгельса",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              846548439,
+              846548450
+            ],
+            "positions": [
+              {
+                "lat": 54.7440405,
+                "lon": 35.2346226
+              },
+              {
+                "lat": 54.7440376,
+                "lon": 35.2341255
+              }
+            ]
+          },
+          "version": 16,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 71076877,
+          "sourceUrl": "https://www.openstreetmap.org/way/71076877",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Ф. Энгельса",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              10703730416,
+              5506221318
+            ],
+            "positions": [
+              {
+                "lat": 54.744036,
+                "lon": 35.2338824
+              },
+              {
+                "lat": 54.7440284,
+                "lon": 35.2326985
+              }
+            ]
+          },
+          "version": 40,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:315fd02b47553349",
+      "position": {
+        "lat": 54.514842,
+        "lon": 36.340818
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 263807384,
+          "sourceUrl": "https://www.openstreetmap.org/way/263807384",
+          "tags": {
+            "highway": "primary",
+            "maxspeed": "RU:urban",
+            "name": "Советская улица"
+          },
+          "segment": {
+            "nodeIds": [
+              12987725056,
+              1761059510
+            ],
+            "positions": [
+              {
+                "lat": 54.5147422,
+                "lon": 36.340809
+              },
+              {
+                "lat": 54.5149005,
+                "lon": 36.3393037
+              }
+            ]
+          },
+          "version": 14,
+          "timestamp": "2025-07-08T14:00:07.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:317dfef5eb6e4fb7",
+      "position": {
+        "lat": 53.876104,
+        "lon": 34.92203
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 172226890,
+          "sourceUrl": "https://www.openstreetmap.org/way/172226890",
+          "tags": {
+            "highway": "trunk",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              1973468924,
+              1831510169
+            ],
+            "positions": [
+              {
+                "lat": 53.8805496,
+                "lon": 34.926272
+              },
+              {
+                "lat": 53.8732107,
+                "lon": 34.9190222
+              }
+            ]
+          },
+          "version": 15,
+          "timestamp": "2024-03-13T15:36:05.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:350f406a3b5bf298",
+      "position": {
+        "lat": 54.902193,
+        "lon": 35.676667
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 739776355,
+          "sourceUrl": "https://www.openstreetmap.org/way/739776355",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:urban",
+            "name": "Московская улица",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              6924360381,
+              6920023159
+            ],
+            "positions": [
+              {
+                "lat": 54.9025649,
+                "lon": 35.6775287
+              },
+              {
+                "lat": 54.9022057,
+                "lon": 35.6765035
+              }
+            ]
+          },
+          "version": 12,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:39cfdf0d25618379",
+      "position": {
+        "lat": 54.443692,
+        "lon": 34.303666
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 441541184,
+          "sourceUrl": "https://www.openstreetmap.org/way/441541184",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "maxspeed:practical": "100",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              3103364125,
+              96629749
+            ],
+            "positions": [
+              {
+                "lat": 54.4447163,
+                "lon": 34.3068587
+              },
+              {
+                "lat": 54.4434421,
+                "lon": 34.3032301
+              }
+            ]
+          },
+          "version": 6,
+          "timestamp": "2021-09-17T21:39:19.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:3bbb151ea135e993",
+      "position": {
+        "lat": 55.164001,
+        "lon": 36.849114
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 617575643,
+          "sourceUrl": "https://www.openstreetmap.org/way/617575643",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "name": "Варшавское шоссе",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              5837857023,
+              1381366451
+            ],
+            "positions": [
+              {
+                "lat": 55.164415,
+                "lon": 36.8500446
+              },
+              {
+                "lat": 55.163389,
+                "lon": 36.8473984
+              }
+            ]
+          },
+          "version": 9,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:3cb6e53c52ec5833",
+      "position": {
+        "lat": 53.538784,
+        "lon": 34.700778
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 996222478,
+          "sourceUrl": "https://www.openstreetmap.org/way/996222478",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              85248937,
+              5336035362
+            ],
+            "positions": [
+              {
+                "lat": 53.5421204,
+                "lon": 34.7025371
+              },
+              {
+                "lat": 53.5375396,
+                "lon": 34.700022
+              }
+            ]
+          },
+          "version": 8,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:3ea28626d6e5c75a",
+      "position": {
+        "lat": 54.345332,
+        "lon": 34.07363
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 440263424,
+          "sourceUrl": "https://www.openstreetmap.org/way/440263424",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:urban",
+            "maxspeed:practical": "100",
+            "name": "Московская улица",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              12944887687,
+              683124405
+            ],
+            "positions": [
+              {
+                "lat": 54.3489033,
+                "lon": 34.0823699
+              },
+              {
+                "lat": 54.3452394,
+                "lon": 34.0732518
+              }
+            ]
+          },
+          "version": 5,
+          "timestamp": "2025-06-22T14:43:49.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:4314889254f6795f",
+      "position": {
+        "lat": 54.373611,
+        "lon": 35.651111
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 310057746,
+          "sourceUrl": "https://www.openstreetmap.org/way/310057746",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              85249074,
+              1719934126
+            ],
+            "positions": [
+              {
+                "lat": 54.3754637,
+                "lon": 35.655981
+              },
+              {
+                "lat": 54.3712588,
+                "lon": 35.6453072
+              }
+            ]
+          },
+          "version": 18,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:464fceb247d1fa2b",
+      "position": {
+        "lat": 55.005196,
+        "lon": 36.437532
+      },
+      "valueKmh": 40,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 131570161,
+          "sourceUrl": "https://www.openstreetmap.org/way/131570161",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "40",
+            "name": "улица Подольских Курсантов",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              1201367483,
+              6060339057
+            ],
+            "positions": [
+              {
+                "lat": 55.0052301,
+                "lon": 36.4385457
+              },
+              {
+                "lat": 55.0050947,
+                "lon": 36.4372847
+              }
+            ]
+          },
+          "version": 27,
+          "timestamp": "2024-04-24T17:08:44.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:477fc5fbef92b91a",
+      "position": {
+        "lat": 54.51087,
+        "lon": 36.233847
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 30733177,
+          "sourceUrl": "https://www.openstreetmap.org/way/30733177",
+          "tags": {
+            "highway": "primary_link",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Гагарина",
+            "oneway": "yes"
+          },
+          "segment": {
+            "nodeIds": [
+              4681419908,
+              259878966
+            ],
+            "positions": [
+              {
+                "lat": 54.510545,
+                "lon": 36.2337806
+              },
+              {
+                "lat": 54.5106368,
+                "lon": 36.2338748
+              }
+            ]
+          },
+          "version": 26,
+          "timestamp": "2026-07-30T20:01:36.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 95096490,
+          "sourceUrl": "https://www.openstreetmap.org/way/95096490",
+          "tags": {
+            "highway": "primary_link",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Гагарина",
+            "oneway": "yes"
+          },
+          "segment": {
+            "nodeIds": [
+              1103225404,
+              4681419969
+            ],
+            "positions": [
+              {
+                "lat": 54.510834,
+                "lon": 36.2338844
+              },
+              {
+                "lat": 54.5107463,
+                "lon": 36.2337471
+              }
+            ]
+          },
+          "version": 20,
+          "timestamp": "2026-07-30T20:01:46.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 106362987,
+          "sourceUrl": "https://www.openstreetmap.org/way/106362987",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Гагарина",
+            "oneway": "yes"
+          },
+          "segment": {
+            "nodeIds": [
+              259878967,
+              1103225404
+            ],
+            "positions": [
+              {
+                "lat": 54.5108646,
+                "lon": 36.2339388
+              },
+              {
+                "lat": 54.510834,
+                "lon": 36.2338844
+              }
+            ]
+          },
+          "version": 18,
+          "timestamp": "2026-07-30T20:02:09.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 133134794,
+          "sourceUrl": "https://www.openstreetmap.org/way/133134794",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Гагарина",
+            "oneway": "yes"
+          },
+          "segment": {
+            "nodeIds": [
+              4681419907,
+              1103130677
+            ],
+            "positions": [
+              {
+                "lat": 54.5107023,
+                "lon": 36.233959
+              },
+              {
+                "lat": 54.5108081,
+                "lon": 36.2341142
+              }
+            ]
+          },
+          "version": 17,
+          "timestamp": "2026-07-30T20:02:15.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 136434110,
+          "sourceUrl": "https://www.openstreetmap.org/way/136434110",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Гагарина",
+            "oneway": "yes"
+          },
+          "segment": {
+            "nodeIds": [
+              1103225404,
+              4681419975
+            ],
+            "positions": [
+              {
+                "lat": 54.510834,
+                "lon": 36.2338844
+              },
+              {
+                "lat": 54.5105524,
+                "lon": 36.2333515
+              }
+            ]
+          },
+          "version": 15,
+          "timestamp": "2026-07-30T20:01:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:4890b6538c95afa7",
+      "position": {
+        "lat": 55.11342,
+        "lon": 36.719337
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 617572459,
+          "sourceUrl": "https://www.openstreetmap.org/way/617572459",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "name": "Варшавское шоссе",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              2484767997,
+              5837824408
+            ],
+            "positions": [
+              {
+                "lat": 55.1148922,
+                "lon": 36.7228036
+              },
+              {
+                "lat": 55.1132889,
+                "lon": 36.7187162
+              }
+            ]
+          },
+          "version": 9,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:4e43e8744f01eb53",
+      "position": {
+        "lat": 53.623279,
+        "lon": 34.747732
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 59355262,
+          "sourceUrl": "https://www.openstreetmap.org/way/59355262",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              1804531812,
+              1804531810
+            ],
+            "positions": [
+              {
+                "lat": 53.6243198,
+                "lon": 34.748365
+              },
+              {
+                "lat": 53.6218169,
+                "lon": 34.746992
+              }
+            ]
+          },
+          "version": 30,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:5310432ff031bfe7",
+      "position": {
+        "lat": 54.529862,
+        "lon": 36.173187
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 94194987,
+          "sourceUrl": "https://www.openstreetmap.org/way/94194987",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Анненки",
+            "oneway": "yes",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              7044972643,
+              1464934381
+            ],
+            "positions": [
+              {
+                "lat": 54.52976,
+                "lon": 36.1730671
+              },
+              {
+                "lat": 54.530708,
+                "lon": 36.1714295
+              }
+            ]
+          },
+          "version": 34,
+          "timestamp": "2023-08-25T08:49:37.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 699356448,
+          "sourceUrl": "https://www.openstreetmap.org/way/699356448",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Анненки",
+            "oneway": "yes",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              6567314900,
+              7044972642
+            ],
+            "positions": [
+              {
+                "lat": 54.5308932,
+                "lon": 36.1708981
+              },
+              {
+                "lat": 54.5297212,
+                "lon": 36.1729806
+              }
+            ]
+          },
+          "version": 13,
+          "timestamp": "2025-06-17T19:43:36.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:5735448f33b7344f",
+      "position": {
+        "lat": 54.517361,
+        "lon": 35.862358
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 1059342320,
+          "sourceUrl": "https://www.openstreetmap.org/way/1059342320",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "90",
+            "maxspeed:practical": "110",
+            "name": "«Золотое кольцо»",
+            "ref": "Р-132"
+          },
+          "segment": {
+            "nodeIds": [
+              6256544632,
+              6925414141
+            ],
+            "positions": [
+              {
+                "lat": 54.5171708,
+                "lon": 35.861104
+              },
+              {
+                "lat": 54.5174687,
+                "lon": 35.8624866
+              }
+            ]
+          },
+          "version": 9,
+          "timestamp": "2026-06-15T21:36:59.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:58b14e9a21a89b4e",
+      "position": {
+        "lat": 54.516747,
+        "lon": 36.203305
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 87083185,
+          "sourceUrl": "https://www.openstreetmap.org/way/87083185",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Калуга-Бор",
+            "oneway": "yes",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              90107436,
+              495962327
+            ],
+            "positions": [
+              {
+                "lat": 54.5166229,
+                "lon": 36.2037288
+              },
+              {
+                "lat": 54.5173201,
+                "lon": 36.2025395
+              }
+            ]
+          },
+          "version": 40,
+          "timestamp": "2023-08-25T08:49:37.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 699356452,
+          "sourceUrl": "https://www.openstreetmap.org/way/699356452",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Калуга-Бор",
+            "oneway": "yes",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              6567314912,
+              6567314913
+            ],
+            "positions": [
+              {
+                "lat": 54.5172702,
+                "lon": 36.2024562
+              },
+              {
+                "lat": 54.5165738,
+                "lon": 36.203645
+              }
+            ]
+          },
+          "version": 14,
+          "timestamp": "2023-08-25T08:49:37.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:5945a523a645146f",
+      "position": {
+        "lat": 54.522222,
+        "lon": 36.191939
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 290482193,
+          "sourceUrl": "https://www.openstreetmap.org/way/290482193",
+          "tags": {
+            "highway": "primary",
+            "lanes": "3",
+            "maxspeed": "60",
+            "name": "улица Калуга-Бор",
+            "oneway": "yes",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              6567300541,
+              90107438
+            ],
+            "positions": [
+              {
+                "lat": 54.5225713,
+                "lon": 36.1913788
+              },
+              {
+                "lat": 54.5227442,
+                "lon": 36.1907875
+              }
+            ]
+          },
+          "version": 20,
+          "timestamp": "2023-08-25T08:49:37.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 398225342,
+          "sourceUrl": "https://www.openstreetmap.org/way/398225342",
+          "tags": {
+            "highway": "primary",
+            "lanes": "3",
+            "maxspeed": "60",
+            "name": "улица Калуга-Бор",
+            "oneway": "yes",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              6567300528,
+              4330543556
+            ],
+            "positions": [
+              {
+                "lat": 54.5217882,
+                "lon": 36.1938097
+              },
+              {
+                "lat": 54.5223743,
+                "lon": 36.1920173
+              }
+            ]
+          },
+          "version": 18,
+          "timestamp": "2023-08-25T08:49:37.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 699356441,
+          "sourceUrl": "https://www.openstreetmap.org/way/699356441",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Калуга-Бор",
+            "oneway": "yes",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              1462224319,
+              6567300541
+            ],
+            "positions": [
+              {
+                "lat": 54.5224122,
+                "lon": 36.1918893
+              },
+              {
+                "lat": 54.5225713,
+                "lon": 36.1913788
+              }
+            ]
+          },
+          "version": 12,
+          "timestamp": "2023-08-25T08:49:37.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 699356451,
+          "sourceUrl": "https://www.openstreetmap.org/way/699356451",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Калуга-Бор",
+            "oneway": "yes",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              6567300543,
+              6567300513
+            ],
+            "positions": [
+              {
+                "lat": 54.5223374,
+                "lon": 36.1918174
+              },
+              {
+                "lat": 54.5218739,
+                "lon": 36.1932363
+              }
+            ]
+          },
+          "version": 12,
+          "timestamp": "2023-08-25T08:49:37.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 699356454,
+          "sourceUrl": "https://www.openstreetmap.org/way/699356454",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Калуга-Бор",
+            "oneway": "yes",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              6567314923,
+              6567300543
+            ],
+            "positions": [
+              {
+                "lat": 54.5226679,
+                "lon": 36.1907205
+              },
+              {
+                "lat": 54.5223374,
+                "lon": 36.1918174
+              }
+            ]
+          },
+          "version": 11,
+          "timestamp": "2023-08-25T08:49:37.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:5afeb6454a8e65bb",
+      "position": {
+        "lat": 55.055287,
+        "lon": 36.574334
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 291790388,
+          "sourceUrl": "https://www.openstreetmap.org/way/291790388",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "RU:urban",
+            "name": "Центральная улица",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              11041844558,
+              269506400
+            ],
+            "positions": [
+              {
+                "lat": 55.0550688,
+                "lon": 36.5736225
+              },
+              {
+                "lat": 55.0552244,
+                "lon": 36.5739893
+              }
+            ]
+          },
+          "version": 21,
+          "timestamp": "2025-09-12T14:30:26.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 604035011,
+          "sourceUrl": "https://www.openstreetmap.org/way/604035011",
+          "tags": {
+            "highway": "primary",
+            "maxspeed": "RU:urban",
+            "name": "Варшавское шоссе",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              269506400,
+              5732473326
+            ],
+            "positions": [
+              {
+                "lat": 55.0552244,
+                "lon": 36.5739893
+              },
+              {
+                "lat": 55.0561312,
+                "lon": 36.5761556
+              }
+            ]
+          },
+          "version": 8,
+          "timestamp": "2023-08-25T08:49:37.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:5d1569dc581354cb",
+      "position": {
+        "lat": 55.144949,
+        "lon": 36.799753
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 499944729,
+          "sourceUrl": "https://www.openstreetmap.org/way/499944729",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "4",
+            "maxspeed": "RU:urban",
+            "name": "Московская улица",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              10931279673,
+              4911219639
+            ],
+            "positions": [
+              {
+                "lat": 55.1449558,
+                "lon": 36.7999776
+              },
+              {
+                "lat": 55.1448868,
+                "lon": 36.799802
+              }
+            ]
+          },
+          "version": 16,
+          "timestamp": "2025-09-03T10:48:42.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:5fda55bb77ba8e1f",
+      "position": {
+        "lat": 54.330766,
+        "lon": 36.181074
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 134122068,
+          "sourceUrl": "https://www.openstreetmap.org/way/134122068",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "Центральная улица",
+            "ref": "Р-92"
+          },
+          "segment": {
+            "nodeIds": [
+              8235439810,
+              12655989313
+            ],
+            "positions": [
+              {
+                "lat": 54.3304877,
+                "lon": 36.1806817
+              },
+              {
+                "lat": 54.3312654,
+                "lon": 36.1809298
+              }
+            ]
+          },
+          "version": 28,
+          "timestamp": "2026-07-21T14:17:23.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:66c6c6c521307730",
+      "position": {
+        "lat": 54.452251,
+        "lon": 36.236558
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 654409809,
+          "sourceUrl": "https://www.openstreetmap.org/way/654409809",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "90",
+            "oneway": "yes",
+            "ref": "Р-92"
+          },
+          "segment": {
+            "nodeIds": [
+              3442266660,
+              3442266663
+            ],
+            "positions": [
+              {
+                "lat": 54.4505357,
+                "lon": 36.2351644
+              },
+              {
+                "lat": 54.453721,
+                "lon": 36.2375649
+              }
+            ]
+          },
+          "version": 6,
+          "timestamp": "2021-11-20T20:38:49.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 654409810,
+          "sourceUrl": "https://www.openstreetmap.org/way/654409810",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "90",
+            "oneway": "yes",
+            "ref": "Р-92"
+          },
+          "segment": {
+            "nodeIds": [
+              90128864,
+              3442266661
+            ],
+            "positions": [
+              {
+                "lat": 54.4537532,
+                "lon": 36.2374334
+              },
+              {
+                "lat": 54.4505478,
+                "lon": 36.2350055
+              }
+            ]
+          },
+          "version": 6,
+          "timestamp": "2023-09-14T11:23:48.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:6a9bcffb7352cf84",
+      "position": {
+        "lat": 54.079637,
+        "lon": 35.202626
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 996100983,
+          "sourceUrl": "https://www.openstreetmap.org/way/996100983",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "90",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              12817726405,
+              767867302
+            ],
+            "positions": [
+              {
+                "lat": 54.0801306,
+                "lon": 35.2036902
+              },
+              {
+                "lat": 54.0793161,
+                "lon": 35.2022
+              }
+            ]
+          },
+          "version": 9,
+          "timestamp": "2025-05-07T17:46:11.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:737f6a1576729334",
+      "position": {
+        "lat": 53.824798,
+        "lon": 34.867087
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 172224318,
+          "sourceUrl": "https://www.openstreetmap.org/way/172224318",
+          "tags": {
+            "highway": "trunk",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              7355042500,
+              736164972
+            ],
+            "positions": [
+              {
+                "lat": 53.8288071,
+                "lon": 34.8715109
+              },
+              {
+                "lat": 53.8202504,
+                "lon": 34.8622192
+              }
+            ]
+          },
+          "version": 22,
+          "timestamp": "2024-03-13T14:30:17.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:7cba5d870213b6ba",
+      "position": {
+        "lat": 54.450085,
+        "lon": 36.30166
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 124017632,
+          "sourceUrl": "https://www.openstreetmap.org/way/124017632",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "90",
+            "name": "«Золотое кольцо»",
+            "ref": "Р-132"
+          },
+          "segment": {
+            "nodeIds": [
+              3203080217,
+              4067074178
+            ],
+            "positions": [
+              {
+                "lat": 54.450214,
+                "lon": 36.3013993
+              },
+              {
+                "lat": 54.4498947,
+                "lon": 36.3023625
+              }
+            ]
+          },
+          "version": 30,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:80b9c9474d68a423",
+      "position": {
+        "lat": 54.877918,
+        "lon": 35.605863
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 55068566,
+          "sourceUrl": "https://www.openstreetmap.org/way/55068566",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "maxspeed:practical": "95",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              4433548018,
+              583225997
+            ],
+            "positions": [
+              {
+                "lat": 54.878219,
+                "lon": 35.6068991
+              },
+              {
+                "lat": 54.8771359,
+                "lon": 35.6037589
+              }
+            ]
+          },
+          "version": 26,
+          "timestamp": "2021-09-16T23:00:56.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:8187e45ec1f39bd6",
+      "position": {
+        "lat": 54.480794,
+        "lon": 36.301568
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 417240064,
+          "sourceUrl": "https://www.openstreetmap.org/way/417240064",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "90",
+            "name": "«Золотое кольцо»",
+            "oneway": "yes",
+            "ref": "Р-132"
+          },
+          "segment": {
+            "nodeIds": [
+              1866863147,
+              1135863086
+            ],
+            "positions": [
+              {
+                "lat": 54.4810822,
+                "lon": 36.3017557
+              },
+              {
+                "lat": 54.4808127,
+                "lon": 36.3014059
+              }
+            ]
+          },
+          "version": 12,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 754362487,
+          "sourceUrl": "https://www.openstreetmap.org/way/754362487",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "90",
+            "name": "«Золотое кольцо»",
+            "oneway": "yes",
+            "ref": "Р-132"
+          },
+          "segment": {
+            "nodeIds": [
+              1042759789,
+              1135862860
+            ],
+            "positions": [
+              {
+                "lat": 54.4804627,
+                "lon": 36.3012256
+              },
+              {
+                "lat": 54.4807811,
+                "lon": 36.3016362
+              }
+            ]
+          },
+          "version": 11,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:835b0dd6564ca775",
+      "position": {
+        "lat": 53.656906,
+        "lon": 34.766615
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 59355262,
+          "sourceUrl": "https://www.openstreetmap.org/way/59355262",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              736164617,
+              470341328
+            ],
+            "positions": [
+              {
+                "lat": 53.6574993,
+                "lon": 34.7668035
+              },
+              {
+                "lat": 53.6551306,
+                "lon": 34.765433
+              }
+            ]
+          },
+          "version": 30,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:87b394613c82dd96",
+      "position": {
+        "lat": 54.330661,
+        "lon": 35.522445
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 236419486,
+          "sourceUrl": "https://www.openstreetmap.org/way/236419486",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              85249066,
+              85249064
+            ],
+            "positions": [
+              {
+                "lat": 54.3337403,
+                "lon": 35.5336861
+              },
+              {
+                "lat": 54.3303423,
+                "lon": 35.521376
+              }
+            ]
+          },
+          "version": 14,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:8c2bf69d0c99ecd9",
+      "position": {
+        "lat": 55.004034,
+        "lon": 36.427939
+      },
+      "valueKmh": 40,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 131570161,
+          "sourceUrl": "https://www.openstreetmap.org/way/131570161",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "40",
+            "name": "улица Подольских Курсантов",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              3103364362,
+              347083328
+            ],
+            "positions": [
+              {
+                "lat": 55.0042483,
+                "lon": 36.4293541
+              },
+              {
+                "lat": 55.0041892,
+                "lon": 36.4287755
+              }
+            ]
+          },
+          "version": 27,
+          "timestamp": "2024-04-24T17:08:44.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 448497214,
+          "sourceUrl": "https://www.openstreetmap.org/way/448497214",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "40",
+            "name": "Варшавское шоссе",
+            "ref": "А-130",
+            "source:maxspeed": "RU:urban"
+          },
+          "segment": {
+            "nodeIds": [
+              1165217433,
+              1165217178
+            ],
+            "positions": [
+              {
+                "lat": 55.0041459,
+                "lon": 36.4283514
+              },
+              {
+                "lat": 55.0038963,
+                "lon": 36.4258918
+              }
+            ]
+          },
+          "version": 13,
+          "timestamp": "2023-08-25T08:49:37.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:920f6b80807eaed7",
+      "position": {
+        "lat": 54.514392,
+        "lon": 36.356104
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 397009951,
+          "sourceUrl": "https://www.openstreetmap.org/way/397009951",
+          "tags": {
+            "highway": "primary",
+            "maxspeed": "RU:urban",
+            "name": "Советская улица"
+          },
+          "segment": {
+            "nodeIds": [
+              3590674476,
+              310695665
+            ],
+            "positions": [
+              {
+                "lat": 54.5144512,
+                "lon": 36.3562394
+              },
+              {
+                "lat": 54.514481,
+                "lon": 36.355955
+              }
+            ]
+          },
+          "version": 14,
+          "timestamp": "2026-05-20T10:29:20.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:953d89b1500446fc",
+      "position": {
+        "lat": 54.422488,
+        "lon": 35.767855
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 602516711,
+          "sourceUrl": "https://www.openstreetmap.org/way/602516711",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              7045058543,
+              761651700
+            ],
+            "positions": [
+              {
+                "lat": 54.4227955,
+                "lon": 35.7681908
+              },
+              {
+                "lat": 54.422277,
+                "lon": 35.7672507
+              }
+            ]
+          },
+          "version": 20,
+          "timestamp": "2026-02-18T13:10:37.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:a0071a62f9419cb6",
+      "position": {
+        "lat": 54.398613,
+        "lon": 35.722819
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 602516711,
+          "sourceUrl": "https://www.openstreetmap.org/way/602516711",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              1719934161,
+              1719934159
+            ],
+            "positions": [
+              {
+                "lat": 54.3989255,
+                "lon": 35.7236669
+              },
+              {
+                "lat": 54.3980345,
+                "lon": 35.7212601
+              }
+            ]
+          },
+          "version": 20,
+          "timestamp": "2026-02-18T13:10:37.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:a421030f1ba7db66",
+      "position": {
+        "lat": 54.760992,
+        "lon": 35.283571
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 444475726,
+          "sourceUrl": "https://www.openstreetmap.org/way/444475726",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:urban",
+            "maxspeed:practical": "80",
+            "name": "Варшавская улица",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              13947831811,
+              4419560587
+            ],
+            "positions": [
+              {
+                "lat": 54.7610308,
+                "lon": 35.2835233
+              },
+              {
+                "lat": 54.7609467,
+                "lon": 35.2833486
+              }
+            ]
+          },
+          "version": 18,
+          "timestamp": "2026-06-17T14:10:48.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:b153cec650a6f595",
+      "position": {
+        "lat": 55.086583,
+        "lon": 36.649886
+      },
+      "valueKmh": 40,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 729088746,
+          "sourceUrl": "https://www.openstreetmap.org/way/729088746",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "40",
+            "name": "Варшавское шоссе",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              271943468,
+              271943425
+            ],
+            "positions": [
+              {
+                "lat": 55.0864505,
+                "lon": 36.6497375
+              },
+              {
+                "lat": 55.0860373,
+                "lon": 36.6486879
+              }
+            ]
+          },
+          "version": 10,
+          "timestamp": "2023-11-03T12:43:13.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 729088749,
+          "sourceUrl": "https://www.openstreetmap.org/way/729088749",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "40",
+            "name": "Московская улица",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              1199514925,
+              271943468
+            ],
+            "positions": [
+              {
+                "lat": 55.0865891,
+                "lon": 36.6500894
+              },
+              {
+                "lat": 55.0864505,
+                "lon": 36.6497375
+              }
+            ]
+          },
+          "version": 10,
+          "timestamp": "2023-11-03T12:43:13.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 1123425734,
+          "sourceUrl": "https://www.openstreetmap.org/way/1123425734",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "40",
+            "name": "Московская улица",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              1199515035,
+              1199514925
+            ],
+            "positions": [
+              {
+                "lat": 55.0868728,
+                "lon": 36.6508099
+              },
+              {
+                "lat": 55.0865891,
+                "lon": 36.6500894
+              }
+            ]
+          },
+          "version": 9,
+          "timestamp": "2023-11-03T12:43:13.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:b507fad47387ca2e",
+      "position": {
+        "lat": 54.536567,
+        "lon": 36.16054
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 94194963,
+          "sourceUrl": "https://www.openstreetmap.org/way/94194963",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Анненки",
+            "oneway": "yes",
+            "ref": "М-3",
+            "source:maxspeed": "sign"
+          },
+          "segment": {
+            "nodeIds": [
+              5698417931,
+              12922048542
+            ],
+            "positions": [
+              {
+                "lat": 54.536696,
+                "lon": 36.1607185
+              },
+              {
+                "lat": 54.5365604,
+                "lon": 36.1609475
+              }
+            ]
+          },
+          "version": 37,
+          "timestamp": "2025-06-17T19:43:36.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 146061026,
+          "sourceUrl": "https://www.openstreetmap.org/way/146061026",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Анненки",
+            "oneway": "yes",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              4885471928,
+              309050629
+            ],
+            "positions": [
+              {
+                "lat": 54.536504,
+                "lon": 36.1612351
+              },
+              {
+                "lat": 54.5365926,
+                "lon": 36.1610598
+              }
+            ]
+          },
+          "version": 25,
+          "timestamp": "2025-06-17T19:43:36.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 620264704,
+          "sourceUrl": "https://www.openstreetmap.org/way/620264704",
+          "tags": {
+            "highway": "primary",
+            "lanes": "3",
+            "maxspeed": "60",
+            "name": "улица Анненки",
+            "oneway": "yes",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              309050629,
+              5698417942
+            ],
+            "positions": [
+              {
+                "lat": 54.5365926,
+                "lon": 36.1610598
+              },
+              {
+                "lat": 54.5367364,
+                "lon": 36.1608177
+              }
+            ]
+          },
+          "version": 12,
+          "timestamp": "2023-08-25T08:49:37.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 1396077401,
+          "sourceUrl": "https://www.openstreetmap.org/way/1396077401",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Анненки",
+            "oneway": "yes",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              12922048542,
+              12922048554
+            ],
+            "positions": [
+              {
+                "lat": 54.5365604,
+                "lon": 36.1609475
+              },
+              {
+                "lat": 54.5364514,
+                "lon": 36.161152
+              }
+            ]
+          },
+          "version": 1,
+          "timestamp": "2025-06-17T19:43:36.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:ba23ac0cb884f268",
+      "position": {
+        "lat": 55.128501,
+        "lon": 36.757919
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 103797279,
+          "sourceUrl": "https://www.openstreetmap.org/way/103797279",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "name": "Варшавское шоссе",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              6642910702,
+              5837828831
+            ],
+            "positions": [
+              {
+                "lat": 55.1358598,
+                "lon": 36.776602
+              },
+              {
+                "lat": 55.1222973,
+                "lon": 36.7418421
+              }
+            ]
+          },
+          "version": 36,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:ba410e242875c739",
+      "position": {
+        "lat": 54.51327,
+        "lon": 36.267551
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 23971869,
+          "sourceUrl": "https://www.openstreetmap.org/way/23971869",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Кирова",
+            "oneway": "yes"
+          },
+          "segment": {
+            "nodeIds": [
+              1024938621,
+              1211681678
+            ],
+            "positions": [
+              {
+                "lat": 54.5131912,
+                "lon": 36.2676851
+              },
+              {
+                "lat": 54.5132935,
+                "lon": 36.2667738
+              }
+            ]
+          },
+          "version": 64,
+          "timestamp": "2023-12-23T14:28:07.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 146322655,
+          "sourceUrl": "https://www.openstreetmap.org/way/146322655",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Кирова",
+            "oneway": "yes"
+          },
+          "segment": {
+            "nodeIds": [
+              1447951523,
+              1297061664
+            ],
+            "positions": [
+              {
+                "lat": 54.5133135,
+                "lon": 36.26523
+              },
+              {
+                "lat": 54.5130212,
+                "lon": 36.2677949
+              }
+            ]
+          },
+          "version": 16,
+          "timestamp": "2023-12-23T14:27:58.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:bb57f9069025ee97",
+      "position": {
+        "lat": 54.394397,
+        "lon": 34.188335
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 441355155,
+          "sourceUrl": "https://www.openstreetmap.org/way/441355155",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:urban",
+            "maxspeed:practical": "100",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              4391169476,
+              2715177412
+            ],
+            "positions": [
+              {
+                "lat": 54.3950896,
+                "lon": 34.1892957
+              },
+              {
+                "lat": 54.3943174,
+                "lon": 34.1880396
+              }
+            ]
+          },
+          "version": 4,
+          "timestamp": "2023-07-29T19:42:45.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:be894ea2092c1a0b",
+      "position": {
+        "lat": 54.110929,
+        "lon": 35.249637
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 996094084,
+          "sourceUrl": "https://www.openstreetmap.org/way/996094084",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              13944071861,
+              85249022
+            ],
+            "positions": [
+              {
+                "lat": 54.1136276,
+                "lon": 35.2533464
+              },
+              {
+                "lat": 54.1071463,
+                "lon": 35.244472
+              }
+            ]
+          },
+          "version": 10,
+          "timestamp": "2026-06-15T22:21:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:c2368ee66ba38f52",
+      "position": {
+        "lat": 54.549511,
+        "lon": 36.142461
+      },
+      "valueKmh": 50,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 649443936,
+          "sourceUrl": "https://www.openstreetmap.org/way/649443936",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "50",
+            "name": "«Украина»",
+            "oneway": "yes",
+            "ref": "М-3",
+            "source:maxspeed": "sign"
+          },
+          "segment": {
+            "nodeIds": [
+              6094907064,
+              6094907065
+            ],
+            "positions": [
+              {
+                "lat": 54.5501219,
+                "lon": 36.1409721
+              },
+              {
+                "lat": 54.5494832,
+                "lon": 36.1421348
+              }
+            ]
+          },
+          "version": 10,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 649443940,
+          "sourceUrl": "https://www.openstreetmap.org/way/649443940",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "50",
+            "name": "«Украина»",
+            "oneway": "yes",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              90107448,
+              6094907891
+            ],
+            "positions": [
+              {
+                "lat": 54.5495423,
+                "lon": 36.1422189
+              },
+              {
+                "lat": 54.5499072,
+                "lon": 36.1415514
+              }
+            ]
+          },
+          "version": 12,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 699597709,
+          "sourceUrl": "https://www.openstreetmap.org/way/699597709",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "50",
+            "name": "«Украина»",
+            "oneway": "yes",
+            "ref": "М-3",
+            "source:maxspeed": "sign"
+          },
+          "segment": {
+            "nodeIds": [
+              6094907065,
+              6094907066
+            ],
+            "positions": [
+              {
+                "lat": 54.5494832,
+                "lon": 36.1421348
+              },
+              {
+                "lat": 54.5489552,
+                "lon": 36.1430937
+              }
+            ]
+          },
+          "version": 11,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 965030992,
+          "sourceUrl": "https://www.openstreetmap.org/way/965030992",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "50",
+            "name": "«Украина»",
+            "oneway": "yes",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              8927287057,
+              90107448
+            ],
+            "positions": [
+              {
+                "lat": 54.5489662,
+                "lon": 36.1432464
+              },
+              {
+                "lat": 54.5495423,
+                "lon": 36.1422189
+              }
+            ]
+          },
+          "version": 10,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:c400460e47473dba",
+      "position": {
+        "lat": 55.084663,
+        "lon": 36.644858
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 304446076,
+          "sourceUrl": "https://www.openstreetmap.org/way/304446076",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "90",
+            "name": "Варшавское шоссе",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              3672953723,
+              6710890121
+            ],
+            "positions": [
+              {
+                "lat": 55.0850033,
+                "lon": 36.6460133
+              },
+              {
+                "lat": 55.0848378,
+                "lon": 36.6455929
+              }
+            ]
+          },
+          "version": 20,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 729088747,
+          "sourceUrl": "https://www.openstreetmap.org/way/729088747",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "90",
+            "name": "Варшавское шоссе",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              6710890121,
+              3124538094
+            ],
+            "positions": [
+              {
+                "lat": 55.0848378,
+                "lon": 36.6455929
+              },
+              {
+                "lat": 55.0834142,
+                "lon": 36.6419752
+              }
+            ]
+          },
+          "version": 9,
+          "timestamp": "2026-10-01T09:09:20.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:cbbb9b2447d65a25",
+      "position": {
+        "lat": 53.567185,
+        "lon": 34.716294
+      },
+      "valueKmh": 70,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 996222489,
+          "sourceUrl": "https://www.openstreetmap.org/way/996222489",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "4",
+            "maxspeed": "70",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              9199164920,
+              9199164902
+            ],
+            "positions": [
+              {
+                "lat": 53.5674011,
+                "lon": 34.7166206
+              },
+              {
+                "lat": 53.5670966,
+                "lon": 34.7164549
+              }
+            ]
+          },
+          "version": 8,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:cbc06068e44d8a83",
+      "position": {
+        "lat": 54.402503,
+        "lon": 35.732043
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 602516711,
+          "sourceUrl": "https://www.openstreetmap.org/way/602516711",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              7082388046,
+              374089476
+            ],
+            "positions": [
+              {
+                "lat": 54.4028193,
+                "lon": 35.7327747
+              },
+              {
+                "lat": 54.4024398,
+                "lon": 35.7319507
+              }
+            ]
+          },
+          "version": 20,
+          "timestamp": "2026-02-18T13:10:37.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:e6677fdc05bd99d0",
+      "position": {
+        "lat": 54.518179,
+        "lon": 36.290728
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 249934614,
+          "sourceUrl": "https://www.openstreetmap.org/way/249934614",
+          "tags": {
+            "highway": "primary",
+            "lanes": "2",
+            "maxspeed": "60",
+            "name": "улица Маршала Жукова"
+          },
+          "segment": {
+            "nodeIds": [
+              1623842474,
+              1623842493
+            ],
+            "positions": [
+              {
+                "lat": 54.5179568,
+                "lon": 36.2901563
+              },
+              {
+                "lat": 54.5184863,
+                "lon": 36.2910829
+              }
+            ]
+          },
+          "version": 15,
+          "timestamp": "2025-10-24T12:39:58.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:e854c172eb613de9",
+      "position": {
+        "lat": 54.23879,
+        "lon": 33.723665
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 188844284,
+          "sourceUrl": "https://www.openstreetmap.org/way/188844284",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "4",
+            "maxspeed": "RU:urban",
+            "name": "Шоссейная улица",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              683124278,
+              2921979740
+            ],
+            "positions": [
+              {
+                "lat": 54.2386091,
+                "lon": 33.723477
+              },
+              {
+                "lat": 54.2376116,
+                "lon": 33.7209675
+              }
+            ]
+          },
+          "version": 8,
+          "timestamp": "2025-09-04T17:39:48.000Z"
+        },
+        {
+          "kind": "way",
+          "id": 188844286,
+          "sourceUrl": "https://www.openstreetmap.org/way/188844286",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:urban",
+            "name": "Шоссейная улица",
+            "ref": "А-130"
+          },
+          "segment": {
+            "nodeIds": [
+              3103364082,
+              683124278
+            ],
+            "positions": [
+              {
+                "lat": 54.2414532,
+                "lon": 33.7307505
+              },
+              {
+                "lat": 54.2386091,
+                "lon": 33.723477
+              }
+            ]
+          },
+          "version": 10,
+          "timestamp": "2025-09-04T17:39:48.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:e9bb603daa74c9f7",
+      "position": {
+        "lat": 54.432895,
+        "lon": 35.787878
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 602516711,
+          "sourceUrl": "https://www.openstreetmap.org/way/602516711",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              5336034618,
+              1719934189
+            ],
+            "positions": [
+              {
+                "lat": 54.4330787,
+                "lon": 35.7884479
+              },
+              {
+                "lat": 54.4309275,
+                "lon": 35.7838607
+              }
+            ]
+          },
+          "version": 20,
+          "timestamp": "2026-02-18T13:10:37.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:f5fe613a797baf3f",
+      "position": {
+        "lat": 54.358913,
+        "lon": 35.613404
+      },
+      "valueKmh": 90,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 310057746,
+          "sourceUrl": "https://www.openstreetmap.org/way/310057746",
+          "tags": {
+            "highway": "trunk",
+            "lanes": "2",
+            "maxspeed": "RU:rural",
+            "name": "«Украина»",
+            "ref": "М-3"
+          },
+          "segment": {
+            "nodeIds": [
+              85249073,
+              85249072
+            ],
+            "positions": [
+              {
+                "lat": 54.3646415,
+                "lon": 35.6281966
+              },
+              {
+                "lat": 54.356762,
+                "lon": 35.6078613
+              }
+            ]
+          },
+          "version": 18,
+          "timestamp": "2023-08-25T09:00:57.000Z"
+        }
+      ]
+    },
+    {
+      "schema": 1,
+      "id": "gibdd:ru-klu:ff22e948ada4b9b8",
+      "position": {
+        "lat": 54.547093,
+        "lon": 36.332273
+      },
+      "valueKmh": 60,
+      "kind": "address-road",
+      "sourceTimestamp": "2026-11-07T00:07:21.000Z",
+      "sources": [
+        {
+          "kind": "way",
+          "id": 154396152,
+          "sourceUrl": "https://www.openstreetmap.org/way/154396152",
+          "tags": {
+            "highway": "primary",
+            "lanes": "4",
+            "maxspeed": "60",
+            "maxspeed:type": "sign",
+            "name": "Грабцевское шоссе"
+          },
+          "segment": {
+            "nodeIds": [
+              1462131612,
+              1313282106
+            ],
+            "positions": [
+              {
+                "lat": 54.5471452,
+                "lon": 36.3328032
+              },
+              {
+                "lat": 54.5466295,
+                "lon": 36.3314447
+              }
+            ]
+          },
+          "version": 12,
+          "timestamp": "2023-08-25T08:49:37.000Z"
+        }
+      ]
+    }
+  ],
+  "audit": [
+    {
+      "id": "osm:node:12533688405",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "osm:node:13188427618",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "osm:node:429173295",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "osm:node:4859646573",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "osm:node:4859646574",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "osm:node:7043854388",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "osm:node:7043854389",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "osm:node:7044976322",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "osm:node:7044984863",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "osm:node:7355040397",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "osm:node:85249087",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "reported:kaluga:boldina-nikitina",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:0202c46650afa9dd",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:070ce17264070eed",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:0ae422637c358834",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:0c1dd9ef0911365c",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:0d2b62ef530a5526",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:1094ef7a7e5fbcf8",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:1367f8a562213167",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:1782ba498bfb18f0",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:17865d30ac522a09",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:201f9c0f79022283",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:2154dd204d220486",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:2248946afe581e66",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:258d2ada557c4115",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:29e6296041288f90",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:2a9c79d2cd3ecab0",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:2c992f9d57404b75",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:2dc15a20117a0f62",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:2e3ce85d13f990c9",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:3030f6c16ec6112e",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:3110392dbad03c0f",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:3416f356c50c3559",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:3574e492f4a7a58b",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:3621cbab0ef8b05c",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:3cb47834435a2c6b",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:3ed3c8f0587cd864",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:3f170334c4c440ef",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:3f635f9675cac3b6",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:41136d62daf3c845",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:4307c6d3dec1c09a",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:44dec5433e51dcb3",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:4822d627f16b44e7",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:49977938c4a3f5ed",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:4acc52c112a30221",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:4dd73bba05eba96f",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:4f55697a45700753",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:5467489c98e3ef48",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:547f4bef371ad2e9",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:5532f4faf6dd28f7",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:565c963876f37999",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:581bacebb0f9d763",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:5884a610049b79fc",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:5b8448bc036ca96a",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:5d11ebc6def3c90f",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:61675ec5e244b138",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:62ecb53fa72f0d4a",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:64ed906ca332f56e",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:65bdafb964ed6979",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:6724934dfb412319",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:70525b3e1d3c80f8",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:708d7286c631a2e5",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:7679b28e1ab14252",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:782deec0d469bd35",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:7aec4656e44eb554",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:7e0cafd831b7ae75",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:805d5d5676083b13",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:830b24616451bbd0",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:859a542ccd77e788",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:870f92f0a08bef07",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:879442e4478e4722",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:8eb6095e0c64394e",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:911879958395fb97",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:921635b028c8621d",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:94fba3d5f15b15b4",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:9b1b4571f0d22b9e",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:9be764b8fd3ee3df",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:a4e0df24692ff69e",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:a58a219dbbba3a1c",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:a6f32f6ad4f07d1b",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:a9c579fc32197d90",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:aa5761e003c41ba8",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:ab23cbc384ca6743",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:b603cc68d0f8e275",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:b75770b2f27a9790",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:ba8000c65933189b",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:be1f3c5d7b7cafc8",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:be7e452e0414c5cb",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:c2a3c2f193a8e3c2",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:cda01dc1b6acb705",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:cf574700ddf8c8b6",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:d00991a942954c2e",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:d02f41a00e35296f",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:d6a055acd05fcff0",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:d93c2b7c1c96aa31",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:dd8c433114c3600c",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:de1184e2ac9ad130",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:df92958d21ebfa0e",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:e002ea8db5b416f1",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:e4c5431190fa4326",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:e94cd99b50a05eeb",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:f12dcf19cf999005",
+      "reason": "ROAD_LIMIT_MISSING_CONDITIONAL_OR_DIRECTION_CONFLICT"
+    },
+    {
+      "id": "gibdd:ru-klu:f328e2a6e0eafc5d",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:f6d3371c82091721",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:fc057fe4eec56b83",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:fc2bb7199a68c7be",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    },
+    {
+      "id": "gibdd:ru-klu:fcb400888d4ba246",
+      "reason": "NO_SHARED_OR_ADDRESS_MATCHED_ROAD"
+    }
+  ]
+}

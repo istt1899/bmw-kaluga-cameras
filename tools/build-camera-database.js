@@ -13,6 +13,7 @@ function bundle(){
  db=store.mergeRelations(db,JSON.parse(fs.readFileSync(path.join(files,'enforcement-relations.json'),'utf8')));
  db=official.augment(db,JSON.parse(fs.readFileSync(path.join(files,'gibdd-kaluga.json'),'utf8')),
   JSON.parse(fs.readFileSync(path.join(files,'official-camera-quality.json'),'utf8')));
+ db=require(path.join(files,'speed-limits')).augment(db,JSON.parse(fs.readFileSync(path.join(files,'speed-limit-data.json'),'utf8')));
  const zones=JSON.parse(fs.readFileSync(path.join(files,'road-zones.json'),'utf8'));
  return store.validateBundle(Object.assign({},db,{schema:1,version:version.version,generatedAt:version.generatedAt,source:db.displaySource||db.source,
   records:db.records.map(r=>Object.assign({},r,{controls:info.controls(Object.assign({},r,{officialSiteContext:null}))})),zones:zones.zones}));

@@ -80,7 +80,7 @@ bundle.records.filter(function (r) { return /^osm:/.test(r.id); }).forEach(funct
     assert(originalById[r.id]);
     assert.deepStrictEqual(r.controls, info.controls(originalById[r.id]), 'Original OSM controls changed: ' + r.id);
     assert.deepStrictEqual(r.position, originalById[r.id].position);
-    assert.strictEqual(r.limitKmh, originalById[r.id].limitKmh);
+    if(originalById[r.id].limitKmh===null&&r.limitKmh!==null){assert(r.speedLimitEvidence&&['camera-tag','enforcement-relation'].indexOf(r.speedLimitEvidence.kind)>=0);assert.strictEqual(r.limitKmh,r.speedLimitEvidence.valueKmh);}else assert.strictEqual(r.limitKmh, originalById[r.id].limitKmh);
 });
 var bundleBytes = JSON.stringify(bundle);
 quality.links.forEach(function (link) {
@@ -136,7 +136,7 @@ assert.strictEqual(popovaAlert.provenance, 'Госавтоинспекция');
 assert.strictEqual(popovaAlert.confidence, 'nearby');
 assert.strictEqual(popovaAlert.roadConfirmed, false);
 assert.strictEqual(popovaAlert.limitKmh, null);
-assert.strictEqual(renderer.presentation(popovaAlert).limit, null);
+assert.strictEqual(renderer.presentation(popovaAlert).limit, 60, 'OSM relation explicitly maps RU:urban; numeric reference is independently decoded, not assigned by the official list');
 assert.strictEqual(renderer.presentation(popovaAlert).mode, 'Рядом');
 
 // Select a real imported source position beyond the old database's reach and

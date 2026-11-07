@@ -81,6 +81,14 @@
       "methods": [
         "getAllSampleSets"
       ]
+    },
+    "de.bmw.infotainment.controlelements.FrontCCU": {
+      "instances": [
+        "1"
+      ],
+      "attributes": {
+        "statusRotaryEncoderState": "rs"
+      }
     }
   },
   "services": {

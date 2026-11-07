@@ -258,10 +258,17 @@ class OnlineApp extends EventEmitter {
 const hmiContexts = [];
 let displayLanguage = null;
 let gpsPositionEvent = null;
+let controllerEvent = null, controllerButton = 0;
 const someipBuilders = {
     buildTypedProxy: (iface, instance) => Promise.resolve(iface === 'de.bmw.infotainment.SatellitePositioning' ? {
         init: () => Promise.resolve(), waitUntilAvailable: () => Promise.resolve(),
         updatePosition: { subscribe: (cb) => { assert.strictEqual(instance, '1'); gpsPositionEvent = cb; return Promise.resolve(); } }
+    } : iface === 'de.bmw.infotainment.controlelements.FrontCCU' ? {
+        init: () => Promise.resolve(), waitUntilAvailable: () => Promise.resolve(),
+        statusRotaryEncoderState: {
+            subscribe: (cb) => { assert.strictEqual(instance, '1'); controllerEvent=cb; return Promise.resolve(); },
+            getValue: () => Promise.resolve({frontRotaryEncoderPushButton:controllerButton})
+        }
     } : {
         init: () => Promise.resolve(),
         waitUntilAvailable: () => Promise.resolve(),
@@ -360,6 +367,7 @@ async function main() {
     assert.deepStrictEqual(cameraRows.map(([id,type])=>`${id} ${type}`).sort(),
         Object.entries(cameraPage.components).map(([id,d])=>`${id} ${d.type}`).sort(),'camera XML and JSON agree');
     const calibrationNames=['cameraHeadCalibration','cameraCardTarget','cameraTestStart','cameraTestStop','cameraCardStatus','cameraCardPosition',
+        'cameraCardX','cameraCardY',
         'cameraCardUp','cameraCardDown','cameraCardLeft','cameraCardRight','cameraCardScale','cameraCardBrightness','cameraCardTransparency',
         'cameraCardSave','cameraCardReset','cameraCardHint','cameraCardStorage'];
     const cameraOrder=cameraRows.map(([id])=>cameraPage.components[id].name), calibrationAt=cameraOrder.indexOf('cameraHeadCalibration');
@@ -373,6 +381,10 @@ async function main() {
     [['360',15,5],['361',18,18],['362',18,0]].forEach(([id,steps,value])=>{
         const row=cameraPage.components[id].rows[0];
         assert.deepStrictEqual([row.MinValue.value,row.MaxValue.value,row.NumberOfSteps.value,row.Value.value],[0,steps,steps,value]);
+    });
+    [['367',100],['368',164]].forEach(([id,value])=>{
+        const row=cameraPage.components[id].rows[0];
+        assert.deepStrictEqual([row.MinValue.value,row.MaxValue.value,row.NumberOfSteps.value,row.Value.value],[0,200,200,value]);
     });
     console.log('ok   first camera page contains target, pinned test, position, controller arrows and independent size/brightness/transparency sliders');
 
@@ -559,11 +571,76 @@ async function main() {
         await until('cluster profile independently selected',()=>byName.cameraCardTarget.shown()==='Настраивать: Приборы'&&
             byName.cameraCardScale.cells['0:Value']===5&&byName.cameraCardBrightness.cells['0:Value']===18&&byName.cameraCardTransparency.cells['0:Value']===0&&
             byName.cameraCardLeft.enabled===true);
+        byName.cameraCardLeft.emit('focus',{value:true});
+        await until('neutral before short click',()=>!!controllerEvent&&!OnlineApp.instance._holdBridge.status().requiresNewPress);
         before=cameraCommands.length;byName.cameraCardLeft.emit('action');
         await until('selected notification movement request',()=>!!lastCommand('card-move',before));
         command=lastCommand('card-move',before);assert.strictEqual(command.target,'map');assert.strictEqual(command.direction,'left');
         cameraState.cardLayout.map.x=490;confirmCommand(command,'Положение сохранено');
         await until('confirmed notification position',()=>byName.cameraCardPosition.text.includes('X 49.0 %'));
+        before=cameraCommands.length;byName.cameraCardX.setStepValue(130);
+        await until('touch horizontal position request',()=>!!lastCommand('card-layout',before));
+        command=lastCommand('card-layout',before);assert.strictEqual(command.target,'map');assert.strictEqual(command.x,650);
+        cameraState.cardLayout.map.x=650;confirmCommand(command,'Положение X сохранено');
+        await until('horizontal position confirmed',()=>byName.cameraCardX.cells['0:Value']===130);
+        before=cameraCommands.length;byName.cameraCardY.setStepValue(100);
+        await until('touch vertical position request',()=>!!lastCommand('card-layout',before));
+        command=lastCommand('card-layout',before);assert.strictEqual(command.target,'map');assert.strictEqual(command.y,500);
+        cameraState.cardLayout.map.y=500;confirmCommand(command,'Положение Y сохранено');
+        await until('vertical position confirmed',()=>byName.cameraCardY.cells['0:Value']===100);
+        assert.strictEqual(cameraState.cardLayout.hud.x,500,'touch sliders only affect the selected profile');
+        // Sliders are touch-operated in this scenario; the actual controller
+        // focus must remain on Left after an ordinary Click on the same row.
+        byName.cameraCardLeft.emit('focus',{value:true});
+        await until('controller has a neutral baseline',()=>!!controllerEvent&&!OnlineApp.instance._holdBridge.status().requiresNewPress);
+        before=cameraCommands.length;OnlineApp.instance._lastPress={};byName.cameraCardLeft.emit('action');
+        await until('short click on focused arrow',()=>!!lastCommand('card-move',before));
+        command=lastCommand('card-move',before);confirmCommand(command,'Положение сохранено');
+        assert.strictEqual(OnlineApp.instance._cameraFocusedArrow,'left','a short click must not discard actual controller focus');
+        before=cameraCommands.length;controllerButton=2;controllerEvent({frontRotaryEncoderPushButton:2});
+        await until('held controller sends first move',()=>!!lastCommand('card-move',before));
+        command=lastCommand('card-move',before);
+        await sleep(220);
+        assert.strictEqual(cameraCommands.slice(before).filter(m=>m.cmd==='card-move').length,1,'hold waits for one terminal acknowledgement');
+        cameraState.cardLayout.map.x=640;confirmCommand(command,'Положение сохранено');
+        await until('held controller sends second move',()=>cameraCommands.slice(before).filter(m=>m.cmd==='card-move').length===2);
+        command=lastCommand('card-move',before);controllerButton=0;controllerEvent({frontRotaryEncoderPushButton:0});
+        cameraState.cardLayout.map.x=630;confirmCommand(command,'Положение сохранено');
+        const releasedCount=cameraCommands.slice(before).filter(m=>m.cmd==='card-move').length;
+        OnlineApp.instance._lastPress={};byName.cameraCardLeft.emit('action',{subType:0});
+        await sleep(260);
+        assert.strictEqual(cameraCommands.slice(before).filter(m=>m.cmd==='card-move').length,releasedCount,'release cancels repeats and suppresses its trailing Click');
+        byName.cameraCardLeft.emit('focus',{value:false});
+        assert.strictEqual(OnlineApp.instance._moveRepeater.status().active,false);
+        assert.strictEqual(OnlineApp.instance._cameraDiagnosticState().calibrationInput.touchHoldConfirmed,false);
+        assert.strictEqual(OnlineApp.instance._cameraDiagnosticState().calibrationInput.events.slice(-1)[0].data.subType,0);
+        byName.cameraCardRight.emit('focus',{value:true});
+        await until('new direction re-arms after neutral',()=>!OnlineApp.instance._holdBridge.status().requiresNewPress);
+        before=cameraCommands.length;controllerButton=2;controllerEvent({frontRotaryEncoderPushButton:2});
+        await until('new held direction moves',()=>!!lastCommand('card-move',before));
+        command=lastCommand('card-move',before);
+        OnlineApp.instance._lastPress={};byName.cameraCardUp.emit('action');
+        assert.strictEqual(OnlineApp.instance._moveRepeater.status().active,false,'manual opposite arrow stops the old hold');
+        await sleep(200);
+        assert.strictEqual(cameraCommands.slice(before).filter(m=>m.cmd==='card-move').length,1,'another arrow cannot overwrite an in-flight move');
+        cameraState.cardLayout.map.x=640;confirmCommand(command,'Положение сохранено');
+        controllerButton=0;controllerEvent({frontRotaryEncoderPushButton:0});
+        byName.cameraCardDown.emit('focus',{focus:true});
+        await until('neutral after new focus',()=>!OnlineApp.instance._holdBridge.status().requiresNewPress);
+        before=cameraCommands.length;controllerButton=2;controllerEvent({frontRotaryEncoderPushButton:2});
+        await until('held move before overlay',()=>!!lastCommand('card-move',before));
+        command=lastCommand('card-move',before);
+        byName.ST_OnlineApps_WazeStrelkaCameras.emit('focus',{focus:false});
+        assert.strictEqual(OnlineApp.instance._moveRepeater.status().active,false,'overlay focus loss stops without a visibility event');
+        cameraState.cardLayout.map.y=510;confirmCommand(command,'Положение сохранено');
+        controllerButton=0;controllerEvent({frontRotaryEncoderPushButton:0});
+        await sleep(200);
+        assert.strictEqual(cameraCommands.slice(before).filter(m=>m.cmd==='card-move').length,1,'overlay cannot resume a cancelled hold');
+        before=cameraCommands.length;
+        byName.cameraCardTarget.pick(0);byName.cameraCardTarget.pick(1);byName.cameraCardTarget.pick(0);
+        await until('rapid target selection follows final row',()=>cameraCommands.slice(before).filter(m=>m.cmd==='display-test').length===3);
+        assert.strictEqual(OnlineApp.instance._cameraCardTarget,'hud');assert.strictEqual(byName.cameraCardTarget.cells.SelectedItem,0);
+        command=lastCommand('display-test',before);cameraState.displayTest.target='hud';confirmCommand(command,'Тест закреплён на HUD');
         cameraState.outputs.hud=false;cameraReply();await sleep(20);
         before=cameraCommands.length;OnlineApp.instance._lastPress={};byName.cameraCardTarget.pick(0);
         await until('disabled selected output stops old preview',()=>!!lastCommand('display-test-stop',before));
@@ -587,7 +664,7 @@ async function main() {
         command=lastCommand('card-layout-reset',before);assert.strictEqual(command.target,'hud');
         cameraState.cardLayout.hud={x:500,y:820,scalePct:100,brightnessPct:100,opacityPct:100};confirmCommand(command,'Настройки HUD сброшены');
         await until('HUD default profile confirmed',()=>byName.cameraCardScale.cells['0:Value']===5&&byName.cameraCardBrightness.cells['0:Value']===18);
-        assert.strictEqual(cameraState.cardLayout.map.x,490,'resetting HUD does not reset the cluster profile');
+        assert.strictEqual(cameraState.cardLayout.map.x,640,'resetting HUD does not reset the cluster profile');
         console.log('ok   first-page pinned preview targets, confirmed sliders, independent profiles, native movement, safe stop/save/reset and disabled-output switching');
         }
         byName.cameraDiagnostics.emit('action');

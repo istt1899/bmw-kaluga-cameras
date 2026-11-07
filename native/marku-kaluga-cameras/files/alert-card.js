@@ -21,7 +21,7 @@ function presentation(alert) {
     return { controls, extraControls: Math.max(0,known.length-controls.length), limit, limitScope, speed, direction,
         distance: Number.isFinite(alert.distanceM) && alert.distanceM >= 0 ? Math.round(alert.distanceM/10)*10 : null,
         mode: alert.positionKind === 'intersection' ? 'Ориентир' : alert.roadConfirmed === true ? (alert.controlScope === 'enforcement-location' ? 'Рубеж' : 'По дороге') : 'Рядом',
-        test: alert.test === true, calibration: alert.calibration === true,
+        test: alert.test === true, calibration: alert.calibration === true, decoy: !!(alert.decoyReport && alert.decoyReport.state === 'reported'),
         overspeed: alert.roadConfirmed === true && alert.overspeed === true && roadLimit !== null && speed !== null && speed > roadLimit };
 }
 function card(alert, target) {
@@ -68,6 +68,7 @@ function card(alert, target) {
     circle(28,27,19,white);
     centered(model.limit === null ? '—' : model.limit,28,34,18,ink,48);
     if(model.test || model.calibration)text(model.calibration?'КАЛИБРОВКА':'ТЕСТ',63,17,18,amber,244);
+    else if(model.decoy){rect(63,1,86,20,[36,30,20],255);text('Муляж',70,17,18,amber,72);}
     const distanceText=model.distance === null ? '— м' : model.distance >= 1000 ? (model.distance/1000).toFixed(1)+' км' : model.distance+' м';
     text(distanceText,63,46,32,white,166);
     text(model.speed === null ? '— км/ч' : model.speed+' км/ч',231,42,18,model.overspeed?red:white,86);

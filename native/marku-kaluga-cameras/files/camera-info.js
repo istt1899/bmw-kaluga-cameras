@@ -57,8 +57,10 @@ function createDescriber(records) {
         }
     });
     return camera => {
-        const result = describe(camera), own = limitEvidence(camera);
-        if (own) result.limitReference = { valueKmh: own.valueKmh, state: 'known', kind: 'camera-record', source: 'OpenStreetMap', records: [own] };
+        const result = describe(camera), own = limitEvidence(camera), evidence=camera.speedLimitEvidence;
+        if(evidence)result.speedLimitEvidence=JSON.parse(JSON.stringify(evidence));
+        if(evidence)result.limitReference={valueKmh:evidence.valueKmh,state:'known',kind:evidence.kind,source:'OpenStreetMap',records:evidence.sources.map(f=>({id:'osm:'+f.kind+':'+f.id,url:f.sourceUrl,valueKmh:evidence.valueKmh,rawTags:f.tags}))};
+        else if (own) result.limitReference = { valueKmh: own.valueKmh, state: 'known', kind: 'camera-record', source: 'OpenStreetMap', records: [own] };
         else if (camera.providerId === 'gibdd-official' && links[camera.id]) {
             const evidence = links[camera.id], value = evidence[0].valueKmh, consistent = evidence.every(e => e.valueKmh === value);
             result.limitReference = { valueKmh: consistent ? value : null, state: consistent ? 'known' : 'conflict',

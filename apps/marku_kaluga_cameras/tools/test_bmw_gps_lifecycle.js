@@ -48,7 +48,7 @@ function create(hasRhmi) {
         './diagnostics_view.js': require('../src/diagnostics_view.js')
     };
     vm.runInNewContext(source, {
-        require: (name) => Object.prototype.hasOwnProperty.call(modules, name) ? modules[name] : require(name),
+        require: (name) => Object.prototype.hasOwnProperty.call(modules, name) ? modules[name] : require(name[0]==='.'?path.join(__dirname,'../src',name):name),
         process: { pid: process.pid, getuid: () => 0, exit: () => { exited++; } }, Buffer, setTimeout, clearTimeout
     }, { filename: 'robertn_waze_cluster.js' });
     // Yield one turn while RHMI initialization waits. GPS becomes ready while

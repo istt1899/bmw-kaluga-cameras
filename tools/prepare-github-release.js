@@ -127,7 +127,7 @@ function collectSource() {
   });
   ['apps', 'native', 'data', 'docs', 'tools/fixtures', '.github'].forEach(tree);
   fs.readdirSync(path.join(ROOT, 'tools')).sort().forEach(name => {
-    if (/^(?:build\.js|build-road-zones\.mjs|build-enforcement-relations\.mjs|build-osm-camera-snapshot\.mjs|build-camera-database\.js|build-camera-font\.py|camera-source-policy\.js|import-gibdd-kaluga\.py|check-camera-source-updates\.py|test_[A-Za-z0-9_]+\.py|prepare-github-release\.js|test[-_][A-Za-z0-9_-]+\.js|[A-Za-z0-9_-]+\.test\.js)$/.test(name)) add('tools/' + name);
+    if (/^(?:build\.js|build-road-zones\.mjs|build-enforcement-relations\.mjs|build-osm-camera-snapshot\.mjs|build-camera-database\.js|build-camera-limit-data\.js|build-camera-limit-observations\.mjs|build-camera-font\.py|camera-source-policy\.js|import-gibdd-kaluga\.py|check-camera-source-updates\.py|test_[A-Za-z0-9_]+\.py|prepare-github-release\.js|test[-_][A-Za-z0-9_-]+\.js|[A-Za-z0-9_-]+\.test\.js)$/.test(name)) add('tools/' + name);
   });
   ['oap_link.js', 'oap_pack.js', 'mgu-install.js', 'mgu-deploy.js', 'LICENSE'].forEach(name => add('tools/upstream/' + name));
   if (fs.existsSync(path.join(ROOT, 'tools', 'upstream', 'UPSTREAM.json'))) add('tools/upstream/UPSTREAM.json');
@@ -205,11 +205,10 @@ function main() {
   fs.writeFileSync(path.join(assets, 'catalog.json'), JSON.stringify(catalog, null, 2) + '\n');
   fs.writeFileSync(path.join(exported, '.gitignore'), 'dist/\nnode_modules/\n*.pbf\n*.osm.pbf\n.env\n.env.*\n');
   const notes = '# Waze Стрелка ' + version + '\n\n' +
-    'Исправлено скрытие известного ограничения скорости в режиме «Рядом». Для Плеханова — Суворова четыре исходных OSM-объекта содержат 60 км/ч; карточка теперь показывает это число с пометкой «Рядом • база», вместо вопросительного знака.\n\n' +
-    'Если выбран официальный рубеж без собственного числового лимита, справочное значение берётся только из явно рассмотренных связей с OSM, при согласии известных значений. Источник, ID, значение и конфликт доступны в диагностике. Исходный официальный limitKmh остаётся null; близость другой камеры не переносит её лимит.\n\n' +
-    'Справочное число выделено янтарным контуром; лимит подтверждённого подъезда сохраняет красный контур и имеет приоритет. При неизвестном значении используется тире, без городского значения по умолчанию. Сигнал превышения по одной лишь близости не включается. Чтение штатного BMW Speed Limit Information в этом выпуске не подключено.\n\n' +
-    'База 2026.11.7.1 (' + dataCounts.total + ' записей источников), SHA, канал обновления, сохранённые профили HUD/приборов, положение, яркость и прозрачность сохранены. Обновить приложение и сервис до ' + version + '.\n\n' +
-    'Проверены фотографический сценарий 70 м с текущей скоростью 19 км/ч, все четыре OSM-объекта и официальный рубеж, противоречащие/неизвестные лимиты, приоритет подтверждённого ограничения, неизменность базы и работа на Node 8.17. На автомобиле этот патч ещё не проверен.\n';
+    'Калибровка камер на первой странице: ползунки положения X/Y для сенсорного экрана и автоповтор стрелки при подтверждённом удержании контроллера iDrive. Команды выполняются по одной; отпускание, потеря фокуса, движение, смена экрана и отказ сервиса прекращают повтор. HUD и приборы используют отдельные сохранённые профили положения, размера, яркости и прозрачности.\n\n' +
+    'Новый read-only источник удержания: FrontCCU.statusRotaryEncoderState. Сенсорное удержание обычной RHMI-кнопки не подтверждено контрактом и не заявляется; для сенсора доступны X/Y и одиночные стрелки. В диагностике есть состояние источника, кнопки, повтора и последние обезличенные события стрелок.\n\n' +
+    'База 2026.11.7.2: ' + dataCounts.total + ' записей источников, справочный или непосредственный лимит доступен у 203. Восстановлены 49 явных RU-кодов камер и 5 enforcement relations; добавлены 38 ссылок на общие дорожные узлы и 57 однозначных адресно-геометрических ссылок. Неоднозначные перекрёстки, разные направления и условные ограничения не получают догадку. У 105 записей значение неизвестно. Число из дорожной ссылки не подтверждает принадлежность камеры вашей дороге и не включает сигнал превышения.\n\n' +
+    'Добавлена компактная поддержка подписи «Муляж», сохраняющая обычное предупреждение. В рабочую базу не внесены неподтверждённые сообщения о муляжах. На компьютере проверены реальные renderer-пиксели, интерфейс, восстановление и Node 8.17; новый автомобильный тест не проводился. Обновить приложение и сервис до ' + version + '.\n';
   fs.writeFileSync(path.join(output, 'release-notes.md'), notes);
   const commands = [
     '# Review source/ and assets/ before running. This file has NOT been executed.',

@@ -174,7 +174,7 @@ async function main() {
     };
     fakeFs.closeSync = function (fd) { if (fd === directoryFd) calls.push('directory-close'); else { calls.push('file-close'); fs.closeSync(fd); } };
     fakeFs.renameSync = function (from, to) { calls.push('rename-' + (to.indexOf('previous') >= 0 ? 'previous' : 'active')); return fs.renameSync(from, to); };
-    function load(n) { return n === 'fs' ? fakeFs : require(n); }
+    function load(n) { return n === 'fs' ? fakeFs : require(n[0] === '.' ? path.join(__dirname,'../native/marku-kaluga-cameras/files',n) : n); }
     vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../native/marku-kaluga-cameras/files/database-store.js'), 'utf8'),
       { module: module, exports: module.exports, require: load, Buffer: Buffer, process: { platform: 'linux', pid: process.pid }, setTimeout: setTimeout, clearTimeout: clearTimeout });
     var remote = payload(version(2));
@@ -218,7 +218,7 @@ async function main() {
       });
       return req;
     } };
-    function load(n) { return n === 'https' ? fakeHttps : require(n); }
+    function load(n) { return n === 'https' ? fakeHttps : require(n[0] === '.' ? path.join(__dirname,'../native/marku-kaluga-cameras/files',n) : n); }
     vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../native/marku-kaluga-cameras/files/database-store.js'), 'utf8'),
       { module: module, exports: module.exports, require: load, Buffer: Buffer, process: process,
         setTimeout: function (fn, ms) { var t = { fn: fn, ms: ms, cleared: false }; deadlines.push(t); return t; },

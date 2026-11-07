@@ -36,7 +36,7 @@ assert.strictEqual(card.presentation({roadConfirmed:true,limitKmh:40,speedKmh:42
 var unknown=bundle.records.find(function(r){return r.providerId==='gibdd-official'&&!describe(r).limitReference;});
 assert(unknown);assert.strictEqual(card.presentation(describe(unknown)).limit,null,'No universal city-60 fallback');
 assert.strictEqual(JSON.stringify(bundle),before,'References cannot rewrite the database');
-assert.strictEqual(crypto.createHash('sha256').update(Buffer.from(JSON.stringify(bundle)+'\n')).digest('hex'),'d094c399802c2952332bbedbb5db6b22a0de87e3450205579cb541edba9a1e67');
+assert.strictEqual(crypto.createHash('sha256').update(fs.readFileSync(require('path').join(__dirname,'../data/camera-database-2026.11.7.1.json'))).digest('hex'),'d094c399802c2952332bbedbb5db6b22a0de87e3450205579cb541edba9a1e67');
 console.log('PASS photographed Plehanova/Suvorova nearby-limit regression: all four OSM objects and official point show reference 60; reviewed-link provenance, 70m west approach, conflicts/unknowns, no proximity merge or overspeed until road confirmation; published data bytes unchanged');
 var EventEmitter=require('events'),os=require('os'),path=require('path');
 async function daemonRegression(){

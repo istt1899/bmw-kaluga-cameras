@@ -1,6 +1,6 @@
 {
   "name": "marku_kaluga_cameras",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Waze on Cluster controls with a separate camera warning overlay",
   "private": false,
   "main": "javascript/runner.js",

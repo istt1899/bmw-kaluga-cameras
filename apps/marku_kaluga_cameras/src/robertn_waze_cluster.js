@@ -64,6 +64,8 @@ const cameraView = require('./view_model.js');
 const cameraDiagnostics = require('./diagnostics_view.js');
 const { BmwGpsBridge } = require('./bmw_gps_bridge.js');
 const { BmwNavigationBridge } = require('./bmw_navigation_bridge.js');
+const { BmwHoldBridge } = require('./bmw_hold_bridge.js');
+const { CameraMoveRepeater } = require('./camera_move_repeater.js');
 
 const logger = logging.getSDKLogger();
 
@@ -110,7 +112,8 @@ const CAMERA_NAMES = ['cameraStatus', 'cameraAlert', 'cameraDatabase', 'cameraDa
     'cameraEnable', 'cameraCluster', 'cameraHud', 'cameraUpdate', 'cameraRollback', 'cameraDiagnostics', 'cameraInfo', 'cameraDescription',
     'cameraMotion','cameraStreet','cameraCommand','cameraCommandMore','cameraLimit','cameraDirection','cameraResultMore'];
 const CARD_MOVE_NAMES = {up:'cameraCardUp',down:'cameraCardDown',left:'cameraCardLeft',right:'cameraCardRight'};
-const CARD_SLIDERS = {cameraCardScale:{key:'scalePct',min:75,max:150,label:'Размер предупреждения'},
+const CARD_SLIDERS = {cameraCardX:{key:'x',min:0,max:1000,label:'По горизонтали',divisor:10},
+    cameraCardY:{key:'y',min:0,max:1000,label:'По вертикали',divisor:10},cameraCardScale:{key:'scalePct',min:75,max:150,label:'Размер предупреждения'},
     cameraCardBrightness:{key:'brightnessPct',min:10,max:100,label:'Яркость предупреждения'},
     cameraCardTransparency:{key:'opacityPct',min:0,max:90,label:'Прозрачность предупреждения',inverse:true}};
 const CARD_NAMES = ['cameraHeadCalibration','cameraCardTarget','cameraCardStatus','cameraCardPosition','cameraCardHint','cameraCardStorage',
@@ -154,6 +157,7 @@ class WazeClusterApp extends OnlineApp {
         this._cameraClientId = 'strelka-'+Date.now().toString(36)+'-'+process.pid.toString(36)+'-'+(++cameraClientSequence).toString(36);
         this._cameraResultBlock = 0; this._cameraResultText = null;
         this._cameraCardTarget = 'hud'; this._cameraCardSelectionReason = null;
+        this._cameraFocusedArrow=null; this._cameraInputEvents=[]; this._cameraConsumedArrow=null; this._cameraSuppressUntil=0; this._cameraHoldStop=null;
         this._shownPage = 'main';   /* the page last shown, which shows again when the app does */
         this._hideTimer = null;
         this._qr = { url: undefined, file: null, chain: Promise.resolve() };
@@ -172,6 +176,16 @@ class WazeClusterApp extends OnlineApp {
         this._gpsBridge = new BmwGpsBridge({ builders: someipBuilders });
         this._navigationBridge = new BmwNavigationBridge({builders:someipBuilders,control:this._gpsBridge.control});
         this._gpsBridge.on('change', () => this._syncActivity());
+        this._holdBridge=new BmwHoldBridge({builders:someipBuilders});
+        this._moveRepeater=new CameraMoveRepeater({guard:context=>this._cameraHeldMoveGuard(context),pending:()=>this._cameraPending,
+            step:context=>{this._cameraAction('cardLayout','card-move',{target:context.target,direction:context.direction});return !!this._cameraPending;},
+            onStop:reason=>{this._cameraHoldStop=reason;}});
+        this._holdBridge.on('held',event=>{
+            if(event.held){this._cameraConsumedArrow=event.direction;this._cameraSuppressUntil=Infinity;this._moveRepeater.start(event.direction,event.target);}
+            else{this._cameraSuppressUntil=Date.now()+450;this._moveRepeater.stop(event.reason);}
+            this._renderCameras();
+        });
+        this._holdBridge.on('change',()=>this._renderCameras());
 
         this.on('initialized', () => {
             this._appInitialized()
@@ -191,7 +205,7 @@ class WazeClusterApp extends OnlineApp {
         logger.info(`robertn_waze_cluster ${this.getAppId()} v${this._packageJson.version} starting`);
         // Never await GPS for RHMI startup. Its separate local IPC client and
         // background hold survive leaving this screen for CarPlay.
-        Promise.resolve().then(() => { this._gpsBridge.start(); this._navigationBridge.start(); }).catch(() => logger.warn('BMW context bridge start failed'));
+        Promise.resolve().then(() => { this._gpsBridge.start(); this._navigationBridge.start(); this._holdBridge.start(); }).catch(() => logger.warn('BMW context bridge start failed'));
         if (!this.rhmiApplication) {
             logger.info('no RhmiApplication for this start reason; initializing without a screen');
             return Promise.resolve(this.initialized()).then(() => this._syncActivity());
@@ -308,7 +322,7 @@ class WazeClusterApp extends OnlineApp {
         this._bind('cameraHud', () => this._cameraCommand(cameraView.outputCommand(this._cameras.state, 'hud')));
         this._bind('cameraResultMore', () => this._nextCameraResult());
         this._bind('cameraDiagResultMore', () => this._nextCameraResult());
-        this._components.cameraCardTarget.on('action',(event)=>this._press('cameraCardTarget',()=>{
+        this._components.cameraCardTarget.on('action',(event)=>{
             const target=['hud','map'][event&&event.row];
             if(!target)return;
             const active=!!((this._cameras.state||{}).displayTest||{}).active;
@@ -323,16 +337,28 @@ class WazeClusterApp extends OnlineApp {
                 }
             }
             this._renderCameras();
-        }));
+        });
         this._bind('cameraTestStart',()=>this._startCameraTest(false));
         this._bind('cameraTestStop',()=>this._cameraAction('displayTestStop','display-test-stop',{target:this._cameraCardTarget}));
         this._bind('cameraCardSave',()=>this._cameraAction('displayTestStop','display-test-stop',{target:this._cameraCardTarget}));
         this._bind('cameraCardReset',()=>this._cameraAction('cardLayout','card-layout-reset',{target:this._cameraCardTarget}));
-        Object.keys(CARD_MOVE_NAMES).forEach(direction=>this._bind(CARD_MOVE_NAMES[direction],()=>{
-            const guard=this._cameraMoveGuard();
-            if(!guard.allowed){this._cameraFeedback={message:guard.reason};this._renderCameras();return;}
-            this._cameraAction('cardLayout','card-move',{target:this._cameraCardTarget,direction});
-        }));
+        Object.keys(CARD_MOVE_NAMES).forEach(direction=>{
+            const name=CARD_MOVE_NAMES[direction],component=this._components[name];
+            component.on('focus',event=>{
+                const focus=event&&(event.focus!==undefined?event.focus:event.value);
+                if(isTrue(focus))this._cameraFocusedArrow=direction;
+                else if((focus===false||focus===0||focus==='false'||focus==='0')&&this._cameraFocusedArrow===direction)this._cameraFocusedArrow=null;
+                this._syncCameraHold();
+            });
+            this._bind(name,()=>{
+                if(this._cameraConsumedArrow===direction&&Date.now()<this._cameraSuppressUntil)return;
+                if(this._holdBridge.status().held){this._holdBridge.stopHeld('MANUAL_ARROW');this._moveRepeater.stop('MANUAL_ARROW');}
+                if(this._cameraPending)return;
+                const guard=this._cameraMoveGuard();
+                if(!guard.allowed){this._cameraFeedback={message:guard.reason};this._renderCameras();return;}
+                this._cameraAction('cardLayout','card-move',{target:this._cameraCardTarget,direction});
+            });
+        });
         Object.keys(CARD_SLIDERS).forEach(name=>this._components[name].on('changed',step=>{
             const config=CARD_SLIDERS[name], state=this._cameras.state, current=state&&state.cardLayout&&state.cardLayout[this._cameraCardTarget];
             const value=config.inverse?100-step*5:config.min+step*5;
@@ -351,7 +377,7 @@ class WazeClusterApp extends OnlineApp {
         });
         this._bind('cameraDiagFreeze', () => {
             if (this._cameras.state) {
-                this._diagFrozen = cameraDiagnostics.capture(this._cameras.state,this._packageJson.version,Date.now());
+                this._diagFrozen = cameraDiagnostics.capture(this._cameraDiagnosticState(),this._packageJson.version,Date.now());
                 this._cameraFeedback = {message:'Снимок '+this._diagFrozen.id+' зафиксирован; команды остаются живыми'};
                 this._diagBlock = 0;
             } else this._cameraFeedback = {message:'Снимок недоступен: сервис не отвечает'};
@@ -366,7 +392,7 @@ class WazeClusterApp extends OnlineApp {
         this._bind('cameraDiagPrev', () => { this._diagPage=(this._diagPage+5)%6; this._diagBlock=0; this._renderDiagnostics(); });
         this._bind('cameraDiagNext', () => { this._diagPage=(this._diagPage+1)%6; this._diagBlock=0; this._renderDiagnostics(); });
         this._bind('cameraDiagMore', () => {
-            const page=cameraDiagnostics.reportPage(this._diagFrozen,this._cameras.state,this._packageJson.version,this._diagPage,this._diagBlock);
+            const page=cameraDiagnostics.reportPage(this._diagFrozen,this._cameraDiagnosticState(),this._packageJson.version,this._diagPage,this._diagBlock);
             this._diagBlock=(this._diagBlock+1)%page.blocks;
             if(page.blocks===1)this._cameraFeedback={message:'Все строки этой страницы уже показаны'};
             this._renderDiagnostics();
@@ -406,6 +432,12 @@ class WazeClusterApp extends OnlineApp {
         this._state.on('visible', (event) => this._pageVisible('main', isTrue(event && event.visible)));
         this._logsState.on('visible', (event) => this._pageVisible('logs', isTrue(event && event.visible)));
         this._cameraState.on('visible', (event) => this._pageVisible('cameras', isTrue(event && event.visible)));
+        this._cameraState.on('focus',event=>{
+            const focus=event&&(event.focus!==undefined?event.focus:event.value);
+            if(focus===false||focus===0||focus==='false'||focus==='0'){
+                this._cameraFocusedArrow=null;this._syncCameraHold();this._moveRepeater.stop('PAGE_FOCUS_LOST');
+            }
+        });
         this._diagState.on('visible', (event) => this._pageVisible('diagnostics', isTrue(event && event.visible)));
         this._removeStaleQr();
         return Promise.all([this._state.updateResources(), this._logsState.updateResources(), this._cameraState.updateResources(), this._diagState.updateResources()]).then(() => {
@@ -454,7 +486,7 @@ class WazeClusterApp extends OnlineApp {
             this._actionById[Number(id)] = { name, handler };
         }
         logger.info(`BIND OK: ${name} (id ${id})`);
-        comp.on('action', () => this._press(name, handler));
+        comp.on('action', event => {if(Object.values(CARD_MOVE_NAMES).indexOf(name)>=0)this._recordCameraInput(name,event);this._press(name, handler);});
     }
 
     _press(name, handler) {
@@ -518,6 +550,8 @@ class WazeClusterApp extends OnlineApp {
             return;
         }
         this._pages[page] = visible;
+        if(page==='cameras'&&!visible)this._cameraFocusedArrow=null;
+        this._syncCameraHold();
         if (visible) {
             this._shownPage = page;
         }
@@ -547,6 +581,7 @@ class WazeClusterApp extends OnlineApp {
     _setVisible(visible) {
         if (!visible) {
             this._pages = { main: false, logs: false, cameras: false, diagnostics: false };
+            this._cameraFocusedArrow=null;this._syncCameraHold();
             this._logs.close();
             this._cameras.close();
         }
@@ -722,6 +757,11 @@ class WazeClusterApp extends OnlineApp {
     }
 
     _cameraCommand(message) {
+        if(message&&message.cmd==='card-move'&&this._cameraPending)return;
+        if(message&&message.cmd!=='card-move'){
+            if(this._holdBridge.status().held)this._holdBridge.stopHeld('OTHER_COMMAND');
+            this._moveRepeater.stop('OTHER_COMMAND');this._syncCameraHold();
+        }
         clearTimeout(this._cameraCommandTimer); this._cameraCommandTimer=null;
         this._cameraPending=null;
         if (!message) {
@@ -778,6 +818,43 @@ class WazeClusterApp extends OnlineApp {
             {target:this._cameraCardTarget});
     }
 
+    _syncCameraHold() {
+        if(!this._holdBridge)return;
+        const state=this._cameras.state||{},test=state.displayTest||{},renderer=state.rendererDetails||{},stationary=cameraDiagnostics.action(this._cameras.state,'cardLayout');
+        this._holdBridge.setContext({visible:!!this._pages.cameras&&!this._shutdownPromise,focusedDirection:this._cameraFocusedArrow,target:this._cameraCardTarget,
+            stationary:stationary.allowed===true,activeTest:test.active===true&&test.target===this._cameraCardTarget,
+            serviceReady:this._cameras.link==='up'&&renderer.connection==='ready'});
+    }
+    _cameraHeldMoveGuard(context) {
+        const state=this._cameras.state||{},test=state.displayTest||{},renderer=state.rendererDetails||{},hold=this._holdBridge.status(),profile=(state.cardLayout||{})[context.target];
+        if(!hold.held||!this._pages.cameras||this._cameraFocusedArrow!==context.direction||this._cameraCardTarget!==context.target||!test.active||test.target!==context.target||renderer.connection!=='ready')return {allowed:false,reason:'CONTEXT_LOST'};
+        const still=cameraDiagnostics.action(this._cameras.state,'cardLayout');if(!still.allowed)return still;
+        if(!profile)return {allowed:false,reason:'PROFILE_UNAVAILABLE'};
+        if((context.direction==='left'&&profile.x<=0)||(context.direction==='right'&&profile.x>=1000)||(context.direction==='up'&&profile.y<=0)||(context.direction==='down'&&profile.y>=1000))return{allowed:false,reason:'EDGE_REACHED'};
+        const allowed=this._cameraMoveGuard();
+        if(!allowed.allowed&&allowed.reason==='Дождитесь подтверждения текущих настроек изображения')return {allowed:false,waiting:true,reason:'RENDER_CONFIRMATION'};
+        return allowed;
+    }
+    _recordCameraInput(name,event) {
+        // Local diagnostic metadata only. No arbitrary SDK objects, strings,
+        // coordinates, pointers or secrets are serialized.
+        const safe={};for(const key of ['type','subType','subtype','actionType','value','row','pressed','long','keyCode','code']){
+            let value;try{value=event&&event[key];}catch(ignored){continue;}
+            if(typeof value==='boolean'||Number.isFinite(value)||typeof value==='string'&&/^[A-Za-z0-9_.-]{1,32}$/.test(value))safe[key]=value;
+        }
+        for(const key of ['args','parameters','parameterMap']){
+            const value=event&&event[key],fields={};
+            if(value instanceof Map)value.forEach((v,k)=>{if(/^\d{1,2}$/.test(String(k))&&(typeof v==='boolean'||Number.isFinite(v)))fields[k]=v;});
+            else if(value&&typeof value==='object')Object.keys(value).slice(0,16).forEach(k=>{const v=value[k];if(/^\d{1,2}$/.test(k)&&(typeof v==='boolean'||Number.isFinite(v)))fields[k]=v;});
+            if(Object.keys(fields).length)safe[key]=fields;
+        }
+        this._cameraInputEvents.push({at:new Date().toISOString(),component:name,data:safe});if(this._cameraInputEvents.length>6)this._cameraInputEvents.shift();
+    }
+    _cameraDiagnosticState() {
+        return Object.assign({},this._cameras.state||{},{calibrationInput:{controller:this._holdBridge.status(),repeat:this._moveRepeater.status(),focusedDirection:this._cameraFocusedArrow,
+            stopReason:this._cameraHoldStop,touchHoldConfirmed:false,events:this._cameraInputEvents.map(e=>Object.assign({},e))}});
+    }
+
     _cameraMoveGuard() {
         const state=this._cameras.state||{}, guard=cameraDiagnostics.action(this._cameras.state,'cardMove'), test=state.displayTest||{},
             renderer=state.rendererDetails||{}, layout=(renderer[this._cameraCardTarget]||{}).layout||{};
@@ -792,6 +869,7 @@ class WazeClusterApp extends OnlineApp {
     }
 
     _renderCameraCard() {
+        this._syncCameraHold();
         if(!this._cameraState||this._shutdownPromise)return;
         const state=this._cameras.state||{}, target=this._cameraCardTarget, profile=state.cardLayout&&state.cardLayout[target],
             test=state.displayTest||{}, guard=cameraDiagnostics.action(this._cameras.state,'cardLayout'), storage=state.storage||{},
@@ -813,7 +891,7 @@ class WazeClusterApp extends OnlineApp {
                 'Тест скрыт • профиль '+name));
         this._write('cameraCardPosition',profile?'Положение: X '+(profile.x/10).toFixed(1)+' % • Y '+(profile.y/10).toFixed(1)+' %':
             'Настройки предупреждения: сервис не сообщил профиль');
-        this._write('cameraCardHint',move.allowed?'HUD и приборы настраиваются и сохраняются отдельно':
+        this._write('cameraCardHint',move.allowed?(this._holdBridge.status().state==='ready'?'Контроллер: удерживайте стрелку • сенсор: ползунки X/Y':'Быстро: ползунки X/Y • стрелки: один шаг'):
             move.reason||'Покажите тест на выбранном выходе для перемещения');
         this._write('cameraCardStorage',!profile?'Обновите сервис для настройки предупреждения':
             !guard.allowed?guard.reason||'Настройка доступна на стоянке со свежей скоростью':
@@ -824,11 +902,13 @@ class WazeClusterApp extends OnlineApp {
         Object.keys(CARD_SLIDERS).forEach(component=>{
             const config=CARD_SLIDERS[component], value=profile&&profile[config.key], supported=Number.isFinite(value),
                 display=config.inverse?100-value:value;
-            this._writeCell(component,'TextDescription',config.label+': '+(supported?display+' %':'нет данных'),'Text',0);
+            this._writeCell(component,'TextDescription',config.label+': '+(supported?(config.divisor?(display/config.divisor).toFixed(1):display)+' %':'нет данных'),'Text',0);
             this._writeCell(component,'Value',supported?Math.round((display-config.min)/5):0,'SInt',0);
             this._setEnabled(component,!!profile&&guard.allowed);
         });
-        Object.values(CARD_MOVE_NAMES).forEach(component=>this._setEnabled(component,move.allowed));
+        const held=this._holdBridge.status(),waitingForRenderer=move.reason==='Дождитесь подтверждения текущих настроек изображения';
+        Object.keys(CARD_MOVE_NAMES).forEach(direction=>this._setEnabled(CARD_MOVE_NAMES[direction],move.allowed||
+            held.held&&held.direction===direction&&held.target===target&&guard.allowed&&test.active&&test.target===target&&waitingForRenderer));
         ['cameraTestStart','cameraTestStop','cameraCardSave','cameraCardReset'].forEach(component=>this._setEnabled(component,true));
     }
 
@@ -848,6 +928,7 @@ class WazeClusterApp extends OnlineApp {
             this._cameraFeedback={message:cameraDiagnostics.commandText({commandResult:result}),requestId:pending.requestId,
                 command:pending.command,target:pending.target,phase:result.phase};
         }else return;
+        if(pending.command==='card-move'&&this._cameraFeedback.phase==='error')this._moveRepeater.stop('MOVE_REJECTED');
         this._cameraPending=null;
         clearTimeout(this._cameraCommandTimer); this._cameraCommandTimer=null;
     }
@@ -870,7 +951,7 @@ class WazeClusterApp extends OnlineApp {
     _exportDiagnostic() {
         try {
             if(!this._diagFrozen&&!this._cameras.state)throw new Error('Нет снимка или ответа сервиса');
-            const report=this._diagFrozen||cameraDiagnostics.capture(this._cameras.state,this._packageJson.version,Date.now());
+            const report=this._diagFrozen||cameraDiagnostics.capture(this._cameraDiagnosticState(),this._packageJson.version,Date.now());
             const payload=JSON.stringify(report,null,2)+'\n';
             if(Buffer.byteLength(payload,'utf8')>262144)throw new Error('Отчёт больше 256 КБ; экспорт отменён');
             if(!fs.existsSync(QR_DIR))fs.mkdirSync(QR_DIR,0o700);
@@ -909,7 +990,7 @@ class WazeClusterApp extends OnlineApp {
     _renderDiagnostics() {
         if (!this._diagState || this._shutdownPromise) return;
         const result=this._cameraResultView();
-        const page=cameraDiagnostics.reportPage(this._diagFrozen,this._cameras.state,this._packageJson.version,this._diagPage,this._diagBlock,
+        const page=cameraDiagnostics.reportPage(this._diagFrozen,this._cameraDiagnosticState(),this._packageJson.version,this._diagPage,this._diagBlock,
             this._cameraFeedback&&this._cameraFeedback.message,result.block);
         this._diagBlock=page.block;
         cameraDiagnostics.PAGE_KEYS.forEach(key=>this._write('cameraDiag_'+key,page.rows[key]));
@@ -1011,6 +1092,7 @@ class WazeClusterApp extends OnlineApp {
         this._cameras.close();
         this._gpsBridge.stop();
         this._navigationBridge.stop();
+        this._moveRepeater.close();this._holdBridge.close();
         if (this._qr.file) {
             try {
                 fs.unlinkSync(this._qr.file);

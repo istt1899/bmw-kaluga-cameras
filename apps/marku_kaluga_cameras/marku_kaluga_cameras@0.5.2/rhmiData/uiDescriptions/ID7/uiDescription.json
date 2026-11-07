@@ -1994,6 +1994,98 @@
             }
           ]
         },
+        "367": {
+          "type": "slider",
+          "name": "cameraCardX",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "TextDescription": {
+                "value": "По горизонтали: 50.0 %",
+                "type": "Text"
+              },
+              "TextDescriptionVisible": {
+                "value": true,
+                "type": "Bool"
+              },
+              "MiddleIndicatorVisible": {
+                "value": false,
+                "type": "Bool"
+              },
+              "MinValue": {
+                "value": 0,
+                "type": "SInt"
+              },
+              "MaxValue": {
+                "value": 200,
+                "type": "SInt"
+              },
+              "NumberOfSteps": {
+                "value": 200,
+                "type": "SInt"
+              },
+              "Value": {
+                "value": 100,
+                "type": "SInt"
+              }
+            }
+          ]
+        },
+        "368": {
+          "type": "slider",
+          "name": "cameraCardY",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "TextDescription": {
+                "value": "По вертикали: 82.0 %",
+                "type": "Text"
+              },
+              "TextDescriptionVisible": {
+                "value": true,
+                "type": "Bool"
+              },
+              "MiddleIndicatorVisible": {
+                "value": false,
+                "type": "Bool"
+              },
+              "MinValue": {
+                "value": 0,
+                "type": "SInt"
+              },
+              "MaxValue": {
+                "value": 200,
+                "type": "SInt"
+              },
+              "NumberOfSteps": {
+                "value": 200,
+                "type": "SInt"
+              },
+              "Value": {
+                "value": 164,
+                "type": "SInt"
+              }
+            }
+          ]
+        },
         "390": {
           "type": "label",
           "name": "cameraHeaderGeneral",

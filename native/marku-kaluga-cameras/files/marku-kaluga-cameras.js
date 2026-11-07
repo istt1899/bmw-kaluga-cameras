@@ -58,7 +58,7 @@ function start(options) {
   var settingsPath = path.join(dataDir, 'settings.json'), settings;
   try { settings = readSettings(settingsPath); }
   catch (e) { storageError = e.message; settings = { enabled: true, outputs: { cluster: false, hud: false }, hudOpacityPct: 100, cardLayout: cardLayout.defaultLayouts() }; }
-  var state = { serviceVersion: '0.5.1', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
+  var state = { serviceVersion: '0.5.2', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
     cardLayout: settings.cardLayout,
     street: { name: null, source: 'BMW', state: 'unavailable', reason: 'Название улицы BMW ещё не получено', observedAtMs: null },
     audio: { available: false, reason: 'Безопасный звуковой канал BMW не подтверждён' },
@@ -86,6 +86,7 @@ function start(options) {
       database = officialData.augment(candidate,
         JSON.parse(fs.readFileSync(options.officialCatalog || path.join(__dirname, 'gibdd-kaluga.json'), 'utf8')),
         JSON.parse(fs.readFileSync(options.officialQuality || path.join(__dirname, 'official-camera-quality.json'), 'utf8')));
+      database = require('./speed-limits').augment(database,JSON.parse(fs.readFileSync(options.speedLimitData || path.join(__dirname,'speed-limit-data.json'),'utf8')));
       state.sourceAssembly.state = 'complete';
     } catch (sourceError) {
       database = candidate; selectedVersion = databaseVersion.legacy;
@@ -124,9 +125,11 @@ function start(options) {
       command: commandName, phase: phase, message: String(message).slice(0,300), timeMs: Date.now() };
   }
   function describeDatabase(bundle) {
+    var describer=cameraInfo.createDescriber(bundle.records),known=0;
+    bundle.records.forEach(function(r){var d=describer(r);if(Number.isFinite(d.cameraLimitKmh)||d.limitReference&&d.limitReference.state==='known'&&Number.isFinite(d.limitReference.valueKmh))known++;});
     return { state: 'ready', source: bundle.displaySource || bundle.source, baseSource: bundle.source,
       osmCount: bundle.osmCount, reportedCount: bundle.reportedCount, relationCount: bundle.relationCount || 0, officialCount: bundle.officialCount || 0,
-      sourceMetadata: bundle.sourceMetadata || null, countUnit: 'source-position-records',
+      speedLimitCoverage: {known:known,unknown:bundle.records.length-known,total:bundle.records.length}, sourceMetadata: bundle.sourceMetadata || null, speedLimitMetadata: bundle.speedLimitMetadata || null, countUnit: 'source-position-records',
       updated: bundle.sourceTimestamp, generatedAt: bundle.generatedAt, count: bundle.records.length, version: bundle.version,
       sha256: crypto.createHash('sha256').update(JSON.stringify(bundle)).digest('hex'), digestKind: 'canonical-json',
       licence: bundle.licence, region: bundle.region, coverage: 'Неполное покрытие открытых источников',

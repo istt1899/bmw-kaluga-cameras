@@ -151,6 +151,7 @@ function validateBundle(bundle) {
   if (bundle.licence !== undefined && !text(bundle.licence, 200)) fail('DATA_LICENCE');
   ['osmCount', 'reportedCount', 'relationCount', 'officialCount'].forEach(function (k) { if (bundle[k] !== undefined && (!Number.isInteger(bundle[k]) || bundle[k] < 0 || bundle[k] > bundle.records.length)) fail('DATA_COUNTS'); });
   validateOfficialMetadata(bundle);
+  require('./speed-limits').validateBundleEvidence(bundle);
   return clone(bundle);
 }
 function mergeRelations(database, supplement) {

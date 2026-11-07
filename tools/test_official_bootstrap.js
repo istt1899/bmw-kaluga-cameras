@@ -20,7 +20,7 @@ function run(extra,saved){
 var broken=path.join(root,'broken.json'),missing=path.join(root,'missing.json');fs.writeFileSync(broken,'{broken');
 async function main(){
  var ok=run();assert.strictEqual(ok.state.database.count,308);assert.strictEqual(ok.state.database.version,latest.version);assert.strictEqual(ok.state.sourceAssembly.state,'complete');
- [ {officialCatalog:broken},{officialCatalog:missing},{officialQuality:broken},{officialQuality:missing} ].forEach(function(options){
+ [ {officialCatalog:broken},{officialCatalog:missing},{officialQuality:broken},{officialQuality:missing},{speedLimitData:broken},{speedLimitData:missing} ].forEach(function(options){
   var r=run(options);assert.strictEqual(r.state.database.count,156);assert.strictEqual(r.state.database.version,old.version);
   assert.strictEqual(r.state.database.generatedAt,old.generatedAt);assert.strictEqual(r.state.sourceAssembly.state,'legacy-fallback');
   assert.strictEqual(r.state.sourceAssembly.errorCode,'OFFICIAL_SOURCE_ASSEMBLY_FAILED');assert(r.state.sourceAssembly.reason);

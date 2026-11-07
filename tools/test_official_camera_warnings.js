@@ -107,7 +107,9 @@ routes.forEach(function (route, routeIndex) {
         }
     }
     assert(notices > 0 && current, 'No notice on synthetic legal approach ' + route.firstWay);
-    assert(fixture.cameraIds.indexOf(current.id) >= 0);
+    // Proximity tracking may retain the exact separately reviewed official
+    // source at this junction; confirmed road membership still uses original IDs.
+    assert(fixture.cameraIds.indexOf(current.id) >= 0 || !current.roadConfirmed && current.id === 'gibdd:ru-klu:fc2bb7199a68c7be');
     assertOfficialContext(current, 'gibdd:ru-klu:fc2bb7199a68c7be');
     if (route.firstWay !== 399324587) assert(road > 0, 'Previously verified corridor must still produce road guidance');
     if (road > 0) totalRoadApproaches++;

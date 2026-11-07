@@ -111,6 +111,8 @@ const DIAG_NAMES = cameraDiagnostics.PAGE_KEYS.map(k => 'cameraDiag_' + k).conca
 const CAMERA_NAMES = ['cameraStatus', 'cameraAlert', 'cameraDatabase', 'cameraDate', 'cameraGps',
     'cameraEnable', 'cameraCluster', 'cameraHud', 'cameraUpdate', 'cameraRollback', 'cameraDiagnostics', 'cameraInfo', 'cameraDescription',
     'cameraMotion','cameraStreet','cameraCommand','cameraCommandMore','cameraLimit','cameraDirection','cameraResultMore'];
+const PREFERENCE_NAMES = ['cameraPreferencesHead','cameraWarningDistance','cameraPreferencesStatus','cameraPreferencesHint']
+    .concat(cameraView.ALERT_TYPES.map(type=>'cameraType_'+type.key));
 const CARD_MOVE_NAMES = {up:'cameraCardUp',down:'cameraCardDown',left:'cameraCardLeft',right:'cameraCardRight'};
 const CARD_SLIDERS = {cameraCardX:{key:'x',min:0,max:1000,label:'По горизонтали',divisor:10},
     cameraCardY:{key:'y',min:0,max:1000,label:'По вертикали',divisor:10},cameraCardScale:{key:'scalePct',min:75,max:150,label:'Размер предупреждения'},
@@ -258,7 +260,7 @@ class WazeClusterApp extends OnlineApp {
             AA_ENABLE_NAME, AA_DISABLE_NAME, AA_ZOOM_NAME, AA_ZOOM_OUT_NAME, AA_ZOOM_IN_NAME, AA_CARD_NAME, RESTART_NAME, GUIDE_NAME,
             HEAD_GENERAL_NAME, HEAD_HUD_NAME, SHOW_ON_NAME, HUD_NAME, HUD_SIZE_NAME, HUD_OPACITY_NAME, HUD_POS_NAME]
             .concat(Object.values(HUD_MOVE_NAMES), [HUD_CENTRE_NAME, CAPTURE_NAME, CAPTURE_STATUS,
-                LOGS_NAME, LOGS_SAVE, LOGS_STATUS, LOGS_QR, LOGS_URL, CAMERA_LINK], LOGS_ROW_NAMES, CAMERA_NAMES, DIAG_NAMES, CARD_NAMES);
+                LOGS_NAME, LOGS_SAVE, LOGS_STATUS, LOGS_QR, LOGS_URL, CAMERA_LINK], LOGS_ROW_NAMES, CAMERA_NAMES, DIAG_NAMES, CARD_NAMES, PREFERENCE_NAMES);
         names.forEach((name) => { this._components[name] = rhmi.getByName(name); });
         const missing = names.filter((name) => !this._components[name]);
         if (missing.length) {
@@ -320,6 +322,31 @@ class WazeClusterApp extends OnlineApp {
         this._bind('cameraEnable', () => this._cameraCommand({ cmd: this._cameras.state && this._cameras.state.enabled ? 'disable' : 'enable' }));
         this._bind('cameraCluster', () => this._cameraCommand(cameraView.outputCommand(this._cameras.state, 'cluster')));
         this._bind('cameraHud', () => this._cameraCommand(cameraView.outputCommand(this._cameras.state, 'hud')));
+        this._components.cameraWarningDistance.on('changed',step=>{
+            const prefs=cameraView.alertPreferences(this._cameras.state), value=50+step*50;
+            if(prefs.available&&Number.isInteger(step)&&step>=0&&step<=19&&value!==prefs.warningDistanceM)
+                this._cameraCommand({cmd:'alert-preferences',warningDistanceM:value});
+            // Slider writes its proposed value after emitting changed. Restore
+            // the confirmed service value after that write, including rejects.
+            delete this._written['cell:cameraWarningDistance:0:Value'];
+            setImmediate(()=>this._renderAlertPreferences());
+        });
+        cameraView.ALERT_TYPES.forEach(type=>{
+            const name='cameraType_'+type.key;
+            this._bind(name,()=>{
+                const prefs=cameraView.alertPreferences(this._cameras.state);
+                if(prefs.available){
+                    const patch={};patch[type.key]=!prefs.cameraTypes[type.key];
+                    this._cameraCommand({cmd:'alert-preferences',cameraTypes:patch});
+                }
+            });
+            // HMI checkboxes toggle locally before action, even when _press
+            // deduplicates a second delivery. Always restore the server tick.
+            this._components[name].on('action',()=>{
+                delete this._written['selected:'+name];
+                this._renderAlertPreferences();
+            });
+        });
         this._bind('cameraResultMore', () => this._nextCameraResult());
         this._bind('cameraDiagResultMore', () => this._nextCameraResult());
         this._components.cameraCardTarget.on('action',(event)=>{
@@ -405,6 +432,10 @@ class WazeClusterApp extends OnlineApp {
             const entry = ev && ev.eventType === 'ACTION' && this._actionById[Number(ev.sourceId)];
             if (entry) {
                 this._press(entry.name, entry.handler);
+                if(entry.name.indexOf('cameraType_')===0){
+                    delete this._written['selected:'+entry.name];
+                    this._renderAlertPreferences();
+                }
             }
         });
         rhmi.on('applicationStackChanged', (stack) => {
@@ -772,7 +803,8 @@ class WazeClusterApp extends OnlineApp {
         const requestId=this._cameraClientId+'-'+(++this._cameraCommandSequence).toString(36);
         const commandName={'display-test':'тест предупреждения','calibration-test':'проверка границ',
             'display-test-stop':'сохранение и остановка теста','card-layout':'настройка предупреждения',
-            'card-layout-reset':'сброс настроек предупреждения','card-move':'положение предупреждения'}[message.cmd]||message.cmd;
+            'card-layout-reset':'сброс настроек предупреждения','card-move':'положение предупреждения',
+            'alert-preferences':'настройки предупреждений'}[message.cmd]||message.cmd;
         const pending={message:'Ожидание ответа: '+commandName,command:message.cmd,target:message.target,requestId,pending:true};
         this._cameraFeedback=pending; this._cameraPending=pending;
         if (!this._cameras.send(Object.assign({},message,{requestId}))) {
@@ -972,6 +1004,28 @@ class WazeClusterApp extends OnlineApp {
         this._renderDiagnostics();
     }
 
+    _renderAlertPreferences() {
+        if(!this._cameraState||this._shutdownPromise)return;
+        const state=this._cameras.state, prefs=cameraView.alertPreferences(state), feedback=this._cameraFeedback;
+        this._write('cameraPreferencesHead','Предупреждения о камерах');
+        this._writeCell('cameraWarningDistance','TextDescription',prefs.available?
+            'Предупреждать за: '+prefs.warningDistanceM+' м':'Дистанция: нет подтверждённых данных','Text',0);
+        this._writeCell('cameraWarningDistance','Value',prefs.available?(prefs.warningDistanceM-50)/50:19,'SInt',0);
+        this._setEnabled('cameraWarningDistance',prefs.available);
+        const summary=!prefs.available?prefs.reason:prefs.enabledCount===0?'Все типы выключены — предупреждений не будет':
+            'Типы включены: '+prefs.enabledCount+'/'+cameraView.ALERT_TYPES.length+' • дистанция '+prefs.warningDistanceM+' м';
+        const temporary=state&&state.storage&&state.storage.persistent===false?' • настройки временные':'';
+        this._write('cameraPreferencesStatus',summary+temporary);
+        this._write('cameraPreferencesHint',prefs.available?feedback&&feedback.command==='alert-preferences'?
+            feedback.message:'У комплекса достаточно любого включённого типа':'Нужен обновлённый сервис и подтверждённые настройки');
+        cameraView.ALERT_TYPES.forEach(type=>{
+            const name='cameraType_'+type.key;
+            this._write(name,type.label+(prefs.available?'':' • нет данных'));
+            this._setEnabled(name,prefs.available);
+            this._setSelected(name,prefs.available?prefs.cameraTypes[type.key]:false);
+        });
+    }
+
     _renderCameras() {
         if (!this._cameraState || this._shutdownPromise) return;
         const view = cameraView.model(this._cameras.state);
@@ -983,6 +1037,7 @@ class WazeClusterApp extends OnlineApp {
         Object.keys(view.text).forEach((name) => this._write(name, view.text[name]));
         Object.keys(view.enabled).forEach((name) => this._setEnabled(name, view.enabled[name]));
         this._setEnabled('cameraResultMore',true);
+        this._renderAlertPreferences();
         this._renderCameraCard();
         this._renderDiagnostics();
     }

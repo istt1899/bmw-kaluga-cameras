@@ -1,0 +1,45 @@
+'use strict';
+var assert=require('assert'),api=require('../native/marku-kaluga-cameras/files/alert-preferences');
+function clone(value){return JSON.parse(JSON.stringify(value));}
+function invalid(partial){assert.throws(function(){api.patch(api.DEFAULTS,partial);},function(error){return error.code==='ALERT_PREFERENCES_INVALID'&&/Некорректные настройки предупреждений/.test(error.message);});}
+var types=['speed','redlight','average','stopline','belt','phone','lane','pedestrian','signs_marking','road_position','other'];
+assert.deepStrictEqual(Object.keys(api.DEFAULTS.cameraTypes),types);assert.strictEqual(api.DEFAULTS.warningDistanceM,1000);types.forEach(function(type){assert.strictEqual(api.DEFAULTS.cameraTypes[type],true);});
+assert(Object.isFrozen(api.DEFAULTS));assert(Object.isFrozen(api.DEFAULTS.cameraTypes));
+assert.throws(function(){api.DEFAULTS.cameraTypes.speed=false;});
+var defaults=api.normalize(),another=api.normalize();defaults.cameraTypes.speed=false;defaults.warningDistanceM=50;
+assert.deepStrictEqual(another,api.DEFAULTS);assert.deepStrictEqual(api.normalize(null),api.DEFAULTS);assert.deepStrictEqual(api.normalize(false),api.DEFAULTS);assert.deepStrictEqual(api.normalize('500'),api.DEFAULTS);assert.deepStrictEqual(api.normalize([]),api.DEFAULTS);
+var legacy={enabled:false,outputs:{cluster:true,hud:false},hudOpacityPct:25,cardLayout:{hud:{x:5}},unrecognized:true};
+var legacyBytes=JSON.stringify(legacy);assert.deepStrictEqual(api.normalize(legacy),api.DEFAULTS);assert.strictEqual(JSON.stringify(legacy),legacyBytes,'Migration does not modify existing settings or their other namespaces');
+var migrated=api.normalize({warningDistanceM:500,cameraTypes:{speed:false,phone:false,other:false,unknown:false,redlight:'false'},futureSchema:99});
+assert.strictEqual(migrated.warningDistanceM,500);assert.strictEqual(migrated.cameraTypes.speed,false);assert.strictEqual(migrated.cameraTypes.phone,false);assert.strictEqual(migrated.cameraTypes.other,false);assert.strictEqual(migrated.cameraTypes.redlight,true);assert.strictEqual(migrated.cameraTypes.unknown,undefined);assert.strictEqual(migrated.futureSchema,undefined);
+[false,true,'500',null,undefined,0,49,75,999,1050,NaN,Infinity].forEach(function(value){assert.strictEqual(api.normalize({warningDistanceM:value}).warningDistanceM,1000);invalid({warningDistanceM:value});});
+for(var metres=50;metres<=1000;metres+=50)assert.strictEqual(api.patch(api.DEFAULTS,{warningDistanceM:metres}).warningDistanceM,metres);
+[false,true,null,undefined,'false',0,[],1].forEach(function(value){invalid({cameraTypes:value});});
+[null,undefined,'false',0,[],1,{}].forEach(function(value){invalid({cameraTypes:{speed:value}});});
+[false,true,null,undefined,'',[],1].forEach(invalid);
+invalid({distance:500});invalid({cmd:'alert-preferences'});invalid({cameraTypes:{speeed:false}});invalid(JSON.parse('{"__proto__":{"warningDistanceM":50}}'));invalid({cameraTypes:JSON.parse('{"__proto__":{"speed":false}}')});
+var inherited=Object.create({warningDistanceM:50,cameraTypes:{speed:false}});assert.deepStrictEqual(api.normalize(inherited),api.DEFAULTS);
+var inheritedTypes=Object.create({speed:false});inheritedTypes.redlight=false;var ownFlags=api.normalize({cameraTypes:inheritedTypes});assert.strictEqual(ownFlags.cameraTypes.speed,true);assert.strictEqual(ownFlags.cameraTypes.redlight,false);
+var previous={warningDistanceM:350,cameraTypes:{speed:false,redlight:false,phone:false,other:false}},previousBytes=JSON.stringify(previous);
+var changed=api.patch(previous,{cameraTypes:{belt:false}});assert.strictEqual(changed.warningDistanceM,350);assert.strictEqual(changed.cameraTypes.speed,false);assert.strictEqual(changed.cameraTypes.redlight,false);assert.strictEqual(changed.cameraTypes.phone,false);assert.strictEqual(changed.cameraTypes.other,false);assert.strictEqual(changed.cameraTypes.belt,false);assert.strictEqual(changed.cameraTypes.lane,true);assert.strictEqual(JSON.stringify(previous),previousBytes);
+var distanceOnly=api.patch(changed,{warningDistanceM:650});assert.strictEqual(distanceOnly.warningDistanceM,650);assert.deepStrictEqual(distanceOnly.cameraTypes,changed.cameraTypes);assert.notStrictEqual(distanceOnly.cameraTypes,changed.cameraTypes);
+assert.deepStrictEqual(api.patch(distanceOnly,{}),distanceOnly);assert.deepStrictEqual(api.patch(distanceOnly,{cameraTypes:{}}),distanceOnly);
+assert.throws(function(){api.patch(previous,{warningDistanceM:500,cameraTypes:{speed:'false'}});});assert.strictEqual(JSON.stringify(previous),previousBytes,'A partially invalid command is atomic and does not modify prior preferences');
+var allOff=api.normalize();types.forEach(function(type){allOff.cameraTypes[type]=false;});
+types.slice(0,-1).forEach(function(type){
+ assert.strictEqual(api.matches({controls:[type]},api.DEFAULTS),true);
+ assert.strictEqual(api.matches({controls:[type]},allOff),false);
+ var only=clone(allOff);only.cameraTypes[type]=true;assert.strictEqual(api.matches({controls:[type]},only),true);
+});
+assert.strictEqual(api.matches({type:'speed'},api.DEFAULTS),true,'Missing controls use camera-info type fallback');
+assert.strictEqual(api.matches({type:'camera',controls:[]},api.DEFAULTS),true);assert.strictEqual(api.matches({type:'camera',controls:[]},allOff),false);
+var onlyOther=clone(allOff);onlyOther.cameraTypes.other=true;
+assert.strictEqual(api.matches({controls:['future-control']},onlyOther),true);assert.strictEqual(api.matches({controls:['speed','future-control']},onlyOther),false,'Unknown extra tags cannot bypass a disabled known camera type');
+['constructor','__proto__','toString'].forEach(function(type){assert.strictEqual(api.matches({controls:[type]},onlyOther),true,'Prototype names are unclassified controls, not known camera types');});
+assert.strictEqual(api.matches({controls:['speed','redlight']},api.patch(allOff,{cameraTypes:{redlight:true}})),true,'Multi-control camera matches any enabled verified type');
+var site={id:'osm:node:1',controls:['speed'],officialSiteContext:{scope:'enforcement-location',controls:['belt','redlight']}};
+var siteBytes=JSON.stringify(site);assert.strictEqual(api.matches(site,api.patch(allOff,{cameraTypes:{belt:true}})),true);assert.strictEqual(api.matches(site,api.patch(allOff,{cameraTypes:{phone:true}})),false);assert.strictEqual(JSON.stringify(site),siteBytes);
+var unrelated=clone(site);unrelated.officialSiteContext.scope='unknown';assert.strictEqual(api.matches(unrelated,api.patch(allOff,{cameraTypes:{belt:true}})),false);
+assert.strictEqual(api.matches({controls:'speed',officialSiteContext:{scope:'enforcement-location',controls:'belt'}},onlyOther),true,'Malformed source control fields remain generic without throwing');
+[null,undefined,false,[],1,'speed'].forEach(function(record){assert.strictEqual(api.matches(record,api.DEFAULTS),false);});
+console.log('PASS alert preferences: 50–1000 m/50 step, defaults and persisted migration, strict atomic partial commands, unchanged unrelated settings, all 10 types + other, multi-control/official-site matching, immutable inputs and prototype-key isolation');

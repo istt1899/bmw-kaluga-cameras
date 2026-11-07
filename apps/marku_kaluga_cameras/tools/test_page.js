@@ -372,7 +372,10 @@ async function main() {
         'cameraCardSave','cameraCardReset','cameraCardHint','cameraCardStorage'];
     const cameraOrder=cameraRows.map(([id])=>cameraPage.components[id].name), calibrationAt=cameraOrder.indexOf('cameraHeadCalibration');
     assert.deepStrictEqual(cameraOrder.slice(calibrationAt,calibrationAt+calibrationNames.length),calibrationNames);
-    assert.strictEqual(cameraOrder[calibrationAt-1],'cameraHud','calibration controls immediately follow output toggles on the first camera page');
+    const prefsAt=cameraOrder.indexOf('cameraPreferencesHead');
+    assert.strictEqual(cameraOrder[prefsAt-1],'cameraHud','warning preferences follow output toggles on the first camera page');
+    assert.deepStrictEqual(cameraOrder.slice(prefsAt,calibrationAt),['cameraPreferencesHead','cameraWarningDistance','cameraPreferencesStatus']
+        .concat(require('../src/view_model.js').ALERT_TYPES.map(type=>'cameraType_'+type.key),['cameraPreferencesHint']));
     calibrationNames.forEach(name=>{
         const id=Object.keys(cameraPage.components).find(key=>cameraPage.components[key].name===name),d=cameraPage.components[id],focus=name==='cameraHeadCalibration'?0:3;
         assert.strictEqual(d.properties.Focusable.value,focus);

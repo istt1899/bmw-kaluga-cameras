@@ -42,7 +42,7 @@ function create(hasRhmi) {
         './i18n.js': { t: (key) => key },
         './waze_cluster_control.js': { WazeClusterControl: Control },
         './logs_control.js': { LogsControl: Control, ROWS: 5 },
-        './qr.js': {}, './control.js': { CameraControl: Control }, './view_model.js': {},
+        './qr.js': {}, './control.js': { CameraControl: Control }, './view_model.js': require('../src/view_model.js'),
         './bmw_gps_bridge.js': { BmwGpsBridge: GpsBridge },
         './bmw_navigation_bridge.js': {BmwNavigationBridge:class { start(){} stop(){} }},
         './diagnostics_view.js': require('../src/diagnostics_view.js')

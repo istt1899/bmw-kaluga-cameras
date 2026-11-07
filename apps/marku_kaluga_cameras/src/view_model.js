@@ -21,6 +21,24 @@ const TYPES = {
     'SPEED CAM': 'Контроль скорости', CAMERA: 'Камера', 'RED LIGHT': 'Контроль светофора',
     'AVG SPEED': 'Контроль средней скорости', 'BUS LANE': 'Контроль полосы'
 };
+const ALERT_TYPES = [
+    {key:'speed',label:'Контроль скорости'}, {key:'average',label:'Средняя скорость'},
+    {key:'redlight',label:'Контроль светофора'}, {key:'stopline',label:'Стоп-линия'},
+    {key:'belt',label:'Контроль ремня'}, {key:'pedestrian',label:'Пешеходный переход'},
+    {key:'lane',label:'Контроль полосы'}, {key:'phone',label:'Контроль телефона'},
+    {key:'signs_marking',label:'Знаки и разметка'},
+    {key:'road_position',label:'Расположение ТС / обгон'}, {key:'other',label:'Другие и неизвестные типы'}
+];
+function alertPreferences(state) {
+    const s=state||{}, p=s.alertPreferences||{}, types=p.cameraTypes;
+    const supported=!!(s.capabilities&&s.capabilities.alertPreferences===true);
+    const available=supported&&Number.isInteger(p.warningDistanceM)&&p.warningDistanceM>=50&&p.warningDistanceM<=1000&&p.warningDistanceM%50===0&&
+        !!types&&ALERT_TYPES.every(type=>typeof types[type.key]==='boolean');
+    return {available,warningDistanceM:available?p.warningDistanceM:null,cameraTypes:available?types:null,
+        enabledCount:available?ALERT_TYPES.filter(type=>types[type.key]).length:null,
+        reason:!state?'Сервис недоступен':!supported?'Для настройки дистанции и типов обновите сервис камер':
+            !available?'Ожидание подтверждённых настроек сервиса':null};
+}
 function gpsSummary(state) {
     const input = state && state.gpsInput;
     if (!input) return null;
@@ -46,7 +64,8 @@ function model(state) {
         cameraStatus: connected ? (s.enabled ? 'Предупреждения включены' : 'Предупреждения выключены') : 'Сервис недоступен',
         cameraAlert: a ? clean(a.title || TYPES[a.type] || a.type, 'Камера') + ' • ' + distance(a.distanceM===undefined?a.distance:a.distanceM) +
             (a.positionKind === 'intersection' ? ' • до перекрёстка' : a.confidence === 'nearby' ? ' • рядом' : ' • по дороге') + (a.limit ? ' • лимит ' + a.limit : '') :
-            s.nearest ? clean(s.nearest.title || TYPES[s.nearest.type], 'Камера') + ' • ' + distance(s.nearest.distanceM) + (s.nearest.positionKind === 'intersection' ? ' • до перекрёстка' : ' • рядом') : 'Активных предупреждений нет',
+            s.nearest ? (s.nearest.filterMatched===false?'Ближайшая: ':'')+clean(s.nearest.title || TYPES[s.nearest.type], 'Камера') + ' • ' + distance(s.nearest.distanceM) +
+                (s.nearest.filterMatched===false?' • тип отключён':s.nearest.positionKind === 'intersection' ? ' • до перекрёстка' : ' • рядом') : 'Активных предупреждений нет',
         cameraDescription: 'Описание камеры: ' + clean((a || s.nearest || {}).description, 'не указано в базе'),
         cameraDatabase: connected ? db.officialCount?'База: OSM '+((db.osmCount||0)+(db.relationCount||0))+' • ГИБДД '+db.officialCount+' • всего '+count+' записей':
             'База: ' + clean(db.source, 'нет источника') + ' • ' + count + ' объектов' : 'База: ожидание ответа сервиса',
@@ -99,4 +118,4 @@ function diagnostics(state) {
     return 'Вывод: ' + clean(rendering, 'неизвестно') + (state.error ? ' • ' + clean(state.error, '') : '');
 }
 
-module.exports = { model, outputCommand, diagnostics, date, distance };
+module.exports = { model, outputCommand, diagnostics, date, distance, ALERT_TYPES, alertPreferences };

@@ -1,4 +1,5 @@
 'use strict';
+const cameraView = require('./view_model.js');
 const KEYS = ['stamp','versions','service','health','nmeaPair','nmeaRmc','nmeaGga','nmeaGst','nmeaRmcGga','nmeaGgaGst',
     'position','fixUtc','age','accuracy','motion','gnss','bridge','counts','reject','gpsStatus','gpsStatusMore','rejectReason',
     'nearest','type','description','descriptionMore','limit','mode','reason','way','samples','alert','outputs','map','hud','test','dimmer','database','error','errorMore'];
@@ -6,7 +7,11 @@ const REASONS = { WAITING_GPS:'Ожидание GPS', GPS_INVALID:'Нет све
     WAITING_MOTION:'Ожидание движения', WAITING_APPROACH:'Нужны две позиции подъезда', NO_ROAD_ZONE:'Для объекта нет дорожной зоны',
     OUT_OF_RANGE:'Вне дистанции предупреждения', OFF_ROAD:'Позиция вне дорожного коридора', CAMERA_WAY_MISSING:'Ближайшая дорога не связана с камерой',
     AMBIGUOUS_ROAD:'Несколько возможных дорог', ONEWAY_MISMATCH:'Против направления дороги', HEADING_MISMATCH:'Курс не совпадает с дорогой',
-    CAMERA_DIRECTION:'Направление камеры не совпало', ROAD_APPROACH:'Подъезд по дороге подтверждён', STOPPED_APPROACH:'Подъезд сохранён на остановке', NEARBY_ONLY:'Камера рядом; дорога не подтверждена' };
+    CAMERA_DIRECTION:'Направление камеры не совпало', ROAD_APPROACH:'Подъезд по дороге подтверждён', STOPPED_APPROACH:'Подъезд сохранён на остановке', NEARBY_ONLY:'Камера рядом; дорога не подтверждена',
+    TRACKING_APPROACH:'Подтверждённый подъезд сопровождается', NEARBY_TRACKING:'Сопровождение камеры рядом; дорога не подтверждена',
+    TYPE_FILTERED:'Тип камеры выключен в настройках', TYPE_DISABLED:'Тип камеры выключен в настройках', ALL_TYPES_DISABLED:'Все типы камер выключены',
+    CAMERA_PASSED:'Камера пройдена', ROAD_CHANGED:'Выбрана другая дорога', APPROACH_LOST:'Подъезд больше не подтверждается',
+    POSITION_JUMP:'Скачок расстояния несовместим с движением', BEARING_CHANGED:'Направление на камеру изменилось' };
 const TYPES = {speed:'Контроль скорости',redlight:'Контроль светофора',average:'Средняя скорость'};
 const clean = v => v === null || v === undefined || v === '' ? '—' : String(v).replace(/[\r\n\t]/g,' ');
 const n = (v, digits) => Number.isFinite(v) ? v.toFixed(digits === undefined ? 1 : digits) : '—';
@@ -130,8 +135,14 @@ function reportPage(report, live, version, pageIndex, blockIndex, localResult, c
             n(Number.isFinite(profile.opacityPct)?100-profile.opacityPct:null,0)+' %';
     };
     const candidates=Array.isArray(s.nearestCandidates)?s.nearestCandidates:[];
+    const prefs=cameraView.alertPreferences(s);
+    const preferenceSummary=prefs.available?'Настроенная дистанция: '+prefs.warningDistanceM+' м • типы '+prefs.enabledCount+'/'+cameraView.ALERT_TYPES.length:
+        'Настройки предупреждений: '+prefs.reason;
+    const preferenceRows=cameraView.ALERT_TYPES.map(type=>type.label+': '+(prefs.available?on(prefs.cameraTypes[type.key]):'нет подтверждённых данных'));
+    const transition=g.transition||{};
     const pages=[
-        [existing.service,existing.health,'GPS: '+clean(s.gps),existing.outputs,existing.alert,
+        [existing.service,existing.health,'GPS: '+clean(s.gps),existing.outputs,existing.alert,preferenceSummary,
+            prefs.available&&prefs.enabledCount===0?'Все типы выключены — реальных предупреждений не будет':'Фильтр комплекса: достаточно любого включённого типа',
             'Тест: '+clean(action(s,'displayTest').reason||'доступен'),
             'Улица '+clean((s.street||{}).name)+' • '+clean((s.street||{}).source||'BMW')+' • '+clean((s.street||{}).reason),
             existing.database,'База: '+clean((s.databaseUpdate||{}).message|| (s.databaseUpdate||{}).phase),'Ошибка: '+clean(s.controlError||s.error)],
@@ -142,6 +153,7 @@ function reportPage(report, live, version, pageIndex, blockIndex, localResult, c
             existing.nmeaRmcGga,existing.nmeaGgaGst,existing.nmeaPair,existing.counts,existing.reject,
             existing.bridge,'GPS: '+clean(s.gps),existing.rejectReason],
         ['Объект: '+clean(c.id), 'Расстояние: '+n(c.distanceM===undefined?c.distance:c.distanceM,0)+' м • '+clean(c.positionKind),
+            'Совпадение с выбранными типами: '+(typeof c.filterMatched==='boolean'?(c.filterMatched?'да':'нет'):'не сообщается'),
             'Источник: '+clean(c.provenance||c.source)+' • '+clean(c.sourceUrl||c.positionSourceUrl),
             'Типы: '+clean(Array.isArray(c.controlLabels)&&c.controlLabels.length?c.controlLabels.join(', '):Array.isArray(c.controls)&&c.controls.length?c.controls.join(', '):c.title||c.type||'тип не подтверждён'),
             'Область сведений: '+(c.controlScope==='enforcement-location'?'официальный рубеж; не параметры отдельного устройства':'объект карты'),
@@ -155,8 +167,15 @@ function reportPage(report, live, version, pageIndex, blockIndex, localResult, c
             'Исходные ограничения: '+(Array.isArray((c.speedLimitEvidence||{}).sources)?c.speedLimitEvidence.sources.map(f=>clean(f.sourceUrl)+' • '+JSON.stringify(f.tags)).join('; '):'—'),
             'Источники справочного лимита: '+(Array.isArray((c.limitReference||{}).records)?c.limitReference.records.map(e=>clean(e.id)+' = '+n(e.valueKmh,0)+' • '+clean(e.url)).join('; '):'—'),
             'Контроль: '+clean(c.captureDirectionVerified?{front:'спереди',rear:'сзади',both:'спереди и сзади'}[c.captureDirection]||'направление неизвестно':'направление неизвестно')+' • источник '+clean(c.captureDirectionSource),
-            existing.mode,existing.reason,existing.way,existing.samples].concat(candidates.map((v,i)=>
-                'Кандидат '+(i+1)+': '+clean(v.id)+' • '+n(v.distanceM,0)+' м • '+clean(v.reason))),
+            existing.mode,existing.reason,existing.way,existing.samples,
+            'Переход: '+clean(transition.from)+' → '+clean(transition.to)+' • '+clean(transition.reason),
+            'Объект перехода: '+clean(transition.cameraId)+' • UTC '+utc(transition.timeMs),
+            'Переход — полные данные: '+JSON.stringify(g.transition||null),
+            'Причина GPS: '+clean(g.gpsReason),
+            'Последнее снятие предупреждения: '+JSON.stringify(g.lastClear||null),
+            preferenceSummary].concat(preferenceRows,candidates.map((v,i)=>
+                'Кандидат '+(i+1)+': '+clean(v.id)+' • '+n(v.distanceM,0)+' м • '+clean(v.reason)+
+                    ' • фильтр '+(typeof v.filterMatched==='boolean'?(v.filterMatched?'да':'нет'):'не сообщается'))),
         [existing.outputs,renderTarget('map'),renderTarget('hud'),
             'Renderer: '+(r.versionReported===false?'версия renderer не сообщается протоколом':
                 layout.rendererVersion||r.version?'версия '+clean(layout.rendererVersion||r.version):'версия renderer не сообщается протоколом'),

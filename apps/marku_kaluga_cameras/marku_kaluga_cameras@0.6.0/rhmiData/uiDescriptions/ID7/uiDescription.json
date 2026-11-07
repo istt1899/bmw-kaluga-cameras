@@ -2086,6 +2086,404 @@
             }
           ]
         },
+        "370": {
+          "type": "label",
+          "name": "cameraPreferencesHead",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Предупреждения о камерах",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "371": {
+          "type": "slider",
+          "name": "cameraWarningDistance",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "TextDescription": {
+                "value": "Предупреждать за: 1000 м",
+                "type": "Text"
+              },
+              "TextDescriptionVisible": {
+                "value": true,
+                "type": "Bool"
+              },
+              "MiddleIndicatorVisible": {
+                "value": false,
+                "type": "Bool"
+              },
+              "MinValue": {
+                "value": 0,
+                "type": "SInt"
+              },
+              "MaxValue": {
+                "value": 19,
+                "type": "SInt"
+              },
+              "NumberOfSteps": {
+                "value": 19,
+                "type": "SInt"
+              },
+              "Value": {
+                "value": 19,
+                "type": "SInt"
+              }
+            }
+          ]
+        },
+        "372": {
+          "type": "label",
+          "name": "cameraPreferencesStatus",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Ожидание подтверждённых настроек сервиса",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "373": {
+          "type": "label",
+          "name": "cameraPreferencesHint",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "У комплекса достаточно любого включённого типа",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "374": {
+          "type": "checkBox",
+          "name": "cameraType_speed",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Контроль скорости",
+                "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": true,
+                "type": "Bool"
+              }
+            }
+          ]
+        },
+        "375": {
+          "type": "checkBox",
+          "name": "cameraType_average",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Средняя скорость",
+                "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": true,
+                "type": "Bool"
+              }
+            }
+          ]
+        },
+        "376": {
+          "type": "checkBox",
+          "name": "cameraType_redlight",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Контроль светофора",
+                "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": true,
+                "type": "Bool"
+              }
+            }
+          ]
+        },
+        "377": {
+          "type": "checkBox",
+          "name": "cameraType_stopline",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Стоп-линия",
+                "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": true,
+                "type": "Bool"
+              }
+            }
+          ]
+        },
+        "378": {
+          "type": "checkBox",
+          "name": "cameraType_belt",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Контроль ремня",
+                "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": true,
+                "type": "Bool"
+              }
+            }
+          ]
+        },
+        "379": {
+          "type": "checkBox",
+          "name": "cameraType_pedestrian",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Пешеходный переход",
+                "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": true,
+                "type": "Bool"
+              }
+            }
+          ]
+        },
+        "380": {
+          "type": "checkBox",
+          "name": "cameraType_lane",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Контроль полосы",
+                "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": true,
+                "type": "Bool"
+              }
+            }
+          ]
+        },
+        "381": {
+          "type": "checkBox",
+          "name": "cameraType_phone",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Контроль телефона",
+                "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": true,
+                "type": "Bool"
+              }
+            }
+          ]
+        },
+        "382": {
+          "type": "checkBox",
+          "name": "cameraType_signs_marking",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Знаки и разметка",
+                "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": true,
+                "type": "Bool"
+              }
+            }
+          ]
+        },
+        "383": {
+          "type": "checkBox",
+          "name": "cameraType_road_position",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Расположение ТС / обгон",
+                "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": true,
+                "type": "Bool"
+              }
+            }
+          ]
+        },
+        "384": {
+          "type": "checkBox",
+          "name": "cameraType_other",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Другие и неизвестные типы",
+                "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": true,
+                "type": "Bool"
+              }
+            }
+          ]
+        },
         "390": {
           "type": "label",
           "name": "cameraHeaderGeneral",

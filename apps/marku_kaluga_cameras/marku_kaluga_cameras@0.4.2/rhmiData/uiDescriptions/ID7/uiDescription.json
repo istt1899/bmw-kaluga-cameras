@@ -23,9 +23,9 @@
             }
           ]
         },
-        "92": {
+        "20": {
           "type": "label",
-          "name": "wocHeadGeneral",
+          "name": "wocStatus",
           "properties": {
             "Visible": {
               "value": 1,
@@ -39,51 +39,7 @@
           "rows": [
             {
               "Text": {
-                "value": "General",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "62": {
-          "type": "dropDownMenu",
-          "name": "wocShowOn",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "cells": {
-            "HeaderText": {
-              "value": "Show on",
-              "type": "Text"
-            },
-            "SelectedItem": {
-              "value": 0,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "ItemText": {
-                "value": "Cluster",
-                "type": "Text"
-              }
-            },
-            {
-              "ItemText": {
-                "value": "HUD (experimental)",
-                "type": "Text"
-              }
-            },
-            {
-              "ItemText": {
-                "value": "Cluster and HUD (experimental)",
+                "value": "Status: Connecting…",
                 "type": "Text"
               }
             }
@@ -106,6 +62,274 @@
             {
               "Text": {
                 "value": "Cluster map: Off",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "22": {
+          "type": "label",
+          "name": "wocAaStatus",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Status: Connecting…",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "23": {
+          "type": "button",
+          "name": "wocAaEnable",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Patch",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "24": {
+          "type": "button",
+          "name": "wocAaDisable",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Remove patch",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "25": {
+          "type": "button",
+          "name": "wocAaZoomOut",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Zoom out",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "26": {
+          "type": "button",
+          "name": "wocAaZoomIn",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Zoom in",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "27": {
+          "type": "checkBox",
+          "name": "wocAaCard",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Hide phone's turn card",
+                "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": false,
+                "type": "Bool"
+              }
+            }
+          ]
+        },
+        "28": {
+          "type": "label",
+          "name": "wocAaZoom",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Zoom: —",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "29": {
+          "type": "label",
+          "name": "wocWifi",
+          "properties": {
+            "Visible": {
+              "value": 0,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "30": {
+          "type": "label",
+          "name": "wocWifiHint",
+          "properties": {
+            "Visible": {
+              "value": 0,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "32": {
+          "type": "button",
+          "name": "wocEnable",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Patch",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "33": {
+          "type": "button",
+          "name": "wocDisable",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Remove patch",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "34": {
+          "type": "button",
+          "name": "wocRestart",
+          "properties": {
+            "Visible": {
+              "value": 0,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Restart head unit",
                 "type": "Text"
               }
             }
@@ -137,6 +361,28 @@
             }
           ]
         },
+        "36": {
+          "type": "label",
+          "name": "wocRestartStatus",
+          "properties": {
+            "Visible": {
+              "value": 0,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "",
+                "type": "Text"
+              }
+            }
+          ]
+        },
         "39": {
           "type": "button",
           "name": "wocLogs",
@@ -154,28 +400,6 @@
             {
               "Text": {
                 "value": "Logs",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "93": {
-          "type": "label",
-          "name": "wocHeadHud",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 0,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "HUD",
                 "type": "Text"
               }
             }
@@ -377,53 +601,9 @@
             }
           ]
         },
-        "90": {
-          "type": "label",
-          "name": "wocHeadCarPlay",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 0,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "CarPlay",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "20": {
-          "type": "label",
-          "name": "wocStatus",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 0,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Status: Connecting…",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "32": {
-          "type": "button",
-          "name": "wocEnable",
+        "62": {
+          "type": "dropDownMenu",
+          "name": "wocShowOn",
           "properties": {
             "Visible": {
               "value": 1,
@@ -434,300 +614,32 @@
               "type": "UInt"
             }
           },
-          "rows": [
-            {
-              "Text": {
-                "value": "Patch",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "33": {
-          "type": "button",
-          "name": "wocDisable",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
+          "cells": {
+            "HeaderText": {
+              "value": "Show on",
+              "type": "Text"
             },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Remove patch",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "29": {
-          "type": "label",
-          "name": "wocWifi",
-          "properties": {
-            "Visible": {
-              "value": 0,
-              "type": "UInt"
-            },
-            "Focusable": {
+            "SelectedItem": {
               "value": 0,
               "type": "UInt"
             }
           },
           "rows": [
             {
-              "Text": {
-                "value": "",
+              "ItemText": {
+                "value": "Cluster",
                 "type": "Text"
               }
-            }
-          ]
-        },
-        "30": {
-          "type": "label",
-          "name": "wocWifiHint",
-          "properties": {
-            "Visible": {
-              "value": 0,
-              "type": "UInt"
             },
-            "Focusable": {
-              "value": 0,
-              "type": "UInt"
-            }
-          },
-          "rows": [
             {
-              "Text": {
-                "value": "",
+              "ItemText": {
+                "value": "HUD (experimental)",
                 "type": "Text"
               }
-            }
-          ]
-        },
-        "91": {
-          "type": "label",
-          "name": "wocHeadAa",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
             },
-            "Focusable": {
-              "value": 0,
-              "type": "UInt"
-            }
-          },
-          "rows": [
             {
-              "Text": {
-                "value": "Android Auto",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "22": {
-          "type": "label",
-          "name": "wocAaStatus",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 0,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Status: Connecting…",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "23": {
-          "type": "button",
-          "name": "wocAaEnable",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Patch",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "24": {
-          "type": "button",
-          "name": "wocAaDisable",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Remove patch",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "28": {
-          "type": "label",
-          "name": "wocAaZoom",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 0,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Zoom: —",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "25": {
-          "type": "button",
-          "name": "wocAaZoomOut",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Zoom out",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "26": {
-          "type": "button",
-          "name": "wocAaZoomIn",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Zoom in",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "27": {
-          "type": "checkBox",
-          "name": "wocAaCard",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Hide phone's turn card",
-                "type": "Text"
-              },
-              "eParam_RowSelected": {
-                "value": false,
-                "type": "Bool"
-              }
-            }
-          ]
-        },
-        "34": {
-          "type": "button",
-          "name": "wocRestart",
-          "properties": {
-            "Visible": {
-              "value": 0,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Restart head unit",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "36": {
-          "type": "label",
-          "name": "wocRestartStatus",
-          "properties": {
-            "Visible": {
-              "value": 0,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 0,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "",
+              "ItemText": {
+                "value": "Cluster and HUD (experimental)",
                 "type": "Text"
               }
             }
@@ -800,6 +712,94 @@
               }
             }
           ]
+        },
+        "90": {
+          "type": "label",
+          "name": "wocHeadCarPlay",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "CarPlay",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "91": {
+          "type": "label",
+          "name": "wocHeadAa",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Android Auto",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "92": {
+          "type": "label",
+          "name": "wocHeadGeneral",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "General",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "93": {
+          "type": "label",
+          "name": "wocHeadHud",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "HUD",
+                "type": "Text"
+              }
+            }
+          ]
         }
       }
     },
@@ -813,24 +813,6 @@
         }
       },
       "components": {
-        "80": {
-          "type": "title",
-          "name": "wocLogsTitle",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "SID_WOC_LOGS",
-                "type": "StringId"
-              }
-            }
-          ]
-        },
         "37": {
           "type": "button",
           "name": "wocCapture",
@@ -871,6 +853,24 @@
               "Text": {
                 "value": "Capture: Unavailable",
                 "type": "Text"
+              }
+            }
+          ]
+        },
+        "80": {
+          "type": "title",
+          "name": "wocLogsTitle",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "SID_WOC_LOGS",
+                "type": "StringId"
               }
             }
           ]
@@ -1334,72 +1334,6 @@
             }
           ]
         },
-        "390": {
-          "type": "label",
-          "name": "cameraHeaderGeneral",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 0,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Общее",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "391": {
-          "type": "label",
-          "name": "cameraHeaderDisplay",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 0,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Отображение",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "392": {
-          "type": "label",
-          "name": "cameraHeaderData",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 0,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "База и диагностика",
-                "type": "Text"
-              }
-            }
-          ]
-        },
         "341": {
           "type": "label",
           "name": "cameraDescription",
@@ -1510,15 +1444,6 @@
             }
           ]
         },
-        "349": {
-          "type": "button",
-          "name": "cameraResultMore",
-          "properties": {
-            "Visible": { "value": 1, "type": "UInt" },
-            "Focusable": { "value": 3, "type": "UInt" }
-          },
-          "rows": [{ "Text": { "value": "Результат • показан полностью", "type": "Text" } }]
-        },
         "346": {
           "type": "label",
           "name": "cameraLimit",
@@ -1580,6 +1505,556 @@
             {
               "Text": {
                 "value": "Вернуть предыдущую базу",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "349": {
+          "type": "button",
+          "name": "cameraResultMore",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Результат • показан полностью",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "350": {
+          "type": "label",
+          "name": "cameraHeadCalibration",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Настройка предупреждения • на стоянке",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "351": {
+          "type": "dropDownMenu",
+          "name": "cameraCardTarget",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "cells": {
+            "HeaderText": {
+              "value": "Настраивать",
+              "type": "Text"
+            },
+            "SelectedItem": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "ItemText": {
+                "value": "HUD",
+                "type": "Text"
+              }
+            },
+            {
+              "ItemText": {
+                "value": "Приборы",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "352": {
+          "type": "label",
+          "name": "cameraCardStatus",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Тест скрыт • профиль HUD",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "353": {
+          "type": "button",
+          "name": "cameraTestStart",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Показать тест • до остановки",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "354": {
+          "type": "button",
+          "name": "cameraTestStop",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Скрыть тест",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "355": {
+          "type": "label",
+          "name": "cameraCardPosition",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Положение: ожидание профиля",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "356": {
+          "type": "button",
+          "name": "cameraCardUp",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "↑ Выше",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "357": {
+          "type": "button",
+          "name": "cameraCardDown",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "↓ Ниже",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "358": {
+          "type": "button",
+          "name": "cameraCardLeft",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "← Левее",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "359": {
+          "type": "button",
+          "name": "cameraCardRight",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Правее →",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "360": {
+          "type": "slider",
+          "name": "cameraCardScale",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "TextDescription": {
+                "value": "Размер предупреждения: 100 %",
+                "type": "Text"
+              },
+              "TextDescriptionVisible": {
+                "value": true,
+                "type": "Bool"
+              },
+              "MiddleIndicatorVisible": {
+                "value": false,
+                "type": "Bool"
+              },
+              "MinValue": {
+                "value": 0,
+                "type": "SInt"
+              },
+              "MaxValue": {
+                "value": 15,
+                "type": "SInt"
+              },
+              "NumberOfSteps": {
+                "value": 15,
+                "type": "SInt"
+              },
+              "Value": {
+                "value": 5,
+                "type": "SInt"
+              }
+            }
+          ]
+        },
+        "361": {
+          "type": "slider",
+          "name": "cameraCardBrightness",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "TextDescription": {
+                "value": "Яркость предупреждения: 100 %",
+                "type": "Text"
+              },
+              "TextDescriptionVisible": {
+                "value": true,
+                "type": "Bool"
+              },
+              "MiddleIndicatorVisible": {
+                "value": false,
+                "type": "Bool"
+              },
+              "MinValue": {
+                "value": 0,
+                "type": "SInt"
+              },
+              "MaxValue": {
+                "value": 18,
+                "type": "SInt"
+              },
+              "NumberOfSteps": {
+                "value": 18,
+                "type": "SInt"
+              },
+              "Value": {
+                "value": 18,
+                "type": "SInt"
+              }
+            }
+          ]
+        },
+        "362": {
+          "type": "slider",
+          "name": "cameraCardTransparency",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "TextDescription": {
+                "value": "Прозрачность предупреждения: 0 %",
+                "type": "Text"
+              },
+              "TextDescriptionVisible": {
+                "value": true,
+                "type": "Bool"
+              },
+              "MiddleIndicatorVisible": {
+                "value": false,
+                "type": "Bool"
+              },
+              "MinValue": {
+                "value": 0,
+                "type": "SInt"
+              },
+              "MaxValue": {
+                "value": 18,
+                "type": "SInt"
+              },
+              "NumberOfSteps": {
+                "value": 18,
+                "type": "SInt"
+              },
+              "Value": {
+                "value": 0,
+                "type": "SInt"
+              }
+            }
+          ]
+        },
+        "363": {
+          "type": "button",
+          "name": "cameraCardSave",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Готово • сохранить и скрыть тест",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "364": {
+          "type": "button",
+          "name": "cameraCardReset",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Сбросить настройки HUD",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "365": {
+          "type": "label",
+          "name": "cameraCardHint",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "HUD и приборы настраиваются и сохраняются отдельно",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "366": {
+          "type": "label",
+          "name": "cameraCardStorage",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Изменения сохраняются после подтверждения сервиса",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "390": {
+          "type": "label",
+          "name": "cameraHeaderGeneral",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Общее",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "391": {
+          "type": "label",
+          "name": "cameraHeaderDisplay",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Отображение",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "392": {
+          "type": "label",
+          "name": "cameraHeaderData",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "База и диагностика",
                 "type": "Text"
               }
             }
@@ -1923,6 +2398,28 @@
             }
           ]
         },
+        "490": {
+          "type": "button",
+          "name": "cameraDiagResultMore",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Результат • показан полностью",
+                "type": "Text"
+              }
+            }
+          ]
+        },
         "500": {
           "type": "label",
           "name": "cameraDiag_row1",
@@ -2120,15 +2617,6 @@
               }
             }
           ]
-        },
-        "490": {
-          "type": "button",
-          "name": "cameraDiagResultMore",
-          "properties": {
-            "Visible": { "value": 1, "type": "UInt" },
-            "Focusable": { "value": 3, "type": "UInt" }
-          },
-          "rows": [{ "Text": { "value": "Результат • показан полностью", "type": "Text" } }]
         },
         "509": {
           "type": "label",

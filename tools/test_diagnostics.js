@@ -27,10 +27,12 @@ async function main(){
   let rows=view.values(app.state(),'0.3.1',true);
   assert(rows.stamp.includes('Снимок зафиксирован'));assert(rows.position.includes('54.517580'));assert(rows.hud.includes('HUD_GUARD'));
   assert(view.KEYS.every(k=>typeof rows[k]==='string'));
-  app.state().displayTest.untilMs=Date.now()-1;app.tick();assert.strictEqual(app.state().displayTest.active,false);assert.strictEqual(shown,null);
+  assert.strictEqual(app.state().displayTest.pinned,true);
+  assert(rows.test.includes('закреплён'),'diagnostics describes the pinned preview rather than an expiry time');
+  app.command({cmd:'display-test-stop'});assert.strictEqual(app.state().displayTest.active,false);assert.strictEqual(shown,null);
   app.command({cmd:'display-test'});fix.speedKmh=2;app.tick();assert.strictEqual(app.state().displayTest.active,false);
   rows=view.values(null,'0.3.1',false);assert(rows.service.includes('нет связи'));
-  console.log('PASS diagnostic rows, exact GPS, renderer refusal; parked-only five-second TEST, no fake detection/settings change, expiry and movement cancellation');
+  console.log('PASS diagnostic rows, exact GPS, renderer refusal; parked-only pinned TEST, no fake detection/settings change, explicit stop and movement cancellation');
  }finally{if(app)app.close();fs.readdirSync(dir).forEach(n=>fs.unlinkSync(path.join(dir,n)));fs.rmdirSync(dir);}
 }
 main().catch(e=>{console.error(e.stack);process.exitCode=1;});

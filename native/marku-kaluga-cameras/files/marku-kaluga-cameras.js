@@ -3,6 +3,7 @@ var fs = require('fs'), net = require('net'), path = require('path');
 var GpsProvider = require('./gps-source').GpsProvider;
 var cameraInfo = require('./camera-info');
 var actionPolicy = require('./action-policy'), dataModule = require('./database-store');
+var cardLayout = require('./card-layout');
 var crypto = require('crypto');
 function validPosition(f, now) {
   return f && [f.timeMs, f.lat, f.lon, f.accuracyM, now].every(Number.isFinite) && Math.abs(f.lat) <= 90 &&
@@ -14,12 +15,13 @@ function mkdirp(dir) {
   try { fs.mkdirSync(dir); } catch (e) { if (e.code !== 'EEXIST' || !fs.statSync(dir).isDirectory()) throw e; }
 }
 function readSettings(file) {
-  var settings = { enabled: true, outputs: { cluster: false, hud: false }, hudOpacityPct: 100 };
+  var settings = { enabled: true, outputs: { cluster: false, hud: false }, hudOpacityPct: 100, cardLayout: cardLayout.defaultLayouts() };
   try {
     var p = JSON.parse(fs.readFileSync(file, 'utf8'));
     if (typeof p.enabled === 'boolean') settings.enabled = p.enabled;
     if (p.outputs) ['cluster', 'hud'].forEach(function (key) { if (typeof p.outputs[key] === 'boolean') settings.outputs[key] = p.outputs[key]; });
     if (Number.isInteger(p.hudOpacityPct) && p.hudOpacityPct >= 10 && p.hudOpacityPct <= 100) settings.hudOpacityPct = p.hudOpacityPct;
+    settings.cardLayout = cardLayout.normalizeLayouts(p.cardLayout);
   } catch (e) { if (e.code !== 'ENOENT') throw new Error('Cannot read settings: ' + e.message); }
   return settings;
 }
@@ -54,19 +56,20 @@ function start(options) {
   if (!inherited && socketPath.indexOf('\\\\.\\pipe\\') !== 0) mkdirp(path.dirname(socketPath));
   var settingsPath = path.join(dataDir, 'settings.json'), settings;
   try { settings = readSettings(settingsPath); }
-  catch (e) { storageError = e.message; settings = { enabled: true, outputs: { cluster: false, hud: false }, hudOpacityPct: 100 }; }
-  var state = { serviceVersion: '0.4.1', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
+  catch (e) { storageError = e.message; settings = { enabled: true, outputs: { cluster: false, hud: false }, hudOpacityPct: 100, cardLayout: cardLayout.defaultLayouts() }; }
+  var state = { serviceVersion: '0.4.2', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
+    cardLayout: settings.cardLayout,
     street: { name: null, source: 'BMW', state: 'unavailable', reason: 'Название улицы BMW ещё не получено', observedAtMs: null },
     audio: { available: false, reason: 'Безопасный звуковой канал BMW не подтверждён' },
     commandResult: null, actions: {}, databaseUpdate: { phase: 'idle', busy: false }, nearestCandidates: [],
     hudDimming: 'unavailable', capabilities: { outputs: false, update: false, hudOpacity: false, displayTest: false },
-    rendererDetails: {}, displayTest: { active: false, untilMs: 0 },
+    rendererDetails: {}, displayTest: { active: false, pinned: false, target: null, calibration: false, untilMs: 0 },
     gps: 'Ожидание моста GPS BMW', gpsFix: null,
     gpsBridge: { state: 'stopped', errorCode: null, ageMs: null },
     gpsInput: { source: 'bmw-nmea', packets: 0, badPackets: 0, checksumErrors: 0, sentences: { RMC: 0, GGA: 0, GST: 0 }, lastPacketAgeMs: null, fixUtcAgeMs: null },
     database: { state: 'error', source: 'OpenStreetMap', count: 0, error: null },
     renderer: 'off', alert: null, nearest: null, error: null, diagnostic: 'No confirmed road; nearby points are diagnostic only',
-    storage: { persistent: !storageError, error: storageError } };
+    storage: { persistent: !storageError, settingsSaved: false, error: storageError } };
   var database = null, guidance = null, display = null, dimmer = null, store = null, audio = null, commandCounter = 0, clients = [], lastStatus = '', closed = false, ownsSocket = false, server;
   try {
     database = loadDatabase(options.database || path.join(__dirname, 'kaluga-speed.json'));
@@ -149,12 +152,41 @@ function start(options) {
     var tmp = settingsPath + '.tmp';
     try {
       fs.writeFileSync(tmp, JSON.stringify(next), { mode: 0o600 });
-      fs.renameSync(tmp, settingsPath); state.storage = { persistent: true, error: null };
+      fs.renameSync(tmp, settingsPath); state.storage = { persistent: true, settingsSaved: true, error: null };
     } catch (e) {
-      state.storage = { persistent: false, error: e.code || e.message };
+      state.storage = { persistent: false, settingsSaved: false, error: e.code || e.message };
       try { fs.unlinkSync(tmp); } catch (ignored) {}
     }
-    settings = next; state.enabled = settings.enabled; state.outputs = settings.outputs; state.hudOpacityPct = settings.hudOpacityPct;
+    settings = next; state.enabled = settings.enabled; state.outputs = settings.outputs; state.hudOpacityPct = settings.hudOpacityPct; state.cardLayout = settings.cardLayout;
+  }
+  function nextSettings() { return { enabled: settings.enabled, outputs: Object.assign({}, settings.outputs), hudOpacityPct: settings.hudOpacityPct, cardLayout: cardLayout.normalizeLayouts(settings.cardLayout) }; }
+  function testTargetEnabled(target) { return target === 'hud' ? settings.outputs.hud : target === 'map' ? settings.outputs.cluster : settings.outputs.hud || settings.outputs.cluster; }
+  function stopDisplayTest(reason) {
+    state.displayTest.active = false; state.displayTest.pinned = false; state.displayTest.untilMs = 0;
+    state.displayTest.stoppedReason = reason;
+  }
+  function movedProfile(target, direction) {
+    if (['up', 'down', 'left', 'right'].indexOf(direction) < 0) throw new Error('Выберите направление перемещения карточки');
+    // Read the current renderer session before moving; the periodic snapshot
+    // may predate a socket disconnect or a changed runtime canvas.
+    tick();
+    var policy = actionPolicy.policies(state, gps.current(Date.now()), Date.now()).cardMove;
+    if (!policy.allowed) throw new Error(policy.reason);
+    if (state.displayTest.target && state.displayTest.target !== target) throw new Error('Включите тест того экрана, который перемещаете');
+    var detail = state.rendererDetails[target], layout = detail && detail.layout, canvas = layout && layout.canvas, card = layout && layout.card;
+    var range = layout && layout.positionRange;
+    if (!layout || layout.withinBounds !== true || !canvas || !card || !range || ![canvas.width, canvas.height, card.x, card.y, card.width, card.height, range.minX, range.maxX, range.minY, range.maxY].every(Number.isFinite) ||
+      canvas.width <= 0 || canvas.height <= 0 || card.width <= 0 || card.height <= 0 || range.minX < 0 || range.minY < 0 || range.maxX < range.minX || range.maxY < range.minY ||
+      range.maxX + card.width > canvas.width || range.maxY + card.height > canvas.height) throw new Error('Размеры и границы вывода ещё не получены: включите тест выбранного экрана');
+    if (JSON.stringify(cardLayout.validateProfile(layout.settings)) !== JSON.stringify(cardLayout.validateProfile(settings.cardLayout[target]))) throw new Error('Дождитесь подтверждения текущих настроек карточки');
+    var horizontal = direction === 'left' || direction === 'right', min = horizontal ? range.minX : range.minY, max = horizontal ? range.maxX : range.maxY;
+    if (max <= min) throw new Error('Для перемещения карточки нет свободного места');
+    var pixel = horizontal ? card.x : card.y;
+    if (pixel < min || pixel > max) throw new Error('Положение карточки вне подтверждённых границ');
+    pixel = Math.max(min, Math.min(max, pixel + (direction === 'left' || direction === 'up' ? -10 : 10)));
+    var next = Object.assign({}, settings.cardLayout[target]);
+    next[horizontal ? 'x' : 'y'] = Math.round((pixel - min) * 1000 / (max - min));
+    return cardLayout.validateProfile(next);
   }
   function tick() {
     if(closed)return;
@@ -184,18 +216,21 @@ function start(options) {
     state.observedAtMs = now;
     state.alert = alert ? Object.assign({}, alert, { limit: alert.limitKmh, distance: Math.round(alert.distanceM), stage: alert.stage || (alert.roadConfirmed ? 'approach' : 'nearby') }) : null;
     if (state.alert) { state.alert.speedKmh = fix.speedKmh; state.alert.overspeed = !!state.alert.roadConfirmed && Number.isFinite(state.alert.limitKmh) && fix.speedKmh > state.alert.limitKmh; }
-    state.displayTest.active = state.displayTest.untilMs > now && state.actions.displayTest.allowed;
-    if (!state.displayTest.active) state.displayTest.untilMs = 0;
+    if (state.displayTest.active && (!state.actions.displayTest.allowed || !testTargetEnabled(state.displayTest.target))) stopDisplayTest(!state.actions.displayTest.allowed ? state.actions.displayTest.code : 'OUTPUTS_OFF');
     var displayAlert = state.displayTest.active ? { id: '__display_test__', test: true, title: 'ТЕСТ УВЕДОМЛЕНИЯ',
       description: 'Проверка приборов и HUD', controls: ['redlight','speed'], distanceM: 150, roadConfirmed: true, limitKmh: 60, speedKmh: fix && fix.speedKmh, confidence: 'test', calibration: !!state.displayTest.calibration } : state.alert;
     if (display) {
-      try { display.update(displayAlert, settings.outputs); state.renderer = display.status();
+      var displayOutputs = state.displayTest.active && state.displayTest.target ? {
+        cluster: state.displayTest.target === 'map' && settings.outputs.cluster, hud: state.displayTest.target === 'hud' && settings.outputs.hud
+      } : settings.outputs;
+      try { display.update(displayAlert, displayOutputs, settings.cardLayout); state.renderer = display.status();
         state.rendererDetails = typeof display.diagnostics === 'function' ? display.diagnostics() : {}; }
       catch (e) { state.renderer = 'error: ' + e.message; state.error = 'Display: ' + e.message; }
     }
     if (state.commandResult && ['display-test','calibration-test'].indexOf(state.commandResult.command) >= 0 && state.commandResult.phase === 'requested') {
       var details = state.rendererDetails || {}, results = [], completed = true, failed = false;
       [['map',settings.outputs.cluster],['hud',settings.outputs.hud]].forEach(function(pair) {
+        if(state.displayTest.target && pair[0] !== state.displayTest.target)return;
         if(!pair[1])return;
         var item = details[pair[0]], label = pair[0] === 'map' ? 'Приборы' : 'HUD';
         var shown = item && item.state === 'shown';
@@ -222,12 +257,20 @@ function start(options) {
     if(closed)throw new Error('Сервис завершает работу');
     if (!msg || typeof msg.cmd !== 'string') throw new Error('Invalid command');
     if (msg.cmd === 'status') return;
+    if (msg.cmd === 'display-test-stop') {
+      stopDisplayTest('USER_STOP'); save(nextSettings()); tick();
+      commandResult(msg.cmd, 'finished', state.storage.settingsSaved ? 'Тест скрыт; настройки сохранены' : 'Тест скрыт; настройки действуют временно: хранилище недоступно', state.commandResult.id);
+      return;
+    }
     if (msg.cmd === 'display-test' || msg.cmd === 'calibration-test') {
       state.actions = actionPolicy.policies(state, gps.current(Date.now()), Date.now());
       var policy = state.actions[msg.cmd === 'display-test' ? 'displayTest' : 'calibrationTest'];
       if(!policy.allowed)throw new Error(policy.reason);
+      var target = msg.target === undefined ? null : cardLayout.validateTarget(msg.target);
+      if(!testTargetEnabled(target))throw new Error('Для теста включите выбранный экран');
       state.displayTest.calibration = msg.cmd === 'calibration-test';
-      state.displayTest.untilMs = Date.now() + 5000; tick(); return;
+      state.displayTest.active = true; state.displayTest.pinned = true; state.displayTest.target = target; state.displayTest.stoppedReason = null;
+      state.displayTest.untilMs = 0; tick(); return;
     }
     if (msg.cmd === 'database-check' || msg.cmd === 'database-rollback') {
       tick(); var dataPolicy = state.actions[msg.cmd === 'database-check' ? 'databaseCheck' : 'databaseRollback'];
@@ -266,16 +309,29 @@ function start(options) {
       if (typeof gps.setBridgeStatus !== 'function') throw new Error('GPS_BRIDGE_UNAVAILABLE');
       gps.setBridgeStatus(msg.state, msg.errorCode); tick(); return;
     }
-    var next = { enabled: settings.enabled, outputs: Object.assign({}, settings.outputs), hudOpacityPct: settings.hudOpacityPct };
+    var next = nextSettings();
     if (msg.cmd === 'enable' || msg.cmd === 'disable') next.enabled = msg.cmd === 'enable';
     else if (msg.cmd === 'outputs') {
       if (!state.capabilities.outputs) throw new Error('Display unavailable');
       if (typeof msg.cluster !== 'boolean' || typeof msg.hud !== 'boolean') throw new Error('outputs requires cluster and hud booleans');
+      if (state.displayTest.active && ((!msg.cluster && settings.outputs.cluster && state.displayTest.target !== 'hud') || (!msg.hud && settings.outputs.hud && state.displayTest.target !== 'map'))) stopDisplayTest('OUTPUTS_OFF');
       next.outputs = { cluster: msg.cluster, hud: msg.hud };
     } else if (msg.cmd === 'hud-opacity') {
       if (!state.capabilities.hudOpacity) throw new Error('HUD opacity unavailable');
       if (!Number.isInteger(msg.percent) || msg.percent < 10 || msg.percent > 100) throw new Error('HUD opacity requires an integer from 10 to 100');
       next.hudOpacityPct = msg.percent;
+    } else if (['card-layout','card-layout-reset','card-move'].indexOf(msg.cmd) >= 0) {
+      var cardPolicy = actionPolicy.policies(state, gps.current(Date.now()), Date.now()).cardLayout;
+      if(!cardPolicy.allowed)throw new Error(cardPolicy.reason);
+      var cardTarget = cardLayout.validateTarget(msg.target);
+      if (msg.cmd === 'card-layout-reset') next.cardLayout[cardTarget] = cardLayout.defaultLayouts()[cardTarget];
+      else if (msg.cmd === 'card-move') next.cardLayout[cardTarget] = movedProfile(cardTarget, msg.direction);
+      else {
+        var partial = {};
+        ['x','y','scalePct','brightnessPct','opacityPct'].forEach(function (key) { if (Object.prototype.hasOwnProperty.call(msg, key)) partial[key] = msg[key]; });
+        partial = cardLayout.validateProfile(partial, true);
+        next.cardLayout[cardTarget] = cardLayout.validateProfile(Object.assign({}, next.cardLayout[cardTarget], partial));
+      }
     } else if (msg.cmd === 'update') throw new Error('Используйте команду database-check для независимого обновления базы');
     else throw new Error('Unsupported command');
     save(next); state.error = null; tick();
@@ -287,7 +343,7 @@ function start(options) {
     try {
       var answer=execute(msg);
       if(userCommand && state.commandResult.phase==='requested' && ['display-test','calibration-test','database-check','database-rollback','audio-test'].indexOf(msg.cmd)<0)
-        commandResult(msg.cmd,'finished','Настройка применена',state.commandResult.id);
+        commandResult(msg.cmd,'finished',state.storage.settingsSaved === false && ['card-layout','card-layout-reset','card-move'].indexOf(msg.cmd) >= 0 ? 'Настройка действует временно: хранилище недоступно' : 'Настройка применена',state.commandResult.id);
       if(userCommand)broadcast(true);return answer;
     } catch(error) { if(userCommand){commandResult(msg.cmd,'error',error.message,state.commandResult.id);broadcast(true);}throw error; }
   }
@@ -349,7 +405,7 @@ function start(options) {
   try { gps.start(); } catch (e) { state.error = 'GPS start: ' + e.message; }
   var timer = setInterval(tick, 500); tick();
   function close() {
-    if (closed) return; closed = true; clearInterval(timer); gps.close(); if (display) display.close(); if (dimmer) dimmer.close(); if(store)store.close(); if(audio)audio.close();
+    if (closed) return; stopDisplayTest('SERVICE_CLOSED'); closed = true; clearInterval(timer); gps.close(); if (display) display.close(); if (dimmer) dimmer.close(); if(store)store.close(); if(audio)audio.close();
     if(typeof gps.removeListener==='function'){gps.removeListener('fix',tick);gps.removeListener('status',onGpsStatus);}
     clients.forEach(function (c) { c.destroy(); }); try { server.close(); } catch (e) {}
     if (ownsSocket) { try { fs.unlinkSync(socketPath); } catch (e) {} }

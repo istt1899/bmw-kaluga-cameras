@@ -78,7 +78,10 @@ const SOCKETS = { [RENDER_PATH]: RSOCK, [PATCH_PATH]: PSOCK, [LOGS_PATH]: LSOCK,
 const cameraPeers = new Set(), cameraCommands = [];
 let cameraState = { enabled: true, capabilities: { outputs: true, hudOpacity: true }, hudOpacityPct: 100,
     actions:{displayTest:{allowed:true},calibrationTest:{allowed:true},audioTest:{allowed:false,reason:'Нет проверенного аудиоканала'},
-        databaseCheck:{allowed:true},databaseRollback:{allowed:false,reason:'Нет предыдущей базы'}},
+        databaseCheck:{allowed:true},databaseRollback:{allowed:false,reason:'Нет предыдущей базы'},
+        displayTestStop:{allowed:true},cardLayout:{allowed:true},cardMove:{allowed:true}},
+    cardLayout:{hud:{x:500,y:820,scalePct:100,brightnessPct:100,opacityPct:100},
+        map:{x:500,y:880,scalePct:100,brightnessPct:100,opacityPct:100}},storage:{persistent:true,settingsSaved:false},
     outputs: { cluster: false, hud: false }, database: { source: 'OpenStreetMap', count: 150, updated: '2026-11-05T00:00:00Z' } };
 const cameraReply = () => cameraPeers.forEach((s) => s.write(JSON.stringify({ ev: 'status', state: cameraState }) + '\n'));
 const cameraServer = net.createServer((s) => {
@@ -353,6 +356,26 @@ async function main() {
         .slice(0, 4), ['Start capture', 'Capture: Unavailable', 'Save logs', 'Saved logs: Connecting…']);
     console.log('ok   the Logs page: Start capture and its row, Save logs and its row, QR code, address, five archives; a child of the main page');
 
+    const cameraPage=UI.containers['3'], cameraRows=xmlIds('3'), cameraXml=XML.split('<container id="3"')[1].split('<container id="4"')[0];
+    assert.deepStrictEqual(cameraRows.map(([id,type])=>`${id} ${type}`).sort(),
+        Object.entries(cameraPage.components).map(([id,d])=>`${id} ${d.type}`).sort(),'camera XML and JSON agree');
+    const calibrationNames=['cameraHeadCalibration','cameraCardTarget','cameraTestStart','cameraTestStop','cameraCardStatus','cameraCardPosition',
+        'cameraCardUp','cameraCardDown','cameraCardLeft','cameraCardRight','cameraCardScale','cameraCardBrightness','cameraCardTransparency',
+        'cameraCardSave','cameraCardReset','cameraCardHint','cameraCardStorage'];
+    const cameraOrder=cameraRows.map(([id])=>cameraPage.components[id].name), calibrationAt=cameraOrder.indexOf('cameraHeadCalibration');
+    assert.deepStrictEqual(cameraOrder.slice(calibrationAt,calibrationAt+calibrationNames.length),calibrationNames);
+    assert.strictEqual(cameraOrder[calibrationAt-1],'cameraHud','calibration controls immediately follow output toggles on the first camera page');
+    calibrationNames.forEach(name=>{
+        const id=Object.keys(cameraPage.components).find(key=>cameraPage.components[key].name===name),d=cameraPage.components[id],focus=name==='cameraHeadCalibration'?0:3;
+        assert.strictEqual(d.properties.Focusable.value,focus);
+        assert(new RegExp('<component id="'+id+'"[^>]*><property id="2" value="1"/><property id="3" value="'+focus+'"/>').test(cameraXml));
+    });
+    [['360',15,5],['361',18,18],['362',18,0]].forEach(([id,steps,value])=>{
+        const row=cameraPage.components[id].rows[0];
+        assert.deepStrictEqual([row.MinValue.value,row.MaxValue.value,row.NumberOfSteps.value,row.Value.value],[0,steps,steps,value]);
+    });
+    console.log('ok   first camera page contains target, pinned test, position, controller arrows and independent size/brightness/transparency sliders');
+
     const diagnosticPage = UI.containers['4'];
     const diagnosticRows = xmlIds('4');
     assert.deepStrictEqual(diagnosticRows.map(([id, type]) => `${id} ${type}`).sort(),
@@ -388,6 +411,7 @@ async function main() {
         rendererDetails:{connection:'ready',versionReported:false,backend:'mapped',protocol:'cluster-render',map:{state:'visible',layout:{backend:'mapped',canvas:{width:1088,height:480},
             card:{x:700,y:340,width:280,height:96,scale:.875},withinBounds:true,profile:'compact',safeArea:{known:false}}},
             hud:{state:'отказ',reason:'TARGET_NOT_AVAILABLE',layout:{canvas:null,card:null,safeArea:{known:false}}}},
+        cardLayout:{hud:{x:500,y:820,scalePct:125,brightnessPct:40,opacityPct:30},map:{x:450,y:880,scalePct:100,brightnessPct:95,opacityPct:100}},
         database:{sha256:'a'.repeat(64),source:'OpenStreetMap'},actions:{displayTest:{allowed:true}},
         databaseUpdate:{phase:'recovered-from-previous',recovery:{source:'previous',reasonCode:'LOCAL_DATA_JSON',
             originalVersion:'2026.1.3',recoveredVersion:'2026.1.2'},durability:{mode:'rename',directorySynced:false,reasonCode:'DIRECTORY_FSYNC_UNAVAILABLE'}},
@@ -407,6 +431,7 @@ async function main() {
     }
     assert(allPages[4].includes('1088×480')&&allPages[4].includes('масштаб 0.875'));
     assert(allPages[4].includes('hud: неизвестно×неизвестно')&&allPages[4].includes('не подтверждена'));
+    assert(allPages[4].replace(/\n/g,' ').includes('HUD профиль: X/Y 500/820 • размер 125 % • яркость 40 % • прозрачность 70 %'));
     assert(allPages[3].includes('TARGET_NOT_AVAILABLE'));
     assert(allPages[3].replace(/\n/g,' ').includes('версия renderer не сообщается протоколом'));
     assert(allPages[3].includes('Соединение renderer: ready'));
@@ -489,6 +514,82 @@ async function main() {
             rmcGgaDeltaMs:-250,ggaGstDeltaMs:0,pairReason:'READY',lastRmcAgeMs:110,lastGgaAgeMs:200,lastGstAgeMs:200}};
         cameraState.nearest = {id:'osm:node:11980400006',title:'Светофор и скорость',description:'Спектр-Поток CCR0047',distanceM:30};
         cameraReply();
+        {
+        const lastCommand=(name,after)=>cameraCommands.slice(after||0).filter(m=>m.cmd===name).slice(-1)[0];
+        let calibrationResultId=100;
+        const confirmCommand=(command,message)=>{
+            cameraState.commandResult={id:++calibrationResultId,requestId:command.requestId,command:command.cmd,phase:'finished',message};
+            ['hud','map'].forEach(target=>{cameraState.rendererDetails[target].layout.settings=Object.assign({},cameraState.cardLayout[target]);});
+            cameraReply();
+        };
+        cameraState.rendererDetails={connection:'ready',hud:{state:'visible',layout:{canvas:{width:640,height:240},withinBounds:true,settings:Object.assign({},cameraState.cardLayout.hud)}},
+            map:{state:'visible',layout:{canvas:{width:1088,height:480},withinBounds:true,settings:Object.assign({},cameraState.cardLayout.map)}}};
+        cameraReply();
+        await until('camera calibration uses HUD profile',()=>byName.cameraCardTarget.shown()==='Настраивать: HUD'&&byName.cameraCardScale.cells['0:Value']===5&&
+            OnlineApp.instance._cameras.state.outputs.hud===true);
+        assert.strictEqual(byName.cameraCardUp.enabled,false,'moving a notification requires an active preview');
+        let before=cameraCommands.length;
+        byName.cameraTestStart.emit('action');
+        await until('HUD pinned preview request',()=>!!lastCommand('display-test',before));
+        let command=lastCommand('display-test',before);assert.strictEqual(command.target,'hud');
+        cameraState.displayTest={active:true,pinned:true,target:'hud',untilMs:0};confirmCommand(command,'Тест закреплён на HUD до завершения');
+        await until('HUD preview confirmed',()=>byName.cameraCardStatus.text.includes('HUD • закреплён')&&byName.cameraCardUp.enabled===true);
+        before=cameraCommands.length;byName.cameraCardScale.turn(1);
+        await until('notification scale request',()=>!!lastCommand('card-layout',before));
+        command=lastCommand('card-layout',before);assert.strictEqual(command.target,'hud');assert.strictEqual(command.scalePct,105);
+        await until('unconfirmed notification scale returns',()=>byName.cameraCardScale.cells['0:Value']===5);
+        cameraState.cardLayout.hud.scalePct=105;confirmCommand(command,'Размер сохранён');
+        await until('confirmed notification scale',()=>byName.cameraCardScale.cells['0:Value']===6);
+        before=cameraCommands.length;byName.cameraCardBrightness.turn(-1);
+        await until('notification brightness request',()=>!!lastCommand('card-layout',before));
+        command=lastCommand('card-layout',before);assert.strictEqual(command.brightnessPct,95);assert.strictEqual(command.target,'hud');
+        cameraState.cardLayout.hud.brightnessPct=95;confirmCommand(command,'Яркость сохранена');
+        await until('confirmed notification brightness',()=>byName.cameraCardBrightness.cells['0:Value']===17);
+        before=cameraCommands.length;byName.cameraCardTransparency.turn(1);
+        await until('notification transparency request',()=>!!lastCommand('card-layout',before));
+        command=lastCommand('card-layout',before);assert.strictEqual(command.opacityPct,95);assert.strictEqual(command.target,'hud');
+        cameraState.cardLayout.hud.opacityPct=95;confirmCommand(command,'Прозрачность сохранена');
+        await until('confirmed notification transparency',()=>byName.cameraCardTransparency.cells['0:Value']===1);
+        assert.strictEqual(cameraState.hudOpacityPct,95,'notification appearance does not change original HUD map opacity');
+        assert.deepStrictEqual(cameraState.cardLayout.map,{x:500,y:880,scalePct:100,brightnessPct:100,opacityPct:100});
+        before=cameraCommands.length;byName.cameraCardTarget.pick(1);
+        await until('active preview moves only to selected cluster target',()=>!!lastCommand('display-test',before));
+        command=lastCommand('display-test',before);assert.strictEqual(command.target,'map');
+        cameraState.displayTest.target='map';confirmCommand(command,'Тест закреплён на приборах');
+        await until('cluster profile independently selected',()=>byName.cameraCardTarget.shown()==='Настраивать: Приборы'&&
+            byName.cameraCardScale.cells['0:Value']===5&&byName.cameraCardBrightness.cells['0:Value']===18&&byName.cameraCardTransparency.cells['0:Value']===0&&
+            byName.cameraCardLeft.enabled===true);
+        before=cameraCommands.length;byName.cameraCardLeft.emit('action');
+        await until('selected notification movement request',()=>!!lastCommand('card-move',before));
+        command=lastCommand('card-move',before);assert.strictEqual(command.target,'map');assert.strictEqual(command.direction,'left');
+        cameraState.cardLayout.map.x=490;confirmCommand(command,'Положение сохранено');
+        await until('confirmed notification position',()=>byName.cameraCardPosition.text.includes('X 49.0 %'));
+        cameraState.outputs.hud=false;cameraReply();await sleep(20);
+        before=cameraCommands.length;OnlineApp.instance._lastPress={};byName.cameraCardTarget.pick(0);
+        await until('disabled selected output stops old preview',()=>!!lastCommand('display-test-stop',before));
+        command=lastCommand('display-test-stop',before);cameraState.displayTest.active=false;confirmCommand(command,'Тест скрыт; настройки сохранены');
+        await until('disabled output explains next action',()=>byName.cameraCardStatus.text.includes('HUD выключена'));
+        assert(!cameraCommands.slice(before).some(m=>m.cmd==='display-test'),'selecting a disabled output does not preview or silently enable it');
+        cameraState.outputs.hud=true;cameraState.actions.cardLayout={allowed:false,reason:'Настройка только на стоянке'};
+        cameraState.actions.cardMove={allowed:false,reason:'Настройка только на стоянке'};cameraReply();
+        await until('motion guard disables calibration sliders',()=>byName.cameraCardScale.enabled===false&&byName.cameraCardStorage.text.includes('на стоянке'));
+        assert.strictEqual(byName.cameraTestStop.enabled,true,'stop remains reachable when motion invalidates adjustment');
+        before=cameraCommands.length;byName.cameraCardSave.emit('action');
+        await until('finish requests native save and stop',()=>!!lastCommand('display-test-stop',before));
+        command=lastCommand('display-test-stop',before);
+        assert(!OnlineApp.instance._cameraFeedback.message.includes('сохранены'),'save never claims persistence before native confirmation');
+        cameraState.storage.settingsSaved=true;confirmCommand(command,'Тест скрыт; настройки сохранены');
+        await until('save confirms native persistence',()=>OnlineApp.instance._cameraFeedback.message.includes('настройки сохранены'));
+        cameraState.actions.cardLayout={allowed:true};cameraState.actions.cardMove={allowed:true};cameraReply();
+        await until('stationary calibration controls return',()=>byName.cameraCardScale.enabled===true&&byName.cameraCardStorage.text.includes('сохранены в автомобиле'));
+        before=cameraCommands.length;byName.cameraCardReset.emit('action');
+        await until('reset applies to selected target only',()=>!!lastCommand('card-layout-reset',before));
+        command=lastCommand('card-layout-reset',before);assert.strictEqual(command.target,'hud');
+        cameraState.cardLayout.hud={x:500,y:820,scalePct:100,brightnessPct:100,opacityPct:100};confirmCommand(command,'Настройки HUD сброшены');
+        await until('HUD default profile confirmed',()=>byName.cameraCardScale.cells['0:Value']===5&&byName.cameraCardBrightness.cells['0:Value']===18);
+        assert.strictEqual(cameraState.cardLayout.map.x,490,'resetting HUD does not reset the cluster profile');
+        console.log('ok   first-page pinned preview targets, confirmed sliders, independent profiles, native movement, safe stop/save/reset and disabled-output switching');
+        }
         byName.cameraDiagnostics.emit('action');
         await until('dedicated diagnostics opens', () => rhmi.opened.includes('ST_OnlineApps_WazeStrelkaDiagnostics'));
         byName.ST_OnlineApps_WazeStrelkaCameras.emit('visible',{visible:false});

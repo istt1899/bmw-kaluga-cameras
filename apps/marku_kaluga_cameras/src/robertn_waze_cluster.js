@@ -109,6 +109,12 @@ const DIAG_NAMES = cameraDiagnostics.PAGE_KEYS.map(k => 'cameraDiag_' + k).conca
 const CAMERA_NAMES = ['cameraStatus', 'cameraAlert', 'cameraDatabase', 'cameraDate', 'cameraGps',
     'cameraEnable', 'cameraCluster', 'cameraHud', 'cameraUpdate', 'cameraRollback', 'cameraDiagnostics', 'cameraInfo', 'cameraDescription',
     'cameraMotion','cameraStreet','cameraCommand','cameraCommandMore','cameraLimit','cameraDirection','cameraResultMore'];
+const CARD_MOVE_NAMES = {up:'cameraCardUp',down:'cameraCardDown',left:'cameraCardLeft',right:'cameraCardRight'};
+const CARD_SLIDERS = {cameraCardScale:{key:'scalePct',min:75,max:150,label:'Размер предупреждения'},
+    cameraCardBrightness:{key:'brightnessPct',min:10,max:100,label:'Яркость предупреждения'},
+    cameraCardTransparency:{key:'opacityPct',min:0,max:90,label:'Прозрачность предупреждения',inverse:true}};
+const CARD_NAMES = ['cameraHeadCalibration','cameraCardTarget','cameraCardStatus','cameraCardPosition','cameraCardHint','cameraCardStorage',
+    'cameraTestStart','cameraTestStop','cameraCardSave','cameraCardReset'].concat(Object.values(CARD_MOVE_NAMES),Object.keys(CARD_SLIDERS));
 const LOGS_ROW_NAMES = Array.from({ length: LOGS_ROWS }, (_, i) => `wocLogsRow${i + 1}`);
 const ROW_CHARS = 90;
 const PRESS_DEDUPE_MS = 400;
@@ -147,6 +153,7 @@ class WazeClusterApp extends OnlineApp {
         this._cameraPending = null; this._cameraCommandSequence = 0;
         this._cameraClientId = 'strelka-'+Date.now().toString(36)+'-'+process.pid.toString(36)+'-'+(++cameraClientSequence).toString(36);
         this._cameraResultBlock = 0; this._cameraResultText = null;
+        this._cameraCardTarget = 'hud'; this._cameraCardSelectionReason = null;
         this._shownPage = 'main';   /* the page last shown, which shows again when the app does */
         this._hideTimer = null;
         this._qr = { url: undefined, file: null, chain: Promise.resolve() };
@@ -237,7 +244,7 @@ class WazeClusterApp extends OnlineApp {
             AA_ENABLE_NAME, AA_DISABLE_NAME, AA_ZOOM_NAME, AA_ZOOM_OUT_NAME, AA_ZOOM_IN_NAME, AA_CARD_NAME, RESTART_NAME, GUIDE_NAME,
             HEAD_GENERAL_NAME, HEAD_HUD_NAME, SHOW_ON_NAME, HUD_NAME, HUD_SIZE_NAME, HUD_OPACITY_NAME, HUD_POS_NAME]
             .concat(Object.values(HUD_MOVE_NAMES), [HUD_CENTRE_NAME, CAPTURE_NAME, CAPTURE_STATUS,
-                LOGS_NAME, LOGS_SAVE, LOGS_STATUS, LOGS_QR, LOGS_URL, CAMERA_LINK], LOGS_ROW_NAMES, CAMERA_NAMES, DIAG_NAMES);
+                LOGS_NAME, LOGS_SAVE, LOGS_STATUS, LOGS_QR, LOGS_URL, CAMERA_LINK], LOGS_ROW_NAMES, CAMERA_NAMES, DIAG_NAMES, CARD_NAMES);
         names.forEach((name) => { this._components[name] = rhmi.getByName(name); });
         const missing = names.filter((name) => !this._components[name]);
         if (missing.length) {
@@ -301,6 +308,42 @@ class WazeClusterApp extends OnlineApp {
         this._bind('cameraHud', () => this._cameraCommand(cameraView.outputCommand(this._cameras.state, 'hud')));
         this._bind('cameraResultMore', () => this._nextCameraResult());
         this._bind('cameraDiagResultMore', () => this._nextCameraResult());
+        this._components.cameraCardTarget.on('action',(event)=>this._press('cameraCardTarget',()=>{
+            const target=['hud','map'][event&&event.row];
+            if(!target)return;
+            const active=!!((this._cameras.state||{}).displayTest||{}).active;
+            this._cameraCardTarget=target; this._cameraCardSelectionReason=null;
+            delete this._written['cell:cameraCardTarget:SelectedItem'];
+            if(active){
+                const allowed=this._cameraTestGuard();
+                if(allowed.allowed)this._cameraAction('displayTest','display-test',{target});
+                else {
+                    this._cameraCardSelectionReason=allowed.reason;
+                    this._cameraAction('displayTestStop','display-test-stop',{target});
+                }
+            }
+            this._renderCameras();
+        }));
+        this._bind('cameraTestStart',()=>this._startCameraTest(false));
+        this._bind('cameraTestStop',()=>this._cameraAction('displayTestStop','display-test-stop',{target:this._cameraCardTarget}));
+        this._bind('cameraCardSave',()=>this._cameraAction('displayTestStop','display-test-stop',{target:this._cameraCardTarget}));
+        this._bind('cameraCardReset',()=>this._cameraAction('cardLayout','card-layout-reset',{target:this._cameraCardTarget}));
+        Object.keys(CARD_MOVE_NAMES).forEach(direction=>this._bind(CARD_MOVE_NAMES[direction],()=>{
+            const guard=this._cameraMoveGuard();
+            if(!guard.allowed){this._cameraFeedback={message:guard.reason};this._renderCameras();return;}
+            this._cameraAction('cardLayout','card-move',{target:this._cameraCardTarget,direction});
+        }));
+        Object.keys(CARD_SLIDERS).forEach(name=>this._components[name].on('changed',step=>{
+            const config=CARD_SLIDERS[name], state=this._cameras.state, current=state&&state.cardLayout&&state.cardLayout[this._cameraCardTarget];
+            const value=config.inverse?100-step*5:config.min+step*5;
+            if(Number.isInteger(step)&&step>=0&&step<=(config.max-config.min)/5&&current&&
+                value!==current[config.key]){
+                const fields={target:this._cameraCardTarget};fields[config.key]=value;
+                this._cameraAction('cardLayout','card-layout',fields);
+            }
+            delete this._written['cell:'+name+':0:Value'];
+            setImmediate(()=>this._renderCameraCard());
+        }));
         this._bind('cameraDiagnostics', () => {
             this._diagPage = 0; this._diagBlock = 0;
             this._cameras.send({ cmd: 'status' }); this._renderDiagnostics();
@@ -316,8 +359,8 @@ class WazeClusterApp extends OnlineApp {
         });
         this._bind('cameraDiagLive', () => { this._diagFrozen = null; this._diagBlock=0;
             this._cameraFeedback={message:'Живые данные включены'}; this._renderDiagnostics(); });
-        this._bind('cameraDiagTest', () => this._cameraAction('displayTest','display-test'));
-        this._bind('cameraDiagCalibration', () => this._cameraAction('calibrationTest','calibration-test'));
+        this._bind('cameraDiagTest', () => {this._startCameraTest(false);return rhmi.openState(CAMERA_STATE);});
+        this._bind('cameraDiagCalibration', () => {this._startCameraTest(true);return rhmi.openState(CAMERA_STATE);});
         this._bind('cameraDiagAudio', () => this._cameraAction('audioTest','audio-test'));
         this._bind('cameraDiagExport', () => this._exportDiagnostic());
         this._bind('cameraDiagPrev', () => { this._diagPage=(this._diagPage+5)%6; this._diagBlock=0; this._renderDiagnostics(); });
@@ -687,7 +730,10 @@ class WazeClusterApp extends OnlineApp {
         }
         this._cameraInfoMode = null;
         const requestId=this._cameraClientId+'-'+(++this._cameraCommandSequence).toString(36);
-        const pending={message:'Ожидание ответа: '+message.cmd,command:message.cmd,requestId,pending:true};
+        const commandName={'display-test':'тест предупреждения','calibration-test':'проверка границ',
+            'display-test-stop':'сохранение и остановка теста','card-layout':'настройка предупреждения',
+            'card-layout-reset':'сброс настроек предупреждения','card-move':'положение предупреждения'}[message.cmd]||message.cmd;
+        const pending={message:'Ожидание ответа: '+commandName,command:message.cmd,target:message.target,requestId,pending:true};
         this._cameraFeedback=pending; this._cameraPending=pending;
         if (!this._cameras.send(Object.assign({},message,{requestId}))) {
             this._cameraPending=null; this._cameraFeedback={message:this._cameras.diagnostic()};
@@ -697,7 +743,7 @@ class WazeClusterApp extends OnlineApp {
                 this._cameraCommandTimer=null;
                 if(this._cameraPending===pending){
                     pending.pending=false; pending.awaiting=true;
-                    pending.message='Нет окончательного подтверждения команды '+message.cmd+'; проверьте связь и обновите сервис';
+                    pending.message='Нет окончательного подтверждения: '+commandName+'; проверьте связь и обновите сервис';
                     this._cameraFeedback=pending;
                     this._renderCameras();
                 }
@@ -707,20 +753,91 @@ class WazeClusterApp extends OnlineApp {
         this._renderCameras();
     }
 
-    _cameraAction(name,command) {
+    _cameraAction(name,command,fields) {
         const a=cameraDiagnostics.action(this._cameras.state,name);
         if(!a.allowed){
             this._cameraFeedback={message:a.reason||'Действие недоступно ('+a.code+')'};
             this._renderCameras(); return;
         }
-        this._cameraCommand({cmd:command});
+        this._cameraCommand(Object.assign({cmd:command},fields||{}));
+    }
+
+    _cameraTestGuard() {
+        const state=this._cameras.state, allowed=cameraDiagnostics.action(state,'displayTest');
+        if(!allowed.allowed)return allowed;
+        const output=this._cameraCardTarget==='map'?'cluster':'hud';
+        return state.outputs&&state.outputs[output]===true?allowed:
+            {allowed:false,reason:(output==='hud'?'Проекция HUD':'Приборная панель')+' выключена. Включите выбранный выход выше.'};
+    }
+
+    _startCameraTest(calibration) {
+        const allowed=this._cameraTestGuard();
+        this._cameraCardSelectionReason=allowed.allowed?null:allowed.reason;
+        if(!allowed.allowed){this._cameraFeedback={message:allowed.reason};this._renderCameras();return;}
+        this._cameraAction(calibration?'calibrationTest':'displayTest',calibration?'calibration-test':'display-test',
+            {target:this._cameraCardTarget});
+    }
+
+    _cameraMoveGuard() {
+        const state=this._cameras.state||{}, guard=cameraDiagnostics.action(this._cameras.state,'cardMove'), test=state.displayTest||{},
+            renderer=state.rendererDetails||{}, layout=(renderer[this._cameraCardTarget]||{}).layout||{};
+        if(!guard.allowed)return guard;
+        if(!test.active||test.target!==this._cameraCardTarget)return {allowed:false,reason:'Для перемещения покажите тест на выбранном выходе'};
+        if(renderer.connection!=='ready')return {allowed:false,reason:'Перемещение: ожидание соединения renderer'};
+        if(!layout.canvas||layout.withinBounds!==true)return {allowed:false,reason:'Перемещение: ожидаются размеры и границы изображения'};
+        const profile=(state.cardLayout||{})[this._cameraCardTarget], rendered=layout.settings;
+        if(!profile||!rendered||['x','y','scalePct','brightnessPct','opacityPct'].some(key=>profile[key]!==rendered[key]))
+            return {allowed:false,reason:'Дождитесь подтверждения текущих настроек изображения'};
+        return guard;
+    }
+
+    _renderCameraCard() {
+        if(!this._cameraState||this._shutdownPromise)return;
+        const state=this._cameras.state||{}, target=this._cameraCardTarget, profile=state.cardLayout&&state.cardLayout[target],
+            test=state.displayTest||{}, guard=cameraDiagnostics.action(this._cameras.state,'cardLayout'), storage=state.storage||{},
+            name=target==='hud'?'HUD':'Приборы', move=this._cameraMoveGuard(), feedback=this._cameraFeedback,
+            cardFeedback=feedback&&feedback.target===target&&(/^(card-|display-test|calibration-test)/.test(feedback.command||''));
+        this._write('cameraHeadCalibration','Настройка предупреждения • на стоянке');
+        this._writeCell('cameraCardTarget','HeaderText','Настраивать','Text');
+        ['HUD','Приборы'].forEach((label,row)=>this._writeCell('cameraCardTarget','ItemText',label,'Text',row));
+        this._writeCell('cameraCardTarget','SelectedItem',target==='hud'?0:1,'UInt');
+        this._setEnabled('cameraCardTarget',true);
+        this._write('cameraTestStart','Показать тест • до остановки');
+        this._write('cameraTestStop','Скрыть тест');
+        this._write('cameraCardSave','Готово • сохранить и скрыть тест');
+        this._write('cameraCardReset','Сбросить настройки '+name);
+        this._write('cameraCardStatus',this._cameraCardSelectionReason||
+            (cardFeedback&&(feedback.pending||feedback.awaiting||feedback.phase==='error'||feedback.command==='display-test-stop')?
+                cameraDiagnostics.commandPage(null,feedback.message,0).command:null)||
+            (test.active?'Тест: '+(test.target==='hud'?'HUD':'Приборы')+' • '+(test.pinned?'закреплён до остановки':'показан'):
+                'Тест скрыт • профиль '+name));
+        this._write('cameraCardPosition',profile?'Положение: X '+(profile.x/10).toFixed(1)+' % • Y '+(profile.y/10).toFixed(1)+' %':
+            'Настройки предупреждения: сервис не сообщил профиль');
+        this._write('cameraCardHint',move.allowed?'HUD и приборы настраиваются и сохраняются отдельно':
+            move.reason||'Покажите тест на выбранном выходе для перемещения');
+        this._write('cameraCardStorage',!profile?'Обновите сервис для настройки предупреждения':
+            !guard.allowed?guard.reason||'Настройка доступна на стоянке со свежей скоростью':
+            storage.settingsSaved===true&&storage.persistent===true?'Изменения сохранены в автомобиле':
+            storage.persistent===false?'Изменения временные • хранилище недоступно':'Изменения сохраняются после подтверждения сервиса');
+        Object.keys(CARD_MOVE_NAMES).forEach(direction=>this._write(CARD_MOVE_NAMES[direction],
+            {up:'↑ Выше',down:'↓ Ниже',left:'← Левее',right:'Правее →'}[direction]));
+        Object.keys(CARD_SLIDERS).forEach(component=>{
+            const config=CARD_SLIDERS[component], value=profile&&profile[config.key], supported=Number.isFinite(value),
+                display=config.inverse?100-value:value;
+            this._writeCell(component,'TextDescription',config.label+': '+(supported?display+' %':'нет данных'),'Text',0);
+            this._writeCell(component,'Value',supported?Math.round((display-config.min)/5):0,'SInt',0);
+            this._setEnabled(component,!!profile&&guard.allowed);
+        });
+        Object.values(CARD_MOVE_NAMES).forEach(component=>this._setEnabled(component,move.allowed));
+        ['cameraTestStart','cameraTestStop','cameraCardSave','cameraCardReset'].forEach(component=>this._setEnabled(component,true));
     }
 
     _refreshCameraFeedback() {
         const pending=this._cameraPending, result=(this._cameras.state||{}).commandResult;
         if(!pending)return;
         if(this._cameras.commandError&&this._cameras.commandErrorRequestId===pending.requestId){
-            this._cameraFeedback={message:'Ошибка: '+this._cameras.commandError,requestId:pending.requestId};
+            this._cameraFeedback={message:'Ошибка: '+this._cameras.commandError,requestId:pending.requestId,
+                command:pending.command,target:pending.target,phase:'error'};
         }else if(result&&result.requestId===pending.requestId&&result.command===pending.command){
             if(CAMERA_TERMINAL_PHASES.indexOf(result.phase)<0){
                 // Acknowledgement is not completion. Preserve the original terminal deadline.
@@ -728,7 +845,8 @@ class WazeClusterApp extends OnlineApp {
                 return;
             }
             // Keep this request's complete result even if a late result from another client arrives.
-            this._cameraFeedback={message:cameraDiagnostics.commandText({commandResult:result}),requestId:pending.requestId};
+            this._cameraFeedback={message:cameraDiagnostics.commandText({commandResult:result}),requestId:pending.requestId,
+                command:pending.command,target:pending.target,phase:result.phase};
         }else return;
         this._cameraPending=null;
         clearTimeout(this._cameraCommandTimer); this._cameraCommandTimer=null;
@@ -784,6 +902,7 @@ class WazeClusterApp extends OnlineApp {
         Object.keys(view.text).forEach((name) => this._write(name, view.text[name]));
         Object.keys(view.enabled).forEach((name) => this._setEnabled(name, view.enabled[name]));
         this._setEnabled('cameraResultMore',true);
+        this._renderCameraCard();
         this._renderDiagnostics();
     }
 

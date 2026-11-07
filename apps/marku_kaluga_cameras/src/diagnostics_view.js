@@ -49,7 +49,9 @@ function values(state, version, frozen) {
         samples:'Подъезд: ' + clean(g.approachSamples) + ' позиции • зоны ' + clean(g.zoneCount) + '/' + clean(g.cameraCount),
         alert:'Уведомление: ' + (a ? clean(a.title) + ' • ' + clean(a.confidence) : 'нет активного'),
         outputs:'Выходы: приборы ' + on(o.cluster) + ' • HUD ' + on(o.hud), map:'Приборы: '+layer('map'), hud:'HUD: '+layer('hud'),
-        test:'Тест вывода: ' + (s.displayTest && s.displayTest.active ? 'идёт • ТЕСТ на 5 секунд' : 'не запущен'),
+        test:'Тест вывода: ' + (s.displayTest && s.displayTest.active ? s.displayTest.pinned?
+            'закреплён • '+(s.displayTest.target==='hud'?'HUD':s.displayTest.target==='map'?'приборы':'цель неизвестна'):
+            'идёт • ТЕСТ на 5 секунд' : 'не запущен'),
         dimmer:'Прозрачность карты: ' + n(Number.isFinite(s.hudOpacityPct)?100-s.hudOpacityPct:null,0) + ' %',
         database:'База: ' + clean((s.database||{}).source) + ' • ' + clean((s.database||{}).count) + ' объектов',
         error:'Ошибка: ' + error.slice(0,60), errorMore:error.length>60?'Продолжение: '+error.slice(60,120):'Продолжение ошибки: —'
@@ -121,6 +123,12 @@ function reportPage(report, live, version, pageIndex, blockIndex, localResult, c
         return name+': масштаб '+n(card.scale,3)+' • границы '+(own.withinBounds===true?'в пределах':own.withinBounds===false?'выход за экран':'не проверены')+
             ' • профиль '+clean(own.profile)+' • backend '+clean(own.backend);
     };
+    const cardProfile=name=>{
+        const profile=(s.cardLayout||{})[name]||{};
+        return (name==='map'?'Приборы':'HUD')+' профиль: X/Y '+n(profile.x,0)+'/'+n(profile.y,0)+
+            ' • размер '+n(profile.scalePct,0)+' % • яркость '+n(profile.brightnessPct,0)+' % • прозрачность '+
+            n(Number.isFinite(profile.opacityPct)?100-profile.opacityPct:null,0)+' %';
+    };
     const candidates=Array.isArray(s.nearestCandidates)?s.nearestCandidates:[];
     const pages=[
         [existing.service,existing.health,'GPS: '+clean(s.gps),existing.outputs,existing.alert,
@@ -152,6 +160,7 @@ function reportPage(report, live, version, pageIndex, blockIndex, localResult, c
             'Последняя команда: '+commandText(s), 'Ошибка: '+clean(s.controlError||s.error)],
         ['Геометрия целей: приборы '+(targetLayout('map').canvas?'получена':'неизвестна')+' • HUD '+(targetLayout('hud').canvas?'получена':'неизвестна'),
             targetRow('map'),targetRow('panel'),targetRow('hud'),rectRow('map'),rectRow('hud'),layoutRow('map'),layoutRow('hud'),
+            cardProfile('map'),cardProfile('hud'),
             existing.dimmer,'Калибровка: '+clean(layout.calibration||layout.calibrationState||'не подтверждена'),
             'Размеры viewport логические; физический размер экрана не измерен'],
         [existing.database,'Версия: '+clean(db.version)+' • регион '+clean(db.region),

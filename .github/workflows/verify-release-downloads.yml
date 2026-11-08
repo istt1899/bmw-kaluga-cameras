@@ -67,15 +67,21 @@ jobs:
           async function main() {
             const root='https://raw.githubusercontent.com/istt1899/bmw-kaluga-cameras/main/catalog.json';
             const data=await get(root); assert.strictEqual(digest(data),process.env.CATALOG_SHA256);
-            const short=await get('https://tinyurl.com/24appypy'); assert.strictEqual(digest(short),digest(data));
-            const released=await get('https://github.com/istt1899/bmw-kaluga-cameras/releases/download/catalog/catalog.json');
-            assert.strictEqual(digest(released),digest(data)); console.log('PASS main, short source and Releases catalog');
+            console.log('PASS main catalog');
             const catalog=JSON.parse(data), expected={marku_kaluga_cameras:process.env.APP_SHA256,'marku-kaluga-cameras':process.env.SERVICE_SHA256};
-            for (const id of Object.keys(expected)) {
+            const checks=[['short-source',async()=>{assert.strictEqual(digest(await get('https://tinyurl.com/24appypy')),digest(data));}],
+              ['releases-catalog',async()=>{assert.strictEqual(digest(await get('https://github.com/istt1899/bmw-kaluga-cameras/releases/download/catalog/catalog.json')),digest(data));}]];
+            for (const id of Object.keys(expected)) checks.push([id,async()=>{
               const entry=catalog.components.find(c=>c.id===id); assert(entry); assert.strictEqual(entry.version,version);
               assert.strictEqual(entry.artifact.sha256,expected[id]); assert(entry.artifact.url.startsWith('https://github.com/istt1899/bmw-kaluga-cameras/releases/download/'));
               const bytes=await get(entry.artifact.url); assert.strictEqual(bytes.length,entry.artifact.size); assert.strictEqual(digest(bytes),expected[id]);
               console.log('PASS '+id+' '+version+' '+bytes.length+' '+digest(bytes));
-            }
+            }]);
+            const outcomes=await Promise.all(checks.map(async ([name,check])=>{
+              try {await check();console.log('PASS '+name);return {name,result:'pass'};}
+              catch(error){console.error('FAIL '+name+': '+error.message);return {name,result:'fail',error:error.message};}
+            }));
+            console.log('PUBLIC_DOWNLOAD_RESULTS '+JSON.stringify(outcomes));
+            assert(outcomes.every(x=>x.result==='pass'),'One or more public download routes failed; see individual results');
           }
           main().catch(error=>{console.error(error.stack);process.exitCode=1;});

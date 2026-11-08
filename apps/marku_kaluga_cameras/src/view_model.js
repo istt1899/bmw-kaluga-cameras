@@ -39,6 +39,34 @@ function alertPreferences(state) {
         reason:!state?'Сервис недоступен':!supported?'Для настройки дистанции и типов обновите сервис камер':
             !available?'Ожидание подтверждённых настроек сервиса':null};
 }
+const OVERSPEED_RECOMMENDED = Object.freeze({visualFlash:true,visualOffsetKmh:0,soundEnabled:false,soundOffsetKmh:20});
+function overspeedPreferences(state) {
+    const s=state||{}, p=s.overspeedPreferences||{}, audio=s.audio||{};
+    const supported=!!(s.capabilities&&s.capabilities.overspeedPreferences===true);
+    const offset=value=>Number.isInteger(value)&&value>=0&&value<=30;
+    const available=supported&&typeof p.visualFlash==='boolean'&&typeof p.soundEnabled==='boolean'&&
+        offset(p.visualOffsetKmh)&&offset(p.soundOffsetKmh);
+    return {available,visualFlash:available?p.visualFlash:null,visualOffsetKmh:available?p.visualOffsetKmh:null,
+        soundEnabled:available?p.soundEnabled:null,soundOffsetKmh:available?p.soundOffsetKmh:null,
+        audioAvailable:audio.available===true,audioReason:clean(audio.reason,audio.available===true?
+            'Канал подтверждён; слышимость проверяется на стоянке':'Звуковой канал BMW не подтверждён'),
+        reason:!state?'Сервис недоступен':!supported?'Для настройки превышения обновите сервис камер':
+            !available?'Ожидание подтверждённых настроек превышения':null};
+}
+function coverageRows(state) {
+    const coverage=((state||{}).database||{}).coverage||{}, value=key=>Number.isInteger(coverage[key])&&coverage[key]>=0?coverage[key]:'—';
+    return [coverage.complete===false?'Покрытие неполное • '+value('sourceRecords')+' записей источников':'Полнота базы не подтверждена',
+        'Лимиты: прямые '+value('directLimit')+' • справочные '+value('referenceLimit')+' • неизвестные '+value('unknownLimit'),
+        'Дорожные зоны '+value('roadZones')+' • с лимитом '+value('numericRoadZones')+' • без зоны '+value('recordsWithoutRoadZone'),
+        'Объектив OSM: известно '+value('facingKnown')+' • сторона фиксации: '+value('captureSideKnown')];
+}
+function cameraFacing(camera) {
+    const facing=(camera||{}).cameraFacing||{}, bearings=facing.bearingsDeg;
+    const known=facing.state==='mapped'&&facing.interpretation==='camera-facing'&&Array.isArray(bearings)&&bearings.length>0&&
+        bearings.every(value=>Number.isFinite(value)&&value>=0&&value<360);
+    return 'Куда смотрит объектив OSM: '+(known?bearings.map(value=>value+'°').join(' / ')+
+        ' • '+clean(facing.sourceUrl,'источник не указан'):'неизвестно');
+}
 function gpsSummary(state) {
     const input = state && state.gpsInput;
     if (!input) return null;
@@ -57,7 +85,8 @@ function model(state) {
     const fresh=Number.isFinite(fixAge)&&fixAge>=-500&&fixAge<=3000;
     const reference=c.limitReference&&c.limitReference.state==='known'?c.limitReference.valueKmh:null;
     const limit=a&&a.roadConfirmed&&Number.isFinite(a.limitKmh)?a.limitKmh:Number.isFinite(c.cameraLimitKmh)?c.cameraLimitKmh:Number.isFinite(reference)?reference:Number.isFinite(c.limitKmh)?c.limitKmh:c.limit;
-    const capture={front:'спереди',rear:'сзади',both:'спереди и сзади'}[c.captureDirection]||'направление неизвестно';
+    const capture=c.captureDirectionVerified===true?{front:'спереди',rear:'сзади',both:'спереди и сзади'}[c.captureDirection]||'направление неизвестно':'направление неизвестно';
+    const coverage=coverageRows(s);
     const providers=db.sourceMetadata&&Array.isArray(db.sourceMetadata.providers)?db.sourceMetadata.providers:[],
         official=providers.find(p=>p.id==='gibdd-official');
     const text = {
@@ -72,7 +101,7 @@ function model(state) {
         cameraDate: connected ? official?'Сборка: '+date(db.generatedAt)+' • перечень ГИБДД: '+date(official.publishedAt):
             'Дата базы: ' + date(db.updated || db.generatedAt || db.sourceUpdated) : 'Дата базы: ожидание ответа сервиса',
         cameraGps: 'Положение: ' + clean(s.gps, 'нет подтверждённых координат'),
-        cameraMotion:'Скорость: '+(fresh&&Number.isFinite(fix.speedKmh)?Math.round(fix.speedKmh)+' км/ч':'нет свежих данных'),
+        cameraMotion:'Скорость: '+(fresh&&Number.isFinite(fix.speedKmh)?fix.speedKmh+' км/ч':'нет свежих данных'),
         cameraStreet:street.name?'Улица: '+clean(street.name,'—')+' • '+clean(street.source,'BMW'):
             'Улица BMW: '+clean(street.reason,'недоступна'),
         cameraCommand:result.message?'Команда: '+clean(result.message,'—'):'Команды: ожидают действия',
@@ -80,6 +109,8 @@ function model(state) {
         cameraLimit:(a&&a.roadConfirmed&&Number.isFinite(a.limitKmh)?'Лимит по дороге: ':'Лимит по базе: ')+(Number.isFinite(limit)?limit+' км/ч':'неизвестен')+
             (a&&a.roadConfirmed?' • дорога подтверждена':' • применимость к дороге не подтверждена'),
         cameraDirection:'Контроль: '+capture,
+        cameraFacing:cameraFacing(c),
+        cameraCoverage:coverage[0],cameraCoverageLimits:coverage[1],cameraCoverageRoad:coverage[2],cameraCoverageDirection:coverage[3],
         cameraEnable:!connected?'Предупреждения: сервис недоступен':s.enabled?'Выключить предупреждения':'Включить предупреждения',
         cameraCluster: 'Приборная панель: ' + (!(s.capabilities||{}).outputs?'вывод недоступен':outputs.cluster === true ? 'вкл' : 'выкл'),
         cameraHud: 'Проекция HUD: ' + (!(s.capabilities||{}).outputs?'вывод недоступен':outputs.hud === true ? 'вкл' : 'выкл'),
@@ -118,4 +149,5 @@ function diagnostics(state) {
     return 'Вывод: ' + clean(rendering, 'неизвестно') + (state.error ? ' • ' + clean(state.error, '') : '');
 }
 
-module.exports = { model, outputCommand, diagnostics, date, distance, ALERT_TYPES, alertPreferences };
+module.exports = { model, outputCommand, diagnostics, date, distance, ALERT_TYPES, alertPreferences,
+    OVERSPEED_RECOMMENDED, overspeedPreferences, coverageRows, cameraFacing };

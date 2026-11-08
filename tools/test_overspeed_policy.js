@@ -1,0 +1,16 @@
+'use strict';
+var assert=require('assert'),p=require('../native/marku-kaluga-cameras/files/warning-policy');
+var now=100000,fix={lat:54,lon:36,timeMs:now,motionTimeMs:now,accuracyM:5,speedKmh:60},alert={id:'a',roadConfirmed:true,limitKmh:60};
+assert.deepStrictEqual(p.normalize(),{visualFlash:true,visualOffsetKmh:0,soundEnabled:false,soundOffsetKmh:20});
+assert.strictEqual(p.normalize(Object.create({soundEnabled:true})).soundEnabled,false);
+assert.deepStrictEqual(p.patch(p.DEFAULTS,{soundEnabled:true}),{visualFlash:true,visualOffsetKmh:0,soundEnabled:true,soundOffsetKmh:20});
+[{soundOffsetKmh:2.5},{soundOffsetKmh:31},{visualFlash:'true'},{what:1},null].forEach(function(v){assert.throws(function(){p.patch(p.DEFAULTS,v);});});
+[60,60.1,80,80.1,81,82].forEach(function(v){var r=p.evaluate(alert,Object.assign({},fix,{speedKmh:v}),now);assert.strictEqual(r.overspeed,v>60);assert.strictEqual(r.soundExceeded,v>80);assert.strictEqual(r.flashActive,v>60);assert.strictEqual(r.limitKmh,60);});
+assert.strictEqual(p.evaluate(alert,Object.assign({},fix,{speedKmh:80.1}),now).displayBoundaryKmh,80);
+assert.strictEqual(p.evaluate(alert,Object.assign({},fix,{speedKmh:60.1}),now).displayBoundaryKmh,60);
+assert.strictEqual(p.evaluate(alert,Object.assign({},fix,{speedKmh:81}),now).displayBoundaryKmh,null);
+var v=Object.assign({},fix,{speedKmh:70});assert.notStrictEqual(p.evaluate(alert,v,now).flashPhase,p.evaluate(alert,v,now+500).flashPhase);
+assert.strictEqual(p.evaluate(alert,v,now,{visualFlash:false}).overspeed,true);assert.strictEqual(p.evaluate(alert,v,now,{visualFlash:false}).flashActive,false);
+[null,{roadConfirmed:false,limitKmh:60},{roadConfirmed:true,limitKmh:null},{roadConfirmed:true,limitKmh:60,test:true},{roadConfirmed:true,limitKmh:60,calibration:true},{roadConfirmed:true,limitKmh:60,filterMatched:false}].forEach(function(a){assert.strictEqual(p.evaluate(a,v,now).eligible,false);});
+[Object.assign({},v,{timeMs:now-3001}),Object.assign({},v,{timeMs:now+501}),Object.assign({},v,{motionTimeMs:now-3001}),Object.assign({},v,{motionTimeMs:now+501}),Object.assign({},v,{accuracyM:16}),Object.assign({},v,{speedKmh:null})].forEach(function(f){assert.strictEqual(p.evaluate(alert,f,now).eligible,false);});
+console.log('PASS overspeed raw boundaries, independent preferences, flash and fix eligibility');

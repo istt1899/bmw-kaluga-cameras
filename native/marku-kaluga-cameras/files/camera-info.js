@@ -2,6 +2,7 @@
 // Source facts only. An OSM speed-camera tag is not evidence of belt/lane
 // enforcement or of a particular hardware model.
 const fs = require('fs');
+const orientation = require('./camera-orientation');
 const LABELS = { speed: 'Контроль скорости', redlight: 'Контроль светофора', average: 'Средняя скорость',
     stopline: 'Стоп-линия', belt: 'Контроль ремня', pedestrian: 'Пешеходный переход', lane: 'Контроль полосы', phone: 'Контроль телефона',
     signs_marking: 'Знаки и разметка', road_position: 'Расположение ТС / встречный разъезд / обгон' };
@@ -37,6 +38,7 @@ function describe(camera) {
         captureDirection: side,
         captureDirectionVerified: !!side,
         captureDirectionSource: side ? camera.captureSideSourceUrl : null,
+        cameraFacing: orientation.describe(camera),
         enforcementRelations: camera.enforcementRelations ? camera.enforcementRelations.map(r => ({id:r.id,sourceUrl:r.sourceUrl})) : null };
 }
 function validLimit(value) { return Number.isFinite(value) && value > 0 && value <= 300; }

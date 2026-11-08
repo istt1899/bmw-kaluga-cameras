@@ -14,10 +14,11 @@ assert(!policies(state,fix,now).audioTest.allowed);
 assert(policies(state,fix,now).databaseRollback.allowed);
 console.log('PASS shared action policy: 19.4m stationary renderer test, separate motion UTC, movement, unavailable outputs/storage/audio and update busy');
 async function audio(){
+ const audioFix=Object.assign({},fix,{lat:54,lon:36,accuracyM:5});
  const calls=[],a=require('../native/marku-kaluga-cameras/files/warning-audio').createAudio({play:x=>{calls.push(x);return Promise.resolve({played:true});}});
  a.configure(true,0);const alert={id:'camera',roadConfirmed:true,limitKmh:60,sign:1};
- a.update(alert,Object.assign({},fix,{speedKmh:70}),now);await new Promise(r=>setImmediate(r));
- a.update(alert,Object.assign({},fix,{speedKmh:70,timeMs:now+13000}),now+13000);await new Promise(r=>setImmediate(r));
+ a.update(alert,Object.assign({},audioFix,{speedKmh:70}),now);await new Promise(r=>setImmediate(r));
+ a.update(alert,Object.assign({},audioFix,{speedKmh:70,timeMs:now+13000,motionTimeMs:now+13000}),now+13000);await new Promise(r=>setImmediate(r));
  assert.strictEqual(calls.length,1,'same camera approach must not sound every GPS frame');
  a.update(Object.assign({},alert,{roadConfirmed:false,id:'other'}),fix,now+14000);assert.strictEqual(calls.length,1);
  await a.test(now+15000);assert.strictEqual(calls.length,2);a.close();

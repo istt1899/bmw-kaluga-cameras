@@ -47,13 +47,22 @@ function GpsDecoder(now, nmeaSource) {
   this.last = {}; this.complete = {}; this.parts = {}; this.rmc = null; this.gga = null; this.gst = null;
   this.lastParsedUtc = null; this.lastRejectReason = null;
   this.lastRmcUtc = null;
+  this.admissionAfterUtc = null;
   this.timing = { RMC: null, GGA: null, GST: null, pairReason: 'MISSING_RMC' };
 }
 GpsDecoder.prototype = Object.create(EventEmitter.prototype);
 GpsDecoder.prototype.constructor = GpsDecoder;
 GpsDecoder.prototype.invalidate = function (source, reason) { this.last[source] = null; this.complete[source] = null; if (source === this.nmeaSource) this.lastRejectReason = reason; this.emit('quality', source + ': ' + reason); };
+GpsDecoder.prototype.resetEpoch = function (afterUtc) {
+  if (!number(afterUtc)) throw new Error('GPS_RESET_TIME_INVALID');
+  this.last = {}; this.complete = {}; this.parts = {}; this.rmc = this.gga = this.gst = null;
+  this.lastRmcUtc = this.lastParsedUtc = null; this.lastRejectReason = 'manual GPS session reset';
+  this.admissionAfterUtc = afterUtc;
+  this.timing = { RMC:null, GGA:null, GST:null, pairReason:'MANUAL_RESET_WAITING_SOURCE' };
+};
 GpsDecoder.prototype.accept = function (fix) {
   var now = this.now();
+  if (this.admissionAfterUtc !== null && fix.timeMs <= this.admissionAfterUtc) { this.invalidate(fix.source, 'source UTC precedes manual reset boundary'); return false; }
   if (!fresh(fix.timeMs, now)) { this.invalidate(fix.source, 'stale or future source UTC'); return false; }
   if (!number(fix.lat) || !number(fix.lon) || Math.abs(fix.lat) > 90 || Math.abs(fix.lon) > 180) return false;
   var previous = this.last[fix.source];
@@ -71,6 +80,7 @@ GpsDecoder.prototype.json = function (obj) {
   if (!(obj.mode === 2 || obj.mode === 3) || [5, 6, 7, 8].indexOf(obj.status) >= 0) { this.parts = {}; this.invalidate('gpsd', 'no usable GNSS fix'); return; }
   if (typeof obj.time !== 'string' || !/Z$/.test(obj.time) || !fresh(Date.parse(obj.time), this.now())) { this.invalidate('gpsd', 'missing/stale source UTC'); return; }
   var timeMs = Date.parse(obj.time), key = String(obj.device || '') + ':' + timeMs;
+  if (this.admissionAfterUtc !== null && timeMs <= this.admissionAfterUtc) { this.invalidate('gpsd','source UTC precedes manual reset boundary'); return; }
   if (this.parts.key !== key) this.parts = { key: key, data: {} };
   Object.assign(this.parts.data, obj);
   var p = this.parts.data, accuracy = null;
@@ -96,6 +106,9 @@ GpsDecoder.prototype.line = function (line) {
   if (kind === 'RMC') {
     var time = utc(p[9], p[1]);
     if (number(time)) this.lastParsedUtc = time;
+    if (this.admissionAfterUtc !== null && number(time) && time <= this.admissionAfterUtc) {
+      this.rmc = null; this.timing.pairReason = 'MANUAL_RESET_WAITING_SOURCE'; this.invalidate(source,'source UTC precedes manual reset boundary'); return parsed;
+    }
     // The position epoch is GGA's. Compare RMC only with prior RMC, never
     // with a later, valid GGA epoch (e.g. RMC .000 / GGA .200).
     if (this.lastRmcUtc !== null && number(time) && time < this.lastRmcUtc) {
@@ -186,6 +199,7 @@ function GpsProvider(options) {
   EventEmitter.call(this); this.options = options || {}; this.now = this.options.now || Date.now;
   this.decoder = new GpsDecoder(this.now); this.bmwDecoder = new GpsDecoder(this.now, 'bmw-nmea');
   this.sock = null; this.udp = null; this.retry = null; this.closed = true;
+  this.generation = 0; this.udpMessageHandler = null; this.udpErrorHandler = null;
   this.bridge = { state: 'stopped', errorCode: null, changedAt: null };
   this.input = { packets: 0, badPackets: 0, checksumErrors: 0, sentences: { RMC: 0, GGA: 0, GST: 0 }, lastPacketAt: null, fixUtc: null };
   var self = this;
@@ -269,25 +283,47 @@ GpsProvider.prototype.description = function (fix, now) {
   if (timing.lastGgaAgeMs !== null && timing.lastGgaAgeMs > MAX_AGE) return 'BMW: сообщения GGA не обновляются';
   return 'BMW: нет свежей достоверной фиксации UTC (максимум 3 с)';
 };
+GpsProvider.prototype.bindUdpHandlers = function () {
+  var self=this,udp=this.udp,gen=this.generation;
+  if(!udp)return;
+  if(this.udpMessageHandler)udp.removeListener('message',this.udpMessageHandler);
+  if(this.udpErrorHandler)udp.removeListener('error',this.udpErrorHandler);
+  this.udpMessageHandler=function(data){if(self.closed||self.udp!==udp||self.generation!==gen)return;if(data.length<=8192)String(data).split(/\r?\n/).forEach(function(line){self.decoder.line(line);});};
+  this.udpErrorHandler=function(err){if(!self.closed&&self.udp===udp&&self.generation===gen)self.emit('status','Внешний NMEA UDP: '+err.code);};
+  udp.on('message',this.udpMessageHandler);udp.on('error',this.udpErrorHandler);
+};
+GpsProvider.prototype.resetEpoch = function (now) {
+  if(!number(now))throw new Error('GPS_RESET_TIME_INVALID');
+  this.generation++;
+  this.decoder.resetEpoch(now+500);this.bmwDecoder.resetEpoch(now+500);
+  this.input.fixUtc=null;this.input.lastPacketAt=null;
+  clearTimeout(this.retry);this.retry=null;
+  var old=this.sock;this.sock=null;if(old)old.destroy();
+  this.bindUdpHandlers();
+  if(!this.closed)this.connect();
+  this.emit('status','История GPS очищена; ожидание новых UTC после ручного сброса');
+  return {phase:'waiting-new-fix',generation:this.generation,afterUtc:now+500};
+};
 GpsProvider.prototype.start = function () {
   var self = this; this.closed = false; this.connect();
   if (this.options.nmeaPort === 0) return;
   this.udp = dgram.createSocket('udp4');
-  this.udp.on('message', function (data) { if (data.length <= 8192) String(data).split(/\r?\n/).forEach(function (line) { self.decoder.line(line); }); });
-  this.udp.on('error', function (err) { self.emit('status', 'Внешний NMEA UDP: ' + err.code); });
-  this.udp.bind(this.options.nmeaPort || 5001, this.options.nmeaHost || '127.0.0.1', function () { self.emit('status', 'Внешний NMEA UDP: ожидание пакетов'); });
+  this.bindUdpHandlers();
+  var udp=this.udp;
+  this.udp.bind(this.options.nmeaPort || 5001, this.options.nmeaHost || '127.0.0.1', function () { if(!self.closed&&self.udp===udp)self.emit('status', 'Внешний NMEA UDP: ожидание пакетов'); });
 };
 GpsProvider.prototype.connect = function () {
   if (this.closed || this.sock) return;
-  var self = this, buffer = '', sock = net.connect(this.options.port || 2947, this.options.host || '127.0.0.1');
+  var self = this, gen=this.generation, buffer = '', sock = net.connect(this.options.port || 2947, this.options.host || '127.0.0.1');
   this.sock = sock; sock.setEncoding('utf8'); sock.setTimeout(15000);
-  sock.on('connect', function () { self.emit('status', 'Внешний GPSD подключён; ожидание UTC'); sock.write('?WATCH={"enable":true,"json":true};\n'); });
+  sock.on('connect', function () { if(self.closed||self.generation!==gen||self.sock!==sock)return;self.emit('status', 'Внешний GPSD подключён; ожидание UTC'); sock.write('?WATCH={"enable":true,"json":true};\n'); });
   sock.on('data', function (chunk) {
+    if(self.closed||self.generation!==gen||self.sock!==sock)return;
     buffer += chunk; if (buffer.length > 65536) { sock.destroy(); return; }
     var nl; while ((nl = buffer.indexOf('\n')) >= 0) { var line = buffer.slice(0, nl).trim(); buffer = buffer.slice(nl + 1); try { self.decoder.json(JSON.parse(line)); } catch (err) {} }
   });
   sock.on('timeout', function () { sock.destroy(); });
-  sock.on('error', function (err) { self.emit('status', 'Внешний GPSD: ' + err.code); });
+  sock.on('error', function (err) { if(!self.closed&&self.generation===gen&&self.sock===sock)self.emit('status', 'Внешний GPSD: ' + err.code); });
   sock.on('close', function () {
     if (self.sock !== sock) return; self.sock = null;
     if (!self.closed) self.retry = setTimeout(function () { self.retry = null; self.connect(); }, self.options.retryMs || 5000);
@@ -299,7 +335,7 @@ GpsProvider.prototype.current = function (now) {
   return b.timeMs > a.timeMs || (b.timeMs === a.timeMs && number(b.accuracyM) && !number(a.accuracyM)) ? b : a;
 };
 GpsProvider.prototype.close = function () {
-  this.closed = true; clearTimeout(this.retry); if (this.sock) this.sock.destroy();
+  this.closed = true; this.generation++; clearTimeout(this.retry); if (this.sock) this.sock.destroy();
   if (this.udp) { try { this.udp.close(); } catch (err) {} }
   this.sock = null; this.udp = null;
 };

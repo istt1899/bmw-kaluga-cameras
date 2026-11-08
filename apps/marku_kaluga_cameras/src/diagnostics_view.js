@@ -139,9 +139,14 @@ function reportPage(report, live, version, pageIndex, blockIndex, localResult, c
     const preferenceSummary=prefs.available?'Настроенная дистанция: '+prefs.warningDistanceM+' м • типы '+prefs.enabledCount+'/'+cameraView.ALERT_TYPES.length:
         'Настройки предупреждений: '+prefs.reason;
     const preferenceRows=cameraView.ALERT_TYPES.map(type=>type.label+': '+(prefs.available?on(prefs.cameraTypes[type.key]):'нет подтверждённых данных'));
+    const overspeed=cameraView.overspeedPreferences(s), warning=s.speedWarning||{};
+    const overspeedSummary=overspeed.available?'Превышение: мигание '+on(overspeed.visualFlash)+' +'+overspeed.visualOffsetKmh+
+        ' км/ч • звук выбран '+on(overspeed.soundEnabled)+' +'+overspeed.soundOffsetKmh+' км/ч':'Превышение: '+overspeed.reason;
+    const warningSummary='Политика превышения: '+(typeof warning.eligible==='boolean'?(warning.eligible?'доступна':'недоступна'):'не подтверждена')+' • '+clean(warning.reason||warning.code);
     const transition=g.transition||{};
     const pages=[
         [existing.service,existing.health,'GPS: '+clean(s.gps),existing.outputs,existing.alert,preferenceSummary,
+            overspeedSummary,warningSummary,
             prefs.available&&prefs.enabledCount===0?'Все типы выключены — реальных предупреждений не будет':'Фильтр комплекса: достаточно любого включённого типа',
             'Тест: '+clean(action(s,'displayTest').reason||'доступен'),
             'Улица '+clean((s.street||{}).name)+' • '+clean((s.street||{}).source||'BMW')+' • '+clean((s.street||{}).reason),
@@ -151,7 +156,10 @@ function reportPage(report, live, version, pageIndex, blockIndex, localResult, c
             'GGA UTC '+clean(timing.ggaTime)+' • возраст '+n(timing.lastGgaAgeMs,0)+' мс',
             'GST UTC '+clean(timing.gstTime)+' • возраст '+n(timing.lastGstAgeMs,0)+' мс',
             existing.nmeaRmcGga,existing.nmeaGgaGst,existing.nmeaPair,existing.counts,existing.reject,
-            existing.bridge,'GPS: '+clean(s.gps),existing.rejectReason],
+            existing.bridge,'GPS: '+clean(s.gps),existing.rejectReason,
+            'Точная скорость GPS: '+clean(f.speedKmh)+' км/ч',
+            'Ручной сброс GPS: '+JSON.stringify(s.gpsReset||null),
+            'После сброса история не используется; ожидаются новые пригодные координаты'],
         ['Объект: '+clean(c.id), 'Расстояние: '+n(c.distanceM===undefined?c.distance:c.distanceM,0)+' м • '+clean(c.positionKind),
             'Совпадение с выбранными типами: '+(typeof c.filterMatched==='boolean'?(c.filterMatched?'да':'нет'):'не сообщается'),
             'Источник: '+clean(c.provenance||c.source)+' • '+clean(c.sourceUrl||c.positionSourceUrl),
@@ -167,13 +175,18 @@ function reportPage(report, live, version, pageIndex, blockIndex, localResult, c
             'Исходные ограничения: '+(Array.isArray((c.speedLimitEvidence||{}).sources)?c.speedLimitEvidence.sources.map(f=>clean(f.sourceUrl)+' • '+JSON.stringify(f.tags)).join('; '):'—'),
             'Источники справочного лимита: '+(Array.isArray((c.limitReference||{}).records)?c.limitReference.records.map(e=>clean(e.id)+' = '+n(e.valueKmh,0)+' • '+clean(e.url)).join('; '):'—'),
             'Контроль: '+clean(c.captureDirectionVerified?{front:'спереди',rear:'сзади',both:'спереди и сзади'}[c.captureDirection]||'направление неизвестно':'направление неизвестно')+' • источник '+clean(c.captureDirectionSource),
+            cameraView.cameraFacing(c),
+            'Ориентация объектива — полные данные: '+JSON.stringify(c.cameraFacing||null),
             existing.mode,existing.reason,existing.way,existing.samples,
             'Переход: '+clean(transition.from)+' → '+clean(transition.to)+' • '+clean(transition.reason),
             'Объект перехода: '+clean(transition.cameraId)+' • UTC '+utc(transition.timeMs),
             'Переход — полные данные: '+JSON.stringify(g.transition||null),
             'Причина GPS: '+clean(g.gpsReason),
             'Последнее снятие предупреждения: '+JSON.stringify(g.lastClear||null),
-            preferenceSummary].concat(preferenceRows,candidates.map((v,i)=>
+            preferenceSummary,overspeedSummary,warningSummary,
+            'Настройки превышения — полные данные: '+JSON.stringify(s.overspeedPreferences||null),
+            'Точная скорость: '+clean(f.speedKmh)+' км/ч',
+            'Превышение — полные данные: '+JSON.stringify(s.speedWarning||null)].concat(preferenceRows,candidates.map((v,i)=>
                 'Кандидат '+(i+1)+': '+clean(v.id)+' • '+n(v.distanceM,0)+' м • '+clean(v.reason)+
                     ' • фильтр '+(typeof v.filterMatched==='boolean'?(v.filterMatched?'да':'нет'):'не сообщается'))),
         [existing.outputs,renderTarget('map'),renderTarget('hud'),
@@ -185,6 +198,8 @@ function reportPage(report, live, version, pageIndex, blockIndex, localResult, c
             existing.test,'Тест изображения: '+clean(action(s,'displayTest').reason||'доступен'),
             'Калибровка: '+clean(action(s,'calibrationTest').reason||'доступна'),
             'Звук: '+((s.audio||{}).available?'доступен':'недоступен')+' • '+clean((s.audio||{}).reason),
+            'Звук — полные данные и последний исход: '+JSON.stringify(s.audio||null),
+            'Слышимость и физическое отображение в автомобиле не подтверждены программным статусом',
             'Последняя команда: '+commandText(s), 'Ошибка: '+clean(s.controlError||s.error)],
         ['Геометрия целей: приборы '+(targetLayout('map').canvas?'получена':'неизвестна')+' • HUD '+(targetLayout('hud').canvas?'получена':'неизвестна'),
             targetRow('map'),targetRow('panel'),targetRow('hud'),rectRow('map'),rectRow('hud'),layoutRow('map'),layoutRow('hud'),
@@ -196,7 +211,8 @@ function reportPage(report, live, version, pageIndex, blockIndex, localResult, c
             'Фокус стрелки: '+clean((s.calibrationInput||{}).focusedDirection)+' • повтор '+clean(((s.calibrationInput||{}).repeat||{}).active)+' • стоп '+clean((s.calibrationInput||{}).stopReason),
             'Удержание сенсорной стрелки: контракт отпускания не подтверждён; доступны ползунки X/Y',
             'Последние события стрелок: '+JSON.stringify((s.calibrationInput||{}).events||[])],
-        [existing.database,'Версия: '+clean(db.version)+' • регион '+clean(db.region),
+        [existing.database,'Версия: '+clean(db.version)+' • регион '+clean(db.region)].concat(cameraView.coverageRows(s),[
+            'Покрытие — полные данные: '+JSON.stringify(db.coverage||null),
             'Сборка источников: '+clean((s.sourceAssembly||{}).state)+' • выбрана '+clean((s.sourceAssembly||{}).selectedVersion)+' • нужна '+clean((s.sourceAssembly||{}).wantedVersion),
             'Ошибка сборки источников: '+clean((s.sourceAssembly||{}).errorCode)+' • '+clean((s.sourceAssembly||{}).reason),
             'UTC базы: '+clean(db.updated||db.generatedAt||db.sourceTimestamp),
@@ -218,7 +234,7 @@ function reportPage(report, live, version, pageIndex, blockIndex, localResult, c
                 (durability.directorySynced===true?'синхронизирован':durability.directorySynced===false?'не синхронизирован':'не проверен')+
                 ' • '+clean(durability.reasonCode),
             'Пропущено: '+clean(db.skippedCount)+' • '+clean(db.coverageReason),
-            'Экспорт JSON — отдельное действие; данные GPS не отправляются автоматически'].concat(
+            'Экспорт JSON — отдельное действие; данные GPS не отправляются автоматически']).concat(
                 db.sourceMetadata&&Array.isArray(db.sourceMetadata.providers)?db.sourceMetadata.providers.reduce((rows,provider)=>rows.concat([
                     'Поставщик: '+clean(provider.title||provider.id)+' • дата публикации '+clean(provider.publishedAt),
                     'Позиции источника: '+clean(provider.positionRecords)+' • включено '+clean(provider.acceptedPositionRecords)+' • строк с ошибками '+clean(provider.rejectedRows),

@@ -16,13 +16,18 @@ function presentation(alert) {
     const reference = alert.limitReference && alert.limitReference.state === 'known' ? alert.limitReference.valueKmh : null;
     const databaseLimit = validLimit(alert.cameraLimitKmh) ? Math.round(alert.cameraLimitKmh) : validLimit(reference) ? Math.round(reference) : null;
     const limit = roadLimit === null ? databaseLimit : roadLimit, limitScope = roadLimit !== null ? 'road' : databaseLimit !== null ? 'reference' : 'unknown';
-    const speed = Number.isFinite(alert.speedKmh) && alert.speedKmh >= 0 && alert.speedKmh <= 400 ? Math.round(alert.speedKmh) : null;
+    const rawSpeed = Number.isFinite(alert.speedKmh) && alert.speedKmh >= 0 && alert.speedKmh <= 400 ? alert.speedKmh : null;
+    const speed = rawSpeed === null ? null : Math.round(rawSpeed), warning = alert.speedWarning || {};
+    const overspeed = alert.roadConfirmed === true && alert.overspeed === true && roadLimit !== null && rawSpeed !== null && rawSpeed > roadLimit;
+    const hiddenBoundary = Number.isFinite(warning.displayBoundaryKmh) && rawSpeed > warning.displayBoundaryKmh && speed <= warning.displayBoundaryKmh ? warning.displayBoundaryKmh :
+        overspeed && speed <= roadLimit ? roadLimit : null;
     const direction = alert.captureDirectionVerified === true && ['front','rear'].indexOf(alert.captureDirection) >= 0 ? alert.captureDirection : 'unknown';
-    return { controls, extraControls: Math.max(0,known.length-controls.length), limit, limitScope, speed, direction,
+    return { controls, extraControls: Math.max(0,known.length-controls.length), limit, limitScope, speed,
+        speedText:speed===null?'—':hiddenBoundary===null?String(speed):'>'+hiddenBoundary, direction,
         distance: Number.isFinite(alert.distanceM) && alert.distanceM >= 0 ? Math.round(alert.distanceM/10)*10 : null,
         mode: alert.positionKind === 'intersection' ? 'Ориентир' : alert.roadConfirmed === true ? (alert.controlScope === 'enforcement-location' ? 'Рубеж' : 'По дороге') : 'Рядом',
         test: alert.test === true, calibration: alert.calibration === true, decoy: !!(alert.decoyReport && alert.decoyReport.state === 'reported'),
-        overspeed: alert.roadConfirmed === true && alert.overspeed === true && roadLimit !== null && speed !== null && speed > roadLimit };
+        overspeed, flashActive:overspeed&&warning.flashActive===true, flashPhase:overspeed&&warning.flashActive===true&&warning.flashPhase===true };
 }
 function card(alert, target) {
     const model=presentation(alert), px=Buffer.alloc(width*height*4);
@@ -71,7 +76,10 @@ function card(alert, target) {
     else if(model.decoy){rect(63,1,86,20,[36,30,20],255);text('Муляж',70,17,18,amber,72);}
     const distanceText=model.distance === null ? '— м' : model.distance >= 1000 ? (model.distance/1000).toFixed(1)+' км' : model.distance+' м';
     text(distanceText,63,46,32,white,166);
-    text(model.speed === null ? '— км/ч' : model.speed+' км/ч',231,42,18,model.overspeed?red:white,86);
+    // Units have their own line, so a truthful fractional boundary such as
+    // >180 fits without dropping the km/h suffix or hiding the distance.
+    text('км/ч',271,17,18,muted,45);
+    text(model.speedText,231,42,18,model.overspeed&&(!model.flashActive||model.flashPhase)?red:white,86);
     model.controls.forEach((type,index)=>{const x=6+index*106;icon(type,x,53);text(types[type],x+27,71,18,white,73);});
     text(model.test||model.calibration?'ТЕСТ':model.limitScope==='reference'?model.mode+' • база':model.mode,7,90,18,muted,150);
     if(model.extraControls)text('+'+model.extraControls,158,90,18,amber,38);

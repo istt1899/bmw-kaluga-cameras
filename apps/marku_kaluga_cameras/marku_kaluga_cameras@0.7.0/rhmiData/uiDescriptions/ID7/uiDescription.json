@@ -2549,6 +2549,414 @@
               }
             }
           ]
+        },
+        "560": {
+          "type": "label",
+          "name": "cameraOverspeedHead",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Превышение скорости",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "561": {
+          "type": "button",
+          "name": "cameraOverspeedRecommended",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Рекомендуется: мигание +0, звук выкл (+20)",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "562": {
+          "type": "label",
+          "name": "cameraOverspeedStatus",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Превышение: нет подтверждённых настроек",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "563": {
+          "type": "label",
+          "name": "cameraOverspeedHint",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Знак не меняется. 60/+20: сигнал только свыше 80 км/ч",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "564": {
+          "type": "checkBox",
+          "name": "cameraVisualFlash",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Мигание при превышении",
+                "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": true,
+                "type": "Bool"
+              }
+            }
+          ]
+        },
+        "565": {
+          "type": "slider",
+          "name": "cameraVisualOffset",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "TextDescription": {
+                "value": "Порог мигания: нет подтверждённых данных",
+                "type": "Text"
+              },
+              "TextDescriptionVisible": {
+                "value": true,
+                "type": "Bool"
+              },
+              "MiddleIndicatorVisible": {
+                "value": false,
+                "type": "Bool"
+              },
+              "MinValue": {
+                "value": 0,
+                "type": "SInt"
+              },
+              "MaxValue": {
+                "value": 30,
+                "type": "SInt"
+              },
+              "NumberOfSteps": {
+                "value": 30,
+                "type": "SInt"
+              },
+              "Value": {
+                "value": 0,
+                "type": "SInt"
+              }
+            }
+          ]
+        },
+        "566": {
+          "type": "checkBox",
+          "name": "cameraSoundEnabled",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Включать звуковой сигнал",
+                "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": false,
+                "type": "Bool"
+              }
+            }
+          ]
+        },
+        "567": {
+          "type": "slider",
+          "name": "cameraSoundOffset",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "TextDescription": {
+                "value": "Порог звука: нет подтверждённых данных",
+                "type": "Text"
+              },
+              "TextDescriptionVisible": {
+                "value": true,
+                "type": "Bool"
+              },
+              "MiddleIndicatorVisible": {
+                "value": false,
+                "type": "Bool"
+              },
+              "MinValue": {
+                "value": 0,
+                "type": "SInt"
+              },
+              "MaxValue": {
+                "value": 30,
+                "type": "SInt"
+              },
+              "NumberOfSteps": {
+                "value": 30,
+                "type": "SInt"
+              },
+              "Value": {
+                "value": 20,
+                "type": "SInt"
+              }
+            }
+          ]
+        },
+        "568": {
+          "type": "label",
+          "name": "cameraAudioStatus",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Звук недоступен: канал BMW не подтверждён",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "569": {
+          "type": "button",
+          "name": "cameraGpsReset",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Сбросить историю GPS",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "570": {
+          "type": "label",
+          "name": "cameraGpsResetHint",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Начать новый сеанс после ошибки UTC; дождитесь свежих координат",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "571": {
+          "type": "label",
+          "name": "cameraFacing",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Куда смотрит объектив OSM: неизвестно",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "572": {
+          "type": "label",
+          "name": "cameraCoverage",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Полнота базы не подтверждена",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "573": {
+          "type": "label",
+          "name": "cameraCoverageLimits",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Лимиты: прямые — • справочные — • неизвестные —",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "574": {
+          "type": "label",
+          "name": "cameraCoverageRoad",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Дорожные зоны — • с лимитом — • без зоны —",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "575": {
+          "type": "label",
+          "name": "cameraCoverageDirection",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Объектив OSM: известно — • сторона фиксации: —",
+                "type": "Text"
+              }
+            }
+          ]
         }
       },
       "properties": {

@@ -110,9 +110,14 @@ const DIAG_NAMES = cameraDiagnostics.PAGE_KEYS.map(k => 'cameraDiag_' + k).conca
     'cameraDiagCalibration','cameraDiagAudio','cameraDiagExport','cameraDiagPrev','cameraDiagNext','cameraDiagMore','cameraDiagResultMore']);
 const CAMERA_NAMES = ['cameraStatus', 'cameraAlert', 'cameraDatabase', 'cameraDate', 'cameraGps',
     'cameraEnable', 'cameraCluster', 'cameraHud', 'cameraUpdate', 'cameraRollback', 'cameraDiagnostics', 'cameraInfo', 'cameraDescription',
-    'cameraMotion','cameraStreet','cameraCommand','cameraCommandMore','cameraLimit','cameraDirection','cameraResultMore'];
+    'cameraMotion','cameraStreet','cameraCommand','cameraCommandMore','cameraLimit','cameraDirection','cameraFacing','cameraResultMore',
+    'cameraCoverage','cameraCoverageLimits','cameraCoverageRoad','cameraCoverageDirection'];
 const PREFERENCE_NAMES = ['cameraPreferencesHead','cameraWarningDistance','cameraPreferencesStatus','cameraPreferencesHint']
     .concat(cameraView.ALERT_TYPES.map(type=>'cameraType_'+type.key));
+const OVERSPEED_CHECKS = {cameraVisualFlash:'visualFlash',cameraSoundEnabled:'soundEnabled'};
+const OVERSPEED_SLIDERS = {cameraVisualOffset:{key:'visualOffsetKmh',label:'Порог мигания'},cameraSoundOffset:{key:'soundOffsetKmh',label:'Порог звука'}};
+const OVERSPEED_NAMES = ['cameraOverspeedHead','cameraOverspeedRecommended','cameraOverspeedStatus','cameraOverspeedHint',
+    'cameraAudioStatus','cameraGpsReset','cameraGpsResetHint'].concat(Object.keys(OVERSPEED_CHECKS),Object.keys(OVERSPEED_SLIDERS));
 const CARD_MOVE_NAMES = {up:'cameraCardUp',down:'cameraCardDown',left:'cameraCardLeft',right:'cameraCardRight'};
 const CARD_SLIDERS = {cameraCardX:{key:'x',min:0,max:1000,label:'По горизонтали',divisor:10},
     cameraCardY:{key:'y',min:0,max:1000,label:'По вертикали',divisor:10},cameraCardScale:{key:'scalePct',min:75,max:150,label:'Размер предупреждения'},
@@ -127,7 +132,7 @@ const HIDE_SETTLE_MS = 800;
 const HMI_CONTEXT = ['de.bmw.infotainment.hmi.hmicontext.HMIContext', 'HMI_CID'];
 const { t } = i18n;
 let cameraClientSequence = 0;
-const CAMERA_TERMINAL_PHASES = ['finished','shown','error','unconfirmed','played','timeout'];
+const CAMERA_TERMINAL_PHASES = ['finished','shown','error','unconfirmed','played','timeout','unavailable','outcome-unknown'];
 const QR_DIR = path.join(fs.existsSync('/dev/shm') ? '/dev/shm' : os.tmpdir(),
     `robertn_waze_cluster_qr_${typeof process.getuid === 'function' ? process.getuid() : 'x'}`);
 
@@ -260,7 +265,7 @@ class WazeClusterApp extends OnlineApp {
             AA_ENABLE_NAME, AA_DISABLE_NAME, AA_ZOOM_NAME, AA_ZOOM_OUT_NAME, AA_ZOOM_IN_NAME, AA_CARD_NAME, RESTART_NAME, GUIDE_NAME,
             HEAD_GENERAL_NAME, HEAD_HUD_NAME, SHOW_ON_NAME, HUD_NAME, HUD_SIZE_NAME, HUD_OPACITY_NAME, HUD_POS_NAME]
             .concat(Object.values(HUD_MOVE_NAMES), [HUD_CENTRE_NAME, CAPTURE_NAME, CAPTURE_STATUS,
-                LOGS_NAME, LOGS_SAVE, LOGS_STATUS, LOGS_QR, LOGS_URL, CAMERA_LINK], LOGS_ROW_NAMES, CAMERA_NAMES, DIAG_NAMES, CARD_NAMES, PREFERENCE_NAMES);
+                LOGS_NAME, LOGS_SAVE, LOGS_STATUS, LOGS_QR, LOGS_URL, CAMERA_LINK], LOGS_ROW_NAMES, CAMERA_NAMES, DIAG_NAMES, CARD_NAMES, PREFERENCE_NAMES, OVERSPEED_NAMES);
         names.forEach((name) => { this._components[name] = rhmi.getByName(name); });
         const missing = names.filter((name) => !this._components[name]);
         if (missing.length) {
@@ -346,6 +351,30 @@ class WazeClusterApp extends OnlineApp {
                 delete this._written['selected:'+name];
                 this._renderAlertPreferences();
             });
+        });
+        this._bind('cameraOverspeedRecommended',()=>{
+            if(cameraView.overspeedPreferences(this._cameras.state).available)
+                this._cameraCommand(Object.assign({cmd:'overspeed-preferences'},cameraView.OVERSPEED_RECOMMENDED));
+        });
+        Object.keys(OVERSPEED_CHECKS).forEach(name=>{
+            this._bind(name,()=>{
+                const prefs=cameraView.overspeedPreferences(this._cameras.state),key=OVERSPEED_CHECKS[name];
+                if(prefs.available){const patch={cmd:'overspeed-preferences'};patch[key]=!prefs[key];this._cameraCommand(patch);}
+            });
+            this._components[name].on('action',()=>{
+                delete this._written['selected:'+name];this._renderOverspeedPreferences();
+            });
+        });
+        Object.keys(OVERSPEED_SLIDERS).forEach(name=>this._components[name].on('changed',step=>{
+            const prefs=cameraView.overspeedPreferences(this._cameras.state),key=OVERSPEED_SLIDERS[name].key;
+            if(prefs.available&&Number.isInteger(step)&&step>=0&&step<=30&&step!==prefs[key]){
+                const patch={cmd:'overspeed-preferences'};patch[key]=step;this._cameraCommand(patch);
+            }
+            delete this._written['cell:'+name+':0:Value'];setImmediate(()=>this._renderOverspeedPreferences());
+        }));
+        this._bind('cameraGpsReset',()=>{
+            const state=this._cameras.state;
+            if(state&&state.capabilities&&state.capabilities.gpsReset===true)this._cameraCommand({cmd:'gps-reset'});
         });
         this._bind('cameraResultMore', () => this._nextCameraResult());
         this._bind('cameraDiagResultMore', () => this._nextCameraResult());
@@ -435,6 +464,9 @@ class WazeClusterApp extends OnlineApp {
                 if(entry.name.indexOf('cameraType_')===0){
                     delete this._written['selected:'+entry.name];
                     this._renderAlertPreferences();
+                }
+                if(Object.prototype.hasOwnProperty.call(OVERSPEED_CHECKS,entry.name)){
+                    delete this._written['selected:'+entry.name];this._renderOverspeedPreferences();
                 }
             }
         });
@@ -804,7 +836,8 @@ class WazeClusterApp extends OnlineApp {
         const commandName={'display-test':'тест предупреждения','calibration-test':'проверка границ',
             'display-test-stop':'сохранение и остановка теста','card-layout':'настройка предупреждения',
             'card-layout-reset':'сброс настроек предупреждения','card-move':'положение предупреждения',
-            'alert-preferences':'настройки предупреждений'}[message.cmd]||message.cmd;
+            'alert-preferences':'настройки предупреждений','overspeed-preferences':'настройки превышения',
+            'gps-reset':'сброс истории GPS; ожидайте свежие координаты'}[message.cmd]||message.cmd;
         const pending={message:'Ожидание ответа: '+commandName,command:message.cmd,target:message.target,requestId,pending:true};
         this._cameraFeedback=pending; this._cameraPending=pending;
         if (!this._cameras.send(Object.assign({},message,{requestId}))) {
@@ -1026,6 +1059,36 @@ class WazeClusterApp extends OnlineApp {
         });
     }
 
+    _renderOverspeedPreferences() {
+        if(!this._cameraState||this._shutdownPromise)return;
+        const state=this._cameras.state,prefs=cameraView.overspeedPreferences(state),feedback=this._cameraFeedback;
+        const temporary=state&&state.storage&&state.storage.persistent===false?' • настройки временные':'';
+        this._write('cameraOverspeedHead','Превышение скорости');
+        this._write('cameraOverspeedRecommended','Рекомендуется: мигание +0, звук выкл (+20)');
+        this._setEnabled('cameraOverspeedRecommended',prefs.available);
+        this._write('cameraOverspeedStatus',!prefs.available?prefs.reason:
+            'Мигание '+(prefs.visualFlash?'вкл':'выкл')+' • звук выбран '+(prefs.soundEnabled?'вкл':'выкл')+temporary);
+        this._write('cameraOverspeedHint',feedback&&feedback.command==='overspeed-preferences'?feedback.message:
+            'Знак не меняется. 60/+20: сигнал только свыше 80 км/ч');
+        this._write('cameraVisualFlash','Мигание при превышении');
+        this._write('cameraSoundEnabled','Включать звуковой сигнал');
+        Object.keys(OVERSPEED_CHECKS).forEach(name=>{
+            this._setEnabled(name,prefs.available);this._setSelected(name,prefs.available?prefs[OVERSPEED_CHECKS[name]]:false);
+        });
+        Object.keys(OVERSPEED_SLIDERS).forEach(name=>{
+            const config=OVERSPEED_SLIDERS[name];
+            this._writeCell(name,'TextDescription',config.label+': '+(prefs.available?'+'+prefs[config.key]+' км/ч':'нет подтверждённых данных'),'Text',0);
+            this._writeCell(name,'Value',prefs.available?prefs[config.key]:0,'SInt',0);
+            this._setEnabled(name,prefs.available);
+        });
+        this._write('cameraAudioStatus','Звук '+(prefs.audioAvailable?'доступен':'недоступен')+': '+prefs.audioReason);
+        const resetAvailable=!!(state&&state.capabilities&&state.capabilities.gpsReset===true),reset=state&&state.gpsReset||{};
+        this._write('cameraGpsReset','Сбросить историю GPS');this._setEnabled('cameraGpsReset',resetAvailable);
+        this._write('cameraGpsResetHint',!resetAvailable?'Для сброса истории GPS обновите сервис камер':
+            feedback&&feedback.command==='gps-reset'?feedback.message:
+            reset.reason||reset.message||'После ошибки UTC начните новый сеанс и дождитесь свежих координат');
+    }
+
     _renderCameras() {
         if (!this._cameraState || this._shutdownPromise) return;
         const view = cameraView.model(this._cameras.state);
@@ -1038,6 +1101,7 @@ class WazeClusterApp extends OnlineApp {
         Object.keys(view.enabled).forEach((name) => this._setEnabled(name, view.enabled[name]));
         this._setEnabled('cameraResultMore',true);
         this._renderAlertPreferences();
+        this._renderOverspeedPreferences();
         this._renderCameraCard();
         this._renderDiagnostics();
     }

@@ -374,8 +374,11 @@ async function main() {
     assert.deepStrictEqual(cameraOrder.slice(calibrationAt,calibrationAt+calibrationNames.length),calibrationNames);
     const prefsAt=cameraOrder.indexOf('cameraPreferencesHead');
     assert.strictEqual(cameraOrder[prefsAt-1],'cameraHud','warning preferences follow output toggles on the first camera page');
-    assert.deepStrictEqual(cameraOrder.slice(prefsAt,calibrationAt),['cameraPreferencesHead','cameraWarningDistance','cameraPreferencesStatus']
+    const overspeedAt=cameraOrder.indexOf('cameraOverspeedHead');
+    assert.deepStrictEqual(cameraOrder.slice(prefsAt,overspeedAt),['cameraPreferencesHead','cameraWarningDistance','cameraPreferencesStatus']
         .concat(require('../src/view_model.js').ALERT_TYPES.map(type=>'cameraType_'+type.key),['cameraPreferencesHint']));
+    assert.deepStrictEqual(cameraOrder.slice(overspeedAt,calibrationAt),['cameraOverspeedHead','cameraOverspeedRecommended','cameraOverspeedStatus',
+        'cameraVisualFlash','cameraVisualOffset','cameraSoundEnabled','cameraSoundOffset','cameraAudioStatus','cameraOverspeedHint','cameraGpsReset','cameraGpsResetHint']);
     calibrationNames.forEach(name=>{
         const id=Object.keys(cameraPage.components).find(key=>cameraPage.components[key].name===name),d=cameraPage.components[id],focus=name==='cameraHeadCalibration'?0:3;
         assert.strictEqual(d.properties.Focusable.value,focus);

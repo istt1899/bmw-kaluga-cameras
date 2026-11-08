@@ -4,13 +4,13 @@
     {
       "id": "marku_kaluga_cameras",
       "kind": "app",
-      "version": "0.6.0",
+      "version": "0.7.0",
       "title": "Waze Стрелка",
       "description": "Waze on Cluster с настройками карты, HUD, CarPlay, Android Auto и дополнительным разделом камер",
       "build": "unit",
       "requires": {
         "waze-on-cluster": "0.9.0",
-        "marku-kaluga-cameras": "0.6.0",
+        "marku-kaluga-cameras": "0.7.0",
         "mgu-deploy": "0.7.11"
       },
       "uninstallable": true,
@@ -18,18 +18,18 @@
         "ID7"
       ],
       "artifact": {
-        "name": "marku_kaluga_cameras@0.6.0.tgz",
-        "size": 127696,
-        "sha256": "271ccc4813f7e462daa31680f133ef8c871c5528d10933488b41f5a22ea6a417",
-        "url": "https://github.com/istt1899/bmw-kaluga-cameras/releases/download/marku_kaluga_cameras@0.6.0/marku_kaluga_cameras@0.6.0.tgz"
+        "name": "marku_kaluga_cameras@0.7.0.tgz",
+        "size": 130836,
+        "sha256": "ef42d79938839f459be43f80aee54f4c5019efdf752498a59ed498b7e022bb18",
+        "url": "https://github.com/istt1899/bmw-kaluga-cameras/releases/download/marku_kaluga_cameras@0.7.0/marku_kaluga_cameras@0.7.0.tgz"
       },
-      "icon": "https://github.com/istt1899/bmw-kaluga-cameras/releases/download/marku_kaluga_cameras@0.6.0/marku_kaluga_cameras.png",
+      "icon": "https://github.com/istt1899/bmw-kaluga-cameras/releases/download/marku_kaluga_cameras@0.7.0/marku_kaluga_cameras.png",
       "iconSha256": "6afaa3655ab866b5f969685340d26b8774f1f72c32e30de275623119999b0dfd"
     },
     {
       "id": "marku-kaluga-cameras",
       "kind": "tool",
-      "version": "0.6.0",
+      "version": "0.7.0",
       "title": "Waze Strelka camera service",
       "description": "Local Kaluga OSM camera snapshot, strict GPS diagnostics and optional verified-road camera alerts",
       "optional": true,
@@ -45,10 +45,10 @@
         5000
       ],
       "artifact": {
-        "name": "marku-kaluga-cameras@0.6.0.tgz",
-        "size": 568022,
-        "sha256": "159dd93789f33246d8849765b74b13fddd9150d7beea336368a8ff458f8c1f6d",
-        "url": "https://github.com/istt1899/bmw-kaluga-cameras/releases/download/marku-kaluga-cameras@0.6.0/marku-kaluga-cameras@0.6.0.tgz"
+        "name": "marku-kaluga-cameras@0.7.0.tgz",
+        "size": 571792,
+        "sha256": "6803b036d111048ff32ab2cba7fa40eff3a6105d80b1cc520feee7f626fa51f5",
+        "url": "https://github.com/istt1899/bmw-kaluga-cameras/releases/download/marku-kaluga-cameras@0.7.0/marku-kaluga-cameras@0.7.0.tgz"
       }
     },
     {

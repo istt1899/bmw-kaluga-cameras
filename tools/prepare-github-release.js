@@ -12,6 +12,7 @@ const path = require('path');
 const crypto = require('crypto');
 const zlib = require('zlib');
 const canonicalBytes = require('./canonical-bytes');
+const releaseDownloads = require('./release-downloads');
 const ROOT = path.resolve(__dirname, '..');
 const REPOSITORY = 'istt1899/bmw-kaluga-cameras';
 const INPUT = path.join(ROOT, 'dist', 'publish', 'kaluga-cameras');
@@ -122,7 +123,7 @@ function collectSource() {
     });
   }
   ['README.md', 'LICENSE'].forEach(add);
-  ['NOTICE', 'THIRD_PARTY_NOTICES.md', 'package.json', 'package-lock.json', '.gitignore', '.gitattributes', 'catalog-providers.json', 'tools/canonical-bytes.js'].forEach(name => {
+  ['NOTICE', 'THIRD_PARTY_NOTICES.md', 'package.json', 'package-lock.json', '.gitignore', '.gitattributes', 'catalog-providers.json', 'store-downloads.json', 'tools/canonical-bytes.js', 'tools/release-downloads.js'].forEach(name => {
     if (fs.existsSync(path.join(ROOT, name))) add(name);
   });
   ['apps', 'native', 'data', 'docs', 'specs', 'tools/fixtures', '.github'].forEach(tree);
@@ -146,6 +147,8 @@ function main() {
   const archives = new Map();
   const names = new Set();
   const version = catalog.components[0].version;
+  const mirrorsFile = path.join(ROOT,'store-downloads.json');
+  const mirrors = releaseDownloads.create(fs.existsSync(mirrorsFile) ? JSON.parse(fs.readFileSync(mirrorsFile,'utf8')) : null);
   catalog.components.forEach(component => {
     assert(expected[component.id] === component.kind && !names.has(component.id), 'Unexpected or duplicate component');
     assert(/^\d+\.\d+\.\d+$/.test(component.version), 'Invalid component version');
@@ -159,7 +162,8 @@ function main() {
     const bytes = fs.readFileSync(target);
     assert(bytes.length === artifact.size && sha256(bytes) === artifact.sha256, 'Artifact checksum/size mismatch: ' + artifact.name);
     compareSource(tarMembers(target, component.kind), component); archives.set(artifact.name, bytes); names.add(component.id);
-    artifact.url = 'https://github.com/' + REPOSITORY + '/releases/download/' + component.id + '@' + component.version + '/' + artifact.name;
+    artifact.url = mirrors.url(component.id,component.version,artifact.name,artifact.size,artifact.sha256,
+      'https://github.com/' + REPOSITORY + '/releases/download/' + component.id + '@' + component.version + '/' + artifact.name);
   });
   const ownComponents = catalog.components.slice();
   const appComponent = ownComponents.find(component => component.kind === 'app');
@@ -168,7 +172,8 @@ function main() {
     'rhmiData', 'variantGroups', 'Common', 'images', 'kaluga_camera.png'),
     'apps/' + appComponent.id + '/' + appManifest.tree + '/rhmiData/variantGroups/Common/images/kaluga_camera.png');
   const iconName = appComponent.id + '.png';
-  appComponent.icon = 'https://github.com/' + REPOSITORY + '/releases/download/' + appComponent.id + '@' + version + '/' + iconName;
+  appComponent.icon = mirrors.url(appComponent.id+'-icon',version,iconName,iconBytes.length,sha256(iconBytes),
+    'https://github.com/' + REPOSITORY + '/releases/download/' + appComponent.id + '@' + version + '/' + iconName);
   appComponent.iconSha256 = sha256(iconBytes);
   const providers = JSON.parse(fs.readFileSync(path.join(ROOT, 'catalog-providers.json'), 'utf8'));
   assert(providers.length === 2, 'Expected shared Waze service and cluster renderer');

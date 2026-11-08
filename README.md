@@ -76,6 +76,10 @@ python tools/check-camera-source-updates.py --output-dir ../output/camera-source
 
 ## Обновление
 
+Для 0.7.0 рекомендуемый HTTPS-источник — **https://tinyurl.com/24appypy**. Каталог и архивы загружаются с raw.githubusercontent.com; каждый архив и значок закреплены за отдельным commit SHA и проверяются по прежним SHA-256/размерам. GitHub Releases сохраняет исходные архивы, но его browser download endpoint отвечал 504 как локально, так и в GitHub Actions. Если выбран источник GitHub Releases и появляется 504, добавьте HTTPS-источник по короткой ссылке.
+
+USB-запасной вариант: [Waze-Strelka-0.7.0-USB.zip](https://raw.githubusercontent.com/istt1899/bmw-kaluga-cameras/64520258d0828946c18d8efb71115be8b430b8a6/Waze-Strelka-0.7.0-USB.zip). Распакуйте папку mgu-repo в корень рабочей флешки и откройте Store → USB; обновляются оба компонента. Общие зависимости должны быть уже установлены. Пакеты побайтно те же.
+
 Источник в Store: `istt1899/bmw-kaluga-cameras`, канал **Releases**. Прямой HTTPS-каталог: `https://raw.githubusercontent.com/istt1899/bmw-kaluga-cameras/main/catalog.json`; короткий адрес: `https://tinyurl.com/24appypy`.
 
 Обновить **приложение и сервис камер до 0.7.0** на стоящей машине. Название прежнего приложения «Камеры • Калуга» станет **Waze Стрелка**. Его идентификатор `marku_kaluga_cameras` и UUID сохранены для обновления на месте. Сервис камер сохраняет идентификатор `marku-kaluga-cameras`. Общие зависимости: `waze-on-cluster` 0.9.0, `cluster-render` 0.4.0, `mgu-deploy` 0.7.11 или новее. Публичный каталог включает проверенные ссылки на официальные общие сервисы.

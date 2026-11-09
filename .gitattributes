@@ -1,0 +1,4 @@
+*.tgz binary
+*.png binary
+*.zip binary
+* text=auto eol=lf

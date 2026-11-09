@@ -69,9 +69,39 @@ const PAGE_KEYS = ['stamp','versions','page','command','commandMore'].concat(Arr
 let snapshotSequence = 0;
 function capture(state, version, now) {
     const at = Number.isFinite(now) ? now : Date.now();
+    const captured=JSON.parse(JSON.stringify(state||{}));
+    if(!captured.appClock){
+        const wallMs=Date.now();captured.appClock={wallMs,wallUtc:utc(wallMs),clockDiscontinuity:null,lastRollback:null};
+    }
     // Only the service's public state is captured, never a transport/client or SDK object.
     return {schema:1,id:'S'+at.toString(36).toUpperCase()+'-'+(++snapshotSequence),capturedAtMs:at,
-        appVersion:version,state:JSON.parse(JSON.stringify(state || {}))};
+        appVersion:version,state:captured};
+}
+function clockRows(state) {
+    const s=state||{},clock=s.clock||{},app=s.appClock||{},fix=s.gpsFix||{},input=s.gpsInput||{};
+    const motionUtc=Number.isFinite(fix.motionTimeMs)?fix.motionTimeMs:fix.timeMs;
+    const motionAge=Number.isFinite(clock.serviceWallMs)&&Number.isFinite(motionUtc)?clock.serviceWallMs-motionUtc:null;
+    const ms=value=>Number.isFinite(value)?(value>0?'+':'')+value+' мс':'неизвестно';
+    const flag=value=>value===true?'да':value===false?'нет':'неизвестно';
+    const knownUtc=(text,value)=>typeof text==='string'&&text?text:Number.isFinite(value)?utc(value):'неизвестно';
+    return ['Отказ/статус: '+clean(action(s,'displayTest').code)+' • часы '+clean(clock.issue),
+        'Часы приложения: '+knownUtc(app.wallUtc,app.wallMs),
+        'Часы сервиса: '+knownUtc(clock.serviceWallUtc,clock.serviceWallMs),
+        'Полный RMC UTC BMW: '+knownUtc(clock.sourceUtc,clock.sourceUtcMs),
+        'Δ сервис − RMC: '+ms(clock.sourceDeltaMs),
+        'Ручной cutoff UTC: '+knownUtc(clock.admissionAfterUtc,clock.admissionAfterUtcMs),
+        'Пакет: возраст '+(Number.isFinite(clock.lastPacketAgeMs)?clock.lastPacketAgeMs+' мс':'неизвестно')+
+            ' • receipt Δ '+ms(clock.packetReceiptDeltaMs),
+        'Разрыв часов приёма: '+flag(clock.receiptClockDiscontinuity),
+        'Скорость: '+clean(fix.speedKmh)+' км/ч • возраст '+(Number.isFinite(motionAge)&&motionAge>=0?motionAge+' мс':'неизвестно'),
+        'Сброс GPS: '+clean((s.gpsReset||{}).phase),
+        'Причина часов: '+clean(clock.reason),
+        'Причина теста: '+clean(action(s,'displayTest').reason),
+        'Отказ GPS: '+clean(input.rejectReason),
+        'Откат часов приложения замечен: '+flag(app.clockDiscontinuity),
+        'При расхождении проверьте дату BMW; после исправления явно сбросьте историю GPS и дождитесь свежей серии',
+        'Тест: скорость не выше 1 км/ч, свежесть 3 с, будущее до +500 мс; точность 15 м нужна дорожным предупреждениям',
+        'Приложение не устанавливает, какие часы истинные'];
 }
 function parts(text) {
     let remaining = clean(text), rows = [];
@@ -100,7 +130,7 @@ function commandPage(state, local, blockIndex) {
         label:blocks>1?'Результат • строки '+(start+1)+'–'+Math.min(lines.length,start+2)+'/'+lines.length+' • далее →':'Результат • показан полностью'};
 }
 function reportPage(report, live, version, pageIndex, blockIndex, localResult, commandBlockIndex) {
-    const snap=report||capture(live,version,(live||{}).observedAtMs), s=snap.state||{}, frozen=!!report;
+    const snap=report||capture(live,version,((live||{}).appClock||{}).wallMs), s=snap.state||{}, frozen=!!report;
     const p=Math.max(0,Math.min(5,pageIndex||0)), f=s.gpsFix||{}, input=s.gpsInput||{}, timing=input.nmeaTiming||{};
     const g=s.guidance||{}, c=s.alert||s.nearest||{}, db=s.database||{}, update=s.databaseUpdate||{},
         recovery=update.recovery||{}, durability=update.durability||{}, r=s.rendererDetails||{}, layout=r.layout||r.geometry||{};
@@ -151,7 +181,7 @@ function reportPage(report, live, version, pageIndex, blockIndex, localResult, c
             'Тест: '+clean(action(s,'displayTest').reason||'доступен'),
             'Улица '+clean((s.street||{}).name)+' • '+clean((s.street||{}).source||'BMW')+' • '+clean((s.street||{}).reason),
             existing.database,'База: '+clean((s.databaseUpdate||{}).message|| (s.databaseUpdate||{}).phase),'Ошибка: '+clean(s.controlError||s.error)],
-        [existing.position,existing.fixUtc,existing.age,existing.accuracy,existing.motion,existing.gnss,
+        clockRows(s).concat([existing.position,existing.fixUtc,existing.age,existing.accuracy,existing.motion,existing.gnss,
             'RMC UTC '+clean(timing.rmcTime)+' • возраст '+n(timing.lastRmcAgeMs,0)+' мс',
             'GGA UTC '+clean(timing.ggaTime)+' • возраст '+n(timing.lastGgaAgeMs,0)+' мс',
             'GST UTC '+clean(timing.gstTime)+' • возраст '+n(timing.lastGstAgeMs,0)+' мс',
@@ -159,7 +189,7 @@ function reportPage(report, live, version, pageIndex, blockIndex, localResult, c
             existing.bridge,'GPS: '+clean(s.gps),existing.rejectReason,
             'Точная скорость GPS: '+clean(f.speedKmh)+' км/ч',
             'Ручной сброс GPS: '+JSON.stringify(s.gpsReset||null),
-            'После сброса история не используется; ожидаются новые пригодные координаты'],
+            'После сброса история не используется; ожидаются новые пригодные координаты']),
         ['Объект: '+clean(c.id), 'Расстояние: '+n(c.distanceM===undefined?c.distance:c.distanceM,0)+' м • '+clean(c.positionKind),
             'Совпадение с выбранными типами: '+(typeof c.filterMatched==='boolean'?(c.filterMatched?'да':'нет'):'не сообщается'),
             'Источник: '+clean(c.provenance||c.source)+' • '+clean(c.sourceUrl||c.positionSourceUrl),
@@ -253,4 +283,4 @@ function reportPage(report, live, version, pageIndex, blockIndex, localResult, c
     for(let i=0;i<PAGE_ROWS;i++) rows['row'+(i+1)]=lines[block*PAGE_ROWS+i]||' ';
     return {rows,page:p,block,blocks,title:PAGE_TITLES[p],report:snap,command:result};
 }
-module.exports = { KEYS, values, REASONS, PAGE_KEYS, PAGE_TITLES, PAGE_ROWS, capture, reportPage, action, commandText, commandPage };
+module.exports = { KEYS, values, REASONS, PAGE_KEYS, PAGE_TITLES, PAGE_ROWS, capture, reportPage, action, commandText, commandPage, clockRows, commandLines:parts };

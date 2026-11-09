@@ -179,7 +179,7 @@ GpsDecoder.prototype.line = function (line) {
 };
 GpsDecoder.prototype.timingSnapshot = function (now) {
   var t = this.timing;
-  function age(part) { return part ? Math.max(0, now - part.received) : null; }
+  function age(part) { return part && now >= part.received ? now - part.received : null; }
   return { rmcTime: t.RMC && t.RMC.text, ggaTime: t.GGA && t.GGA.text, gstTime: t.GST && t.GST.text,
     rmcGgaDeltaMs: t.RMC && t.GGA && t.RMC.tod !== null && t.GGA.tod !== null ? todDelta(t.GGA.tod, t.RMC.tod) : null,
     ggaGstDeltaMs: t.GGA && t.GST && t.GGA.tod !== null && t.GST.tod !== null ? todDelta(t.GST.tod, t.GGA.tod) : null,
@@ -244,8 +244,27 @@ GpsProvider.prototype.inputNmea = function (data) {
 };
 GpsProvider.prototype.diagnostics = function (now) {
   now = number(now) ? now : this.now();
-  function age(time) { return time === null ? null : Math.max(0, now - time); }
+  function age(time) { return number(time) && now >= time ? now - time : null; }
+  function iso(time) { return number(time) && isFinite(new Date(time).getTime()) ? new Date(time).toISOString() : null; }
+  var sourceUtc = this.bmwDecoder.lastParsedUtc, cutoff = this.bmwDecoder.admissionAfterUtc;
+  var receiptDelta = number(this.input.lastPacketAt) ? now - this.input.lastPacketAt : null;
+  var delta = number(sourceUtc) ? now - sourceUtc : null;
+  var issue = 'NONE', reason = 'Расхождение часов не установлено';
+  if (number(cutoff) && cutoff > now + 500) {
+    issue = 'RESET_BOUNDARY_FUTURE';
+    reason = 'Граница сброса GPS находится в будущем относительно часов сервиса; проверьте дату и время и после исправления явно сбросьте GPS снова';
+  } else if (receiptDelta !== null && receiptDelta < 0) {
+    issue = 'CLOCK_DISCONTINUITY'; reason = 'Часы изменились после приёма пакета; возраст пакета неизвестен';
+  } else if (delta !== null && receiptDelta !== null && receiptDelta <= MAX_AGE && (delta > MAX_AGE || delta < -500)) {
+    issue = 'UTC_MISMATCH'; reason = 'UTC GPS и часы сервиса расходятся или данные GPS устарели; проверьте дату и время, после исправления явно сбросьте GPS';
+  } else if (delta === null) {
+    issue = 'SOURCE_UTC_UNKNOWN'; reason = 'Полная дата и время RMC BMW пока неизвестны';
+  }
   return {
+    clock: { serviceWallMs: now, serviceWallUtc: iso(now), sourceUtcMs: number(sourceUtc) ? sourceUtc : null,
+      sourceUtc: iso(sourceUtc), sourceDeltaMs: delta, lastPacketAgeMs: receiptDelta !== null && receiptDelta >= 0 ? receiptDelta : null,
+      packetReceiptDeltaMs: receiptDelta, receiptClockDiscontinuity: receiptDelta === null ? null : receiptDelta < 0,
+      admissionAfterUtcMs: number(cutoff) ? cutoff : null, admissionAfterUtc: iso(cutoff), issue: issue, reason: reason },
     gpsBridge: { state: this.bridge.state, errorCode: this.bridge.errorCode, ageMs: age(this.bridge.changedAt) },
     gpsInput: { source: 'bmw-nmea', packets: this.input.packets, badPackets: this.input.badPackets, checksumErrors: this.input.checksumErrors,
       sentences: Object.assign({}, this.input.sentences), lastPacketAgeMs: age(this.input.lastPacketAt), fixUtcAgeMs: age(this.input.fixUtc),

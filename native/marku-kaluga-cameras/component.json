@@ -1,7 +1,7 @@
 {
   "id": "marku-kaluga-cameras",
   "kind": "tool",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "title": "Waze Strelka camera service",
   "description": "Local Kaluga OSM camera snapshot, strict GPS diagnostics and optional verified-road camera alerts",
   "optional": true,

@@ -363,36 +363,13 @@ async function main() {
         .slice(0, 4), ['Start capture', 'Capture: Unavailable', 'Save logs', 'Saved logs: Connecting…']);
     console.log('ok   the Logs page: Start capture and its row, Save logs and its row, QR code, address, five archives; a child of the main page');
 
-    const cameraPage=UI.containers['3'], cameraRows=xmlIds('3'), cameraXml=XML.split('<container id="3"')[1].split('<container id="4"')[0];
-    assert.deepStrictEqual(cameraRows.map(([id,type])=>`${id} ${type}`).sort(),
-        Object.entries(cameraPage.components).map(([id,d])=>`${id} ${d.type}`).sort(),'camera XML and JSON agree');
-    const calibrationNames=['cameraHeadCalibration','cameraCardTarget','cameraTestStart','cameraTestStop','cameraCardStatus','cameraCardPosition',
-        'cameraCardX','cameraCardY',
-        'cameraCardUp','cameraCardDown','cameraCardLeft','cameraCardRight','cameraCardScale','cameraCardBrightness','cameraCardTransparency',
-        'cameraCardSave','cameraCardReset','cameraCardHint','cameraCardStorage'];
-    const cameraOrder=cameraRows.map(([id])=>cameraPage.components[id].name), calibrationAt=cameraOrder.indexOf('cameraHeadCalibration');
-    assert.deepStrictEqual(cameraOrder.slice(calibrationAt,calibrationAt+calibrationNames.length),calibrationNames);
-    const prefsAt=cameraOrder.indexOf('cameraPreferencesHead');
-    assert.strictEqual(cameraOrder[prefsAt-1],'cameraHud','warning preferences follow output toggles on the first camera page');
-    const overspeedAt=cameraOrder.indexOf('cameraOverspeedHead');
-    assert.deepStrictEqual(cameraOrder.slice(prefsAt,overspeedAt),['cameraPreferencesHead','cameraWarningDistance','cameraPreferencesStatus']
-        .concat(require('../src/view_model.js').ALERT_TYPES.map(type=>'cameraType_'+type.key),['cameraPreferencesHint']));
-    assert.deepStrictEqual(cameraOrder.slice(overspeedAt,calibrationAt),['cameraOverspeedHead','cameraOverspeedRecommended','cameraOverspeedStatus',
-        'cameraVisualFlash','cameraVisualOffset','cameraSoundEnabled','cameraSoundOffset','cameraAudioStatus','cameraOverspeedHint','cameraGpsReset','cameraGpsResetHint']);
-    calibrationNames.forEach(name=>{
-        const id=Object.keys(cameraPage.components).find(key=>cameraPage.components[key].name===name),d=cameraPage.components[id],focus=name==='cameraHeadCalibration'?0:3;
-        assert.strictEqual(d.properties.Focusable.value,focus);
-        assert(new RegExp('<component id="'+id+'"[^>]*><property id="2" value="1"/><property id="3" value="'+focus+'"/>').test(cameraXml));
-    });
-    [['360',15,5],['361',18,18],['362',18,0]].forEach(([id,steps,value])=>{
-        const row=cameraPage.components[id].rows[0];
-        assert.deepStrictEqual([row.MinValue.value,row.MaxValue.value,row.NumberOfSteps.value,row.Value.value],[0,steps,steps,value]);
-    });
-    [['367',100],['368',164]].forEach(([id,value])=>{
-        const row=cameraPage.components[id].rows[0];
-        assert.deepStrictEqual([row.MinValue.value,row.MaxValue.value,row.NumberOfSteps.value,row.Value.value],[0,200,200,value]);
-    });
-    console.log('ok   first camera page contains target, pinned test, position, controller arrows and independent size/brightness/transparency sliders');
+    const cameraPage=UI.containers['3'],cameraRows=xmlIds('3');
+    const rootNames=cameraRows.map(([id])=>cameraPage.components[id].name);
+    assert.deepStrictEqual(rootNames.slice(2),['cameraDiagnostics','cameraAlertsLink','cameraTypesLink','cameraHudSetup','cameraMapSetup','cameraDatabaseLink']);
+    assert.strictEqual(rootNames.length,8,'title, short status and exactly six navigation rows');
+    assert.strictEqual(UI.containers['7'].properties.ParentState.value,3);
+    assert.strictEqual(UI.containers['8'].properties.ParentState.value,7);
+    console.log('ok   compact camera hub has six native child links; calibration and position have canonical native parents');
 
     const diagnosticPage = UI.containers['4'];
     const diagnosticRows = xmlIds('4');
@@ -417,8 +394,8 @@ async function main() {
     assert.deepStrictEqual(controllerStops.filter((name) => /^cameraDiag_/.test(name)).sort(), diagnosticNames,
         'the controller can stop on every diagnostic data row, including all rows below GPS');
     assert.deepStrictEqual(diagnosticRows.slice(0,9).map(([id]) => diagnosticPage.components[id].name),
-        ['cameraDiagTitle','cameraDiag_page','cameraDiag_stamp','cameraDiag_versions','cameraDiag_command','cameraDiag_commandMore',
-            'cameraDiagResultMore','cameraDiagFreeze','cameraDiagLive'],
+        ['cameraDiagTitle','cameraDiagSelector','cameraDiag_stamp','cameraDiag_versions','cameraDiag_page','cameraDiag_command','cameraDiag_commandMore',
+            'cameraDiagResultMore','cameraGpsReset'],
         'page, snapshot identity and live command result precede report data');
     const uniqueRhmiIds = matches(XML, /<(?:container|layoutGroup|component) id="(\d+)"/g).map((m) => m[1]);
     assert.strictEqual(uniqueRhmiIds.length, new Set(uniqueRhmiIds).size, 'RHMI ids stay globally unique');
@@ -532,147 +509,18 @@ async function main() {
             rmcGgaDeltaMs:-250,ggaGstDeltaMs:0,pairReason:'READY',lastRmcAgeMs:110,lastGgaAgeMs:200,lastGstAgeMs:200}};
         cameraState.nearest = {id:'osm:node:11980400006',title:'Светофор и скорость',description:'Спектр-Поток CCR0047',distanceM:30};
         cameraReply();
-        {
-        const lastCommand=(name,after)=>cameraCommands.slice(after||0).filter(m=>m.cmd===name).slice(-1)[0];
-        let calibrationResultId=100;
-        const confirmCommand=(command,message)=>{
-            cameraState.commandResult={id:++calibrationResultId,requestId:command.requestId,command:command.cmd,phase:'finished',message};
-            ['hud','map'].forEach(target=>{cameraState.rendererDetails[target].layout.settings=Object.assign({},cameraState.cardLayout[target]);});
-            cameraReply();
-        };
-        cameraState.rendererDetails={connection:'ready',hud:{state:'visible',layout:{canvas:{width:640,height:240},withinBounds:true,settings:Object.assign({},cameraState.cardLayout.hud)}},
-            map:{state:'visible',layout:{canvas:{width:1088,height:480},withinBounds:true,settings:Object.assign({},cameraState.cardLayout.map)}}};
-        cameraReply();
-        await until('camera calibration uses HUD profile',()=>byName.cameraCardTarget.shown()==='Настраивать: HUD'&&byName.cameraCardScale.cells['0:Value']===5&&
-            OnlineApp.instance._cameras.state.outputs.hud===true);
-        assert.strictEqual(byName.cameraCardUp.enabled,false,'moving a notification requires an active preview');
-        let before=cameraCommands.length;
+        byName.cameraHudSetup.emit('action');
+        await until('HUD calibration child requested',()=>rhmi.opened.includes('ST_OnlineApps_CameraCalibration'));
+        byName.ST_OnlineApps_WazeStrelkaCameras.emit('visible',{visible:false});
+        byName.ST_OnlineApps_CameraCalibration.emit('visible',{visible:true});
+        assert(byName.cameraCalibrationTitle.text.includes('HUD'));
+        assert.strictEqual(OnlineApp.instance._cameraCardTarget,'hud');
+        await until('fresh enabled camera outputs received',()=>OnlineApp.instance._cameras.state&&OnlineApp.instance._cameras.state.outputs.hud===true);
         byName.cameraTestStart.emit('action');
-        await until('HUD pinned preview request',()=>!!lastCommand('display-test',before));
-        let command=lastCommand('display-test',before);assert.strictEqual(command.target,'hud');
-        cameraState.displayTest={active:true,pinned:true,target:'hud',untilMs:0};confirmCommand(command,'Тест закреплён на HUD до завершения');
-        await until('HUD preview confirmed',()=>byName.cameraCardStatus.text.includes('HUD • закреплён')&&byName.cameraCardUp.enabled===true);
-        before=cameraCommands.length;byName.cameraCardScale.turn(1);
-        await until('notification scale request',()=>!!lastCommand('card-layout',before));
-        command=lastCommand('card-layout',before);assert.strictEqual(command.target,'hud');assert.strictEqual(command.scalePct,105);
-        await until('unconfirmed notification scale returns',()=>byName.cameraCardScale.cells['0:Value']===5);
-        cameraState.cardLayout.hud.scalePct=105;confirmCommand(command,'Размер сохранён');
-        await until('confirmed notification scale',()=>byName.cameraCardScale.cells['0:Value']===6);
-        before=cameraCommands.length;byName.cameraCardBrightness.turn(-1);
-        await until('notification brightness request',()=>!!lastCommand('card-layout',before));
-        command=lastCommand('card-layout',before);assert.strictEqual(command.brightnessPct,95);assert.strictEqual(command.target,'hud');
-        cameraState.cardLayout.hud.brightnessPct=95;confirmCommand(command,'Яркость сохранена');
-        await until('confirmed notification brightness',()=>byName.cameraCardBrightness.cells['0:Value']===17);
-        before=cameraCommands.length;byName.cameraCardTransparency.turn(1);
-        await until('notification transparency request',()=>!!lastCommand('card-layout',before));
-        command=lastCommand('card-layout',before);assert.strictEqual(command.opacityPct,95);assert.strictEqual(command.target,'hud');
-        cameraState.cardLayout.hud.opacityPct=95;confirmCommand(command,'Прозрачность сохранена');
-        await until('confirmed notification transparency',()=>byName.cameraCardTransparency.cells['0:Value']===1);
-        assert.strictEqual(cameraState.hudOpacityPct,95,'notification appearance does not change original HUD map opacity');
-        assert.deepStrictEqual(cameraState.cardLayout.map,{x:500,y:880,scalePct:100,brightnessPct:100,opacityPct:100});
-        before=cameraCommands.length;byName.cameraCardTarget.pick(1);
-        await until('active preview moves only to selected cluster target',()=>!!lastCommand('display-test',before));
-        command=lastCommand('display-test',before);assert.strictEqual(command.target,'map');
-        cameraState.displayTest.target='map';confirmCommand(command,'Тест закреплён на приборах');
-        await until('cluster profile independently selected',()=>byName.cameraCardTarget.shown()==='Настраивать: Приборы'&&
-            byName.cameraCardScale.cells['0:Value']===5&&byName.cameraCardBrightness.cells['0:Value']===18&&byName.cameraCardTransparency.cells['0:Value']===0&&
-            byName.cameraCardLeft.enabled===true);
-        byName.cameraCardLeft.emit('focus',{value:true});
-        await until('neutral before short click',()=>!!controllerEvent&&!OnlineApp.instance._holdBridge.status().requiresNewPress);
-        before=cameraCommands.length;byName.cameraCardLeft.emit('action');
-        await until('selected notification movement request',()=>!!lastCommand('card-move',before));
-        command=lastCommand('card-move',before);assert.strictEqual(command.target,'map');assert.strictEqual(command.direction,'left');
-        cameraState.cardLayout.map.x=490;confirmCommand(command,'Положение сохранено');
-        await until('confirmed notification position',()=>byName.cameraCardPosition.text.includes('X 49.0 %'));
-        before=cameraCommands.length;byName.cameraCardX.setStepValue(130);
-        await until('touch horizontal position request',()=>!!lastCommand('card-layout',before));
-        command=lastCommand('card-layout',before);assert.strictEqual(command.target,'map');assert.strictEqual(command.x,650);
-        cameraState.cardLayout.map.x=650;confirmCommand(command,'Положение X сохранено');
-        await until('horizontal position confirmed',()=>byName.cameraCardX.cells['0:Value']===130);
-        before=cameraCommands.length;byName.cameraCardY.setStepValue(100);
-        await until('touch vertical position request',()=>!!lastCommand('card-layout',before));
-        command=lastCommand('card-layout',before);assert.strictEqual(command.target,'map');assert.strictEqual(command.y,500);
-        cameraState.cardLayout.map.y=500;confirmCommand(command,'Положение Y сохранено');
-        await until('vertical position confirmed',()=>byName.cameraCardY.cells['0:Value']===100);
-        assert.strictEqual(cameraState.cardLayout.hud.x,500,'touch sliders only affect the selected profile');
-        // Sliders are touch-operated in this scenario; the actual controller
-        // focus must remain on Left after an ordinary Click on the same row.
-        byName.cameraCardLeft.emit('focus',{value:true});
-        await until('controller has a neutral baseline',()=>!!controllerEvent&&!OnlineApp.instance._holdBridge.status().requiresNewPress);
-        before=cameraCommands.length;OnlineApp.instance._lastPress={};byName.cameraCardLeft.emit('action');
-        await until('short click on focused arrow',()=>!!lastCommand('card-move',before));
-        command=lastCommand('card-move',before);confirmCommand(command,'Положение сохранено');
-        assert.strictEqual(OnlineApp.instance._cameraFocusedArrow,'left','a short click must not discard actual controller focus');
-        before=cameraCommands.length;controllerButton=2;controllerEvent({frontRotaryEncoderPushButton:2});
-        await until('held controller sends first move',()=>!!lastCommand('card-move',before));
-        command=lastCommand('card-move',before);
-        await sleep(220);
-        assert.strictEqual(cameraCommands.slice(before).filter(m=>m.cmd==='card-move').length,1,'hold waits for one terminal acknowledgement');
-        cameraState.cardLayout.map.x=640;confirmCommand(command,'Положение сохранено');
-        await until('held controller sends second move',()=>cameraCommands.slice(before).filter(m=>m.cmd==='card-move').length===2);
-        command=lastCommand('card-move',before);controllerButton=0;controllerEvent({frontRotaryEncoderPushButton:0});
-        cameraState.cardLayout.map.x=630;confirmCommand(command,'Положение сохранено');
-        const releasedCount=cameraCommands.slice(before).filter(m=>m.cmd==='card-move').length;
-        OnlineApp.instance._lastPress={};byName.cameraCardLeft.emit('action',{subType:0});
-        await sleep(260);
-        assert.strictEqual(cameraCommands.slice(before).filter(m=>m.cmd==='card-move').length,releasedCount,'release cancels repeats and suppresses its trailing Click');
-        byName.cameraCardLeft.emit('focus',{value:false});
-        assert.strictEqual(OnlineApp.instance._moveRepeater.status().active,false);
-        assert.strictEqual(OnlineApp.instance._cameraDiagnosticState().calibrationInput.touchHoldConfirmed,false);
-        assert.strictEqual(OnlineApp.instance._cameraDiagnosticState().calibrationInput.events.slice(-1)[0].data.subType,0);
-        byName.cameraCardRight.emit('focus',{value:true});
-        await until('new direction re-arms after neutral',()=>!OnlineApp.instance._holdBridge.status().requiresNewPress);
-        before=cameraCommands.length;controllerButton=2;controllerEvent({frontRotaryEncoderPushButton:2});
-        await until('new held direction moves',()=>!!lastCommand('card-move',before));
-        command=lastCommand('card-move',before);
-        OnlineApp.instance._lastPress={};byName.cameraCardUp.emit('action');
-        assert.strictEqual(OnlineApp.instance._moveRepeater.status().active,false,'manual opposite arrow stops the old hold');
-        await sleep(200);
-        assert.strictEqual(cameraCommands.slice(before).filter(m=>m.cmd==='card-move').length,1,'another arrow cannot overwrite an in-flight move');
-        cameraState.cardLayout.map.x=640;confirmCommand(command,'Положение сохранено');
-        controllerButton=0;controllerEvent({frontRotaryEncoderPushButton:0});
-        byName.cameraCardDown.emit('focus',{focus:true});
-        await until('neutral after new focus',()=>!OnlineApp.instance._holdBridge.status().requiresNewPress);
-        before=cameraCommands.length;controllerButton=2;controllerEvent({frontRotaryEncoderPushButton:2});
-        await until('held move before overlay',()=>!!lastCommand('card-move',before));
-        command=lastCommand('card-move',before);
-        byName.ST_OnlineApps_WazeStrelkaCameras.emit('focus',{focus:false});
-        assert.strictEqual(OnlineApp.instance._moveRepeater.status().active,false,'overlay focus loss stops without a visibility event');
-        cameraState.cardLayout.map.y=510;confirmCommand(command,'Положение сохранено');
-        controllerButton=0;controllerEvent({frontRotaryEncoderPushButton:0});
-        await sleep(200);
-        assert.strictEqual(cameraCommands.slice(before).filter(m=>m.cmd==='card-move').length,1,'overlay cannot resume a cancelled hold');
-        before=cameraCommands.length;
-        byName.cameraCardTarget.pick(0);byName.cameraCardTarget.pick(1);byName.cameraCardTarget.pick(0);
-        await until('rapid target selection follows final row',()=>cameraCommands.slice(before).filter(m=>m.cmd==='display-test').length===3);
-        assert.strictEqual(OnlineApp.instance._cameraCardTarget,'hud');assert.strictEqual(byName.cameraCardTarget.cells.SelectedItem,0);
-        command=lastCommand('display-test',before);cameraState.displayTest.target='hud';confirmCommand(command,'Тест закреплён на HUD');
-        cameraState.outputs.hud=false;cameraReply();await sleep(20);
-        before=cameraCommands.length;OnlineApp.instance._lastPress={};byName.cameraCardTarget.pick(0);
-        await until('disabled selected output stops old preview',()=>!!lastCommand('display-test-stop',before));
-        command=lastCommand('display-test-stop',before);cameraState.displayTest.active=false;confirmCommand(command,'Тест скрыт; настройки сохранены');
-        await until('disabled output explains next action',()=>byName.cameraCardStatus.text.includes('HUD выключена'));
-        assert(!cameraCommands.slice(before).some(m=>m.cmd==='display-test'),'selecting a disabled output does not preview or silently enable it');
-        cameraState.outputs.hud=true;cameraState.actions.cardLayout={allowed:false,reason:'Настройка только на стоянке'};
-        cameraState.actions.cardMove={allowed:false,reason:'Настройка только на стоянке'};cameraReply();
-        await until('motion guard disables calibration sliders',()=>byName.cameraCardScale.enabled===false&&byName.cameraCardStorage.text.includes('на стоянке'));
-        assert.strictEqual(byName.cameraTestStop.enabled,true,'stop remains reachable when motion invalidates adjustment');
-        before=cameraCommands.length;byName.cameraCardSave.emit('action');
-        await until('finish requests native save and stop',()=>!!lastCommand('display-test-stop',before));
-        command=lastCommand('display-test-stop',before);
-        assert(!OnlineApp.instance._cameraFeedback.message.includes('сохранены'),'save never claims persistence before native confirmation');
-        cameraState.storage.settingsSaved=true;confirmCommand(command,'Тест скрыт; настройки сохранены');
-        await until('save confirms native persistence',()=>OnlineApp.instance._cameraFeedback.message.includes('настройки сохранены'));
-        cameraState.actions.cardLayout={allowed:true};cameraState.actions.cardMove={allowed:true};cameraReply();
-        await until('stationary calibration controls return',()=>byName.cameraCardScale.enabled===true&&byName.cameraCardStorage.text.includes('сохранены в автомобиле'));
-        before=cameraCommands.length;byName.cameraCardReset.emit('action');
-        await until('reset applies to selected target only',()=>!!lastCommand('card-layout-reset',before));
-        command=lastCommand('card-layout-reset',before);assert.strictEqual(command.target,'hud');
-        cameraState.cardLayout.hud={x:500,y:820,scalePct:100,brightnessPct:100,opacityPct:100};confirmCommand(command,'Настройки HUD сброшены');
-        await until('HUD default profile confirmed',()=>byName.cameraCardScale.cells['0:Value']===5&&byName.cameraCardBrightness.cells['0:Value']===18);
-        assert.strictEqual(cameraState.cardLayout.map.x,640,'resetting HUD does not reset the cluster profile');
-        console.log('ok   first-page pinned preview targets, confirmed sliders, independent profiles, native movement, safe stop/save/reset and disabled-output switching');
-        }
+        await until('native camera test command sent',()=>cameraCommands.some(m=>m.cmd==='display-test'&&m.target==='hud'));
+        byName.ST_OnlineApps_CameraCalibration.emit('visible',{visible:false});
+        byName.ST_OnlineApps_WazeStrelkaCameras.emit('visible',{visible:true});
+        console.log('ok   explicit HUD entry reaches calibration and test sends selected target over real JSONL socket');
         byName.cameraDiagnostics.emit('action');
         await until('dedicated diagnostics opens', () => rhmi.opened.includes('ST_OnlineApps_WazeStrelkaDiagnostics'));
         byName.ST_OnlineApps_WazeStrelkaCameras.emit('visible',{visible:false});
@@ -682,9 +530,9 @@ async function main() {
         byName.cameraDiagFreeze.emit('action');
         await until('snapshot frozen',()=>byName.cameraDiag_stamp.text.startsWith('Снимок S'));
         const stamp=byName.cameraDiag_stamp.text;
-        byName.cameraDiagNext.emit('action');
+        byName.cameraDiagSelector.pick(1);
         await until('GPS page opens',()=>byName.cameraDiag_page.text.startsWith('GPS 2/6'));
-        assert(reportRows().includes('54.517580'));
+        assert(reportRows().includes('Часы приложения')&&reportRows().includes('Полный RMC UTC BMW'));
         const frozenRows = reportRows();
         cameraState.observedAtMs+=5000;cameraState.gpsFix.lat=54.518;
         Object.assign(cameraState.gpsInput.nmeaTiming, {rmcTime:'160305.250',ggaTime:'160305.350',gstTime:'160305.400',
@@ -736,7 +584,7 @@ async function main() {
         const mainResult=[],diagResult=[],guiBlocks=app._cameraResultView().blocks;
         for(let b=0;b<guiBlocks;b++){
             app._lastPress={};
-            mainResult.push(byName.cameraCommand.text,byName.cameraCommandMore.text.trim());
+            mainResult.push(byName.cameraPositionCommand.text,byName.cameraPositionCommandMore.text.trim());
             diagResult.push(byName.cameraDiag_command.text,byName.cameraDiag_commandMore.text.trim());
             assert(byName.cameraResultMore.text.includes('строки')&&byName.cameraDiagResultMore.text.includes('строки'));
             (b%2?byName.cameraDiagResultMore:byName.cameraResultMore).emit('action');
@@ -768,10 +616,15 @@ async function main() {
         fs.unlinkSync(exportFile);
         byName.cameraDiagMore.emit('action');
         await until('second GPS block',()=>byName.cameraDiag_page.text.includes('строки 11'));
-        assert(frozenRows.includes('(GGA − RMC): -250 мс'));
-        assert(reportRows().includes('(GST − GGA): 0 мс')&&reportRows().includes('READY'),reportRows());
-        byName.cameraDiagLive.emit('action');
-        await until('live diagnostics resumes',()=>reportRows().includes('54.518000'));
+        const allGps=[];
+        const frozen=OnlineApp.instance._diagFrozen;
+        for(let b=0;b<reportView.reportPage(frozen,cameraState,'test',1,0).blocks;b++){
+            const r=reportView.reportPage(frozen,cameraState,'test',1,b);allGps.push(Object.values(r.rows).join(' '));
+        }
+        assert(allGps.join(' ').includes('(GGA − RMC): -250 мс'));
+        assert(allGps.join(' ').includes('(GST − GGA): 0 мс'));
+        OnlineApp.instance._lastPress.cameraDiagFreeze=0;byName.cameraDiagFreeze.emit('action');
+        await until('live diagnostics resumes',()=>OnlineApp.instance._diagFrozen===null);
         assert(byName.cameraDiag_stamp.text.startsWith('Живые '));
         byName.cameraUpdate.emit('action');
         await until('real database check request',()=>cameraCommands.some(m=>m.cmd==='database-check'));
@@ -996,8 +849,10 @@ async function main() {
         /* Through every state above, no row came or went but CarPlay Wi-Fi,
          * its line and the restart's, and each button was greyed and enabled
          * in place. */
-        assert.deepStrictEqual([...shownOrHidden].sort(), ['wocRestart', 'wocRestartStatus', 'wocWifi', 'wocWifiHint'],
+        assert.deepStrictEqual([...shownOrHidden].filter(name=>name.startsWith('woc')).sort(), ['wocRestart', 'wocRestartStatus', 'wocWifi', 'wocWifiHint'],
             'only CarPlay Wi-Fi, its line and the restart\'s rows are shown and hidden');
+        assert([...shownOrHidden].filter(name=>name.startsWith('camera')).every(name=>/^cameraCardResultLine\d+$/.test(name)),
+            'camera visibility changes are limited to overflow reading rows; no old menu controls are hidden');
         Object.values(components).filter((d) => !/^(wocRestart|wocWifi)/.test(d.name) && d.type !== 'title')
             .forEach((d) => assert.strictEqual(byName[d.name].visible, true, `${d.name} stays on the page`));
         ['wocEnable', 'wocDisable', 'wocAaEnable', 'wocAaDisable', 'wocAaZoomOut', 'wocAaZoomIn', 'wocAaCard', 'wocGuide', 'wocShowOn', 'wocHudSize',

@@ -149,5 +149,13 @@ function diagnostics(state) {
     return 'Вывод: ' + clean(rendering, 'неизвестно') + (state.error ? ' • ' + clean(state.error, '') : '');
 }
 
-module.exports = { model, outputCommand, diagnostics, date, distance, ALERT_TYPES, alertPreferences,
+function hubSummary(state) {
+    if(!state)return 'Сервис недоступен • откройте Диагностику';
+    const prefs=alertPreferences(state),test=state.displayTest||{},clock=state.clock||{};
+    const gps=clock.issue&&clock.issue!=='NONE'?'GPS: часы/UTC':state.gpsFix?'GPS: есть данные':'GPS: ожидание';
+    return 'Оповещения '+(state.enabled?'вкл':'выкл')+' • '+gps+' • типы '+
+        (prefs.available?prefs.enabledCount+'/11':'—')+' • тест '+(test.active?(test.target==='hud'?'HUD':'приборы'):'выкл');
+}
+
+module.exports = { model, outputCommand, diagnostics, date, distance, ALERT_TYPES, alertPreferences, hubSummary,
     OVERSPEED_RECOMMENDED, overspeedPreferences, coverageRows, cameraFacing };

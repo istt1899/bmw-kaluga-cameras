@@ -1,11 +1,12 @@
 'use strict';
+function monotonicNow(){if(typeof process.hrtime==='function'){const t=process.hrtime();return t[0]*1000+t[1]/1e6;}return Date.now();}
 // Schedules bounded, single-flight camera moves only while a verified input
 // bridge says the selected button remains held. No event guessing here.
 class CameraMoveRepeater {
     constructor(options) {
         const o=options||{};
         this.guard=o.guard; this.pending=o.pending; this.step=o.step; this.onStop=o.onStop||(()=>{});
-        this.now=o.now||Date.now; this.setTimer=o.setTimeout||setTimeout; this.clearTimer=o.clearTimeout||clearTimeout;
+        this.now=o.now||monotonicNow; this.setTimer=o.setTimeout||setTimeout; this.clearTimer=o.clearTimeout||clearTimeout;
         this.intervalMs=o.intervalMs||170; this.pendingTimeoutMs=o.pendingTimeoutMs||1200;
         this.current=null; this.timer=null; this.generation=0; this.closed=false; this.waitSince=null;
     }
@@ -21,7 +22,9 @@ class CameraMoveRepeater {
         const pending=this.pending();
         if(pending||guard.waiting){
             if(this.waitSince===null)this.waitSince=this.now();
-            if(pending&&pending.awaiting||this.now()-this.waitSince>=this.pendingTimeoutMs){this.stop('MOVE_ACK_TIMEOUT');return;}
+            const elapsed=this.now()-this.waitSince;
+            if(elapsed<0){this.stop('CLOCK_DISCONTINUITY');return;}
+            if(pending&&pending.awaiting||elapsed>=this.pendingTimeoutMs){this.stop('MOVE_ACK_TIMEOUT');return;}
         }else{
             this.waitSince=null;
             this.waitSince=this.now();

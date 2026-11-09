@@ -106,12 +106,19 @@ const LOGS_URL = 'wocLogsUrl';
 const CAMERA_LINK = 'wocCameras';
 const CAMERA_STATE = 'ST_OnlineApps_WazeStrelkaCameras';
 const DIAG_STATE = 'ST_OnlineApps_WazeStrelkaDiagnostics';
-const DIAG_NAMES = cameraDiagnostics.PAGE_KEYS.map(k => 'cameraDiag_' + k).concat(['cameraDiagFreeze','cameraDiagLive','cameraDiagTest',
-    'cameraDiagCalibration','cameraDiagAudio','cameraDiagExport','cameraDiagPrev','cameraDiagNext','cameraDiagMore','cameraDiagResultMore']);
-const CAMERA_NAMES = ['cameraStatus', 'cameraAlert', 'cameraDatabase', 'cameraDate', 'cameraGps',
-    'cameraEnable', 'cameraCluster', 'cameraHud', 'cameraUpdate', 'cameraRollback', 'cameraDiagnostics', 'cameraInfo', 'cameraDescription',
-    'cameraMotion','cameraStreet','cameraCommand','cameraCommandMore','cameraLimit','cameraDirection','cameraFacing','cameraResultMore',
-    'cameraCoverage','cameraCoverageLimits','cameraCoverageRoad','cameraCoverageDirection'];
+// Every native state participates in resources, visibility and overlay restore.
+// Calibration has one static canonical parent (Cameras), including diagnostic entry.
+const PAGE_STATES = Object.freeze({main:STATE_NAME,logs:LOGS_STATE,cameras:CAMERA_STATE,diagnostics:DIAG_STATE,
+    alerts:'ST_OnlineApps_CameraAlerts',types:'ST_OnlineApps_CameraTypes',calibration:'ST_OnlineApps_CameraCalibration',
+    position:'ST_OnlineApps_CameraPosition',database:'ST_OnlineApps_CameraDatabase',overspeed:'ST_OnlineApps_CameraOverspeed'});
+const DIAG_NAMES = cameraDiagnostics.PAGE_KEYS.map(k => 'cameraDiag_' + k).concat(['cameraDiagSelector','cameraDiagFreeze','cameraDiagTest',
+    'cameraDiagCalibration','cameraDiagAudio','cameraDiagExport','cameraDiagMore','cameraDiagResultMore']);
+const CAMERA_NAMES = ['cameraStatus','cameraDatabase','cameraDate','cameraCoverage','cameraEnable','cameraUpdate','cameraRollback',
+    'cameraDiagnostics','cameraAlertsLink','cameraTypesLink','cameraHudSetup','cameraMapSetup','cameraDatabaseLink','cameraOverspeedLink',
+    'cameraDistanceRecommended','cameraTypesAll','cameraTypesStatus','cameraTypesHint','cameraCoverageDetails',
+    'cameraCommand','cameraCommandMore','cameraResultMore','cameraAlertCommand','cameraAlertCommandMore','cameraAlertsResultMore',
+    'cameraTypesCommand','cameraTypesCommandMore','cameraDatabaseCommand','cameraDatabaseCommandMore','cameraDatabaseResultMore',
+    'cameraOverspeedCommand','cameraOverspeedCommandMore','cameraOverspeedResultMore'];
 const PREFERENCE_NAMES = ['cameraPreferencesHead','cameraWarningDistance','cameraPreferencesStatus','cameraPreferencesHint']
     .concat(cameraView.ALERT_TYPES.map(type=>'cameraType_'+type.key));
 const OVERSPEED_CHECKS = {cameraVisualFlash:'visualFlash',cameraSoundEnabled:'soundEnabled'};
@@ -123,8 +130,10 @@ const CARD_SLIDERS = {cameraCardX:{key:'x',min:0,max:1000,label:'По гориз
     cameraCardY:{key:'y',min:0,max:1000,label:'По вертикали',divisor:10},cameraCardScale:{key:'scalePct',min:75,max:150,label:'Размер предупреждения'},
     cameraCardBrightness:{key:'brightnessPct',min:10,max:100,label:'Яркость предупреждения'},
     cameraCardTransparency:{key:'opacityPct',min:0,max:90,label:'Прозрачность предупреждения',inverse:true}};
-const CARD_NAMES = ['cameraHeadCalibration','cameraCardTarget','cameraCardStatus','cameraCardPosition','cameraCardHint','cameraCardStorage',
-    'cameraTestStart','cameraTestStop','cameraCardSave','cameraCardReset'].concat(Object.values(CARD_MOVE_NAMES),Object.keys(CARD_SLIDERS));
+const CARD_NAMES = ['cameraCalibrationTitle','cameraPositionTitle','cameraHeadCalibration','cameraCardOutput','cameraCardStatus',
+    'cameraCardPosition','cameraCardHint','cameraCardStorage','cameraTestStart','cameraCardSave','cameraCardReset','cameraCardBaselinePosition','cameraCardBaselineAppearance',
+    'cameraPositionStatus','cameraPositionHint','cameraPositionTest','cameraPositionCommand','cameraPositionCommandMore']
+    .concat(Object.values(CARD_MOVE_NAMES),Object.keys(CARD_SLIDERS),Array.from({length:30},(_,i)=>'cameraCardResultLine'+(i+3)));
 const LOGS_ROW_NAMES = Array.from({ length: LOGS_ROWS }, (_, i) => `wocLogsRow${i + 1}`);
 const ROW_CHARS = 90;
 const PRESS_DEDUPE_MS = 400;
@@ -156,7 +165,9 @@ class WazeClusterApp extends OnlineApp {
         this._lastPress = {};
         this._written = {};
         this._visible = false;
-        this._pages = { main: false, logs: false, cameras: false, diagnostics: false };
+        this._pages = this._emptyPages();
+        this._rhmiStates = {};
+        this._appLastWallMs = null; this._appClockRollback = null;
         this._diagFrozen = null;
         this._diagPage = 0; this._diagBlock = 0;
         this._cameraFeedback = null; this._cameraCommandTimer = null;
@@ -164,7 +175,8 @@ class WazeClusterApp extends OnlineApp {
         this._cameraClientId = 'strelka-'+Date.now().toString(36)+'-'+process.pid.toString(36)+'-'+(++cameraClientSequence).toString(36);
         this._cameraResultBlock = 0; this._cameraResultText = null;
         this._cameraCardTarget = 'hud'; this._cameraCardSelectionReason = null;
-        this._cameraFocusedArrow=null; this._cameraInputEvents=[]; this._cameraConsumedArrow=null; this._cameraSuppressUntil=0; this._cameraHoldStop=null;
+        this._cameraFocusedArrow=null; this._cameraInputEvents=[]; this._cameraConsumedArrow=null; this._cameraSuppressUntil=0;
+        this._cameraSuppressStartedAt=null; this._cameraHoldStop=null;
         this._shownPage = 'main';   /* the page last shown, which shows again when the app does */
         this._hideTimer = null;
         this._qr = { url: undefined, file: null, chain: Promise.resolve() };
@@ -188,8 +200,8 @@ class WazeClusterApp extends OnlineApp {
             step:context=>{this._cameraAction('cardLayout','card-move',{target:context.target,direction:context.direction});return !!this._cameraPending;},
             onStop:reason=>{this._cameraHoldStop=reason;}});
         this._holdBridge.on('held',event=>{
-            if(event.held){this._cameraConsumedArrow=event.direction;this._cameraSuppressUntil=Infinity;this._moveRepeater.start(event.direction,event.target);}
-            else{this._cameraSuppressUntil=Date.now()+450;this._moveRepeater.stop(event.reason);}
+            if(event.held){this._cameraConsumedArrow=event.direction;this._cameraSuppressStartedAt=null;this._cameraSuppressUntil=Infinity;this._moveRepeater.start(event.direction,event.target);}
+            else{this._cameraSuppressStartedAt=Date.now();this._cameraSuppressUntil=this._cameraSuppressStartedAt+450;this._moveRepeater.stop(event.reason);}
             this._renderCameras();
         });
         this._holdBridge.on('change',()=>this._renderCameras());
@@ -254,13 +266,11 @@ class WazeClusterApp extends OnlineApp {
     /* ---- RHMI ---- */
     _setupRhmi() {
         const rhmi = this.rhmiApplication;
-        this._state = rhmi.getByName(STATE_NAME);
-        this._logsState = rhmi.getByName(LOGS_STATE);
-        this._cameraState = rhmi.getByName(CAMERA_STATE);
-        this._diagState = rhmi.getByName(DIAG_STATE);
-        if (!this._state || !this._logsState || !this._cameraState || !this._diagState) {
-            return Promise.reject(new Error(`uiDescription has no ${STATE_NAME} or ${LOGS_STATE}`));
-        }
+        Object.keys(PAGE_STATES).forEach(page=>{this._rhmiStates[page]=rhmi.getByName(PAGE_STATES[page]);});
+        const missingStates=Object.keys(PAGE_STATES).filter(page=>!this._rhmiStates[page]);
+        if(missingStates.length)return Promise.reject(new Error('uiDescription lacks states: '+missingStates.join(', ')));
+        this._state=this._rhmiStates.main;this._logsState=this._rhmiStates.logs;
+        this._cameraState=this._rhmiStates.cameras;this._diagState=this._rhmiStates.diagnostics;
         const names = [STATUS_NAME, MAP_NAME, RESTART_STATUS_NAME, ENABLE_NAME, DISABLE_NAME, WIFI_NAME, WIFI_HINT_NAME, AA_STATUS_NAME,
             AA_ENABLE_NAME, AA_DISABLE_NAME, AA_ZOOM_NAME, AA_ZOOM_OUT_NAME, AA_ZOOM_IN_NAME, AA_CARD_NAME, RESTART_NAME, GUIDE_NAME,
             HEAD_GENERAL_NAME, HEAD_HUD_NAME, SHOW_ON_NAME, HUD_NAME, HUD_SIZE_NAME, HUD_OPACITY_NAME, HUD_POS_NAME]
@@ -325,8 +335,22 @@ class WazeClusterApp extends OnlineApp {
         this._bind(CAMERA_LINK, () => Promise.resolve(rhmi.openState(CAMERA_STATE))
             .catch((err) => logger.warn('camera page: ' + err.message)));
         this._bind('cameraEnable', () => this._cameraCommand({ cmd: this._cameras.state && this._cameras.state.enabled ? 'disable' : 'enable' }));
-        this._bind('cameraCluster', () => this._cameraCommand(cameraView.outputCommand(this._cameras.state, 'cluster')));
-        this._bind('cameraHud', () => this._cameraCommand(cameraView.outputCommand(this._cameras.state, 'hud')));
+        this._bind('cameraAlertsLink',()=>this._openCameraPage('alerts'));
+        this._bind('cameraTypesLink',()=>this._openCameraPage('types'));
+        this._bind('cameraHudSetup',()=>this._openCalibration('hud'));
+        this._bind('cameraMapSetup',()=>this._openCalibration('map'));
+        this._bind('cameraDatabaseLink',()=>this._openCameraPage('database'));
+        this._bind('cameraOverspeedLink',()=>this._openCameraPage('overspeed'));
+        this._bind('cameraCoverageDetails',()=>{this._diagPage=5;this._diagBlock=0;this._renderDiagnostics();return this._openCameraPage('diagnostics');});
+        this._bind('cameraDistanceRecommended',()=>{
+            if(cameraView.alertPreferences(this._cameras.state).available)this._cameraCommand({cmd:'alert-preferences',warningDistanceM:1000});
+        });
+        this._bind('cameraTypesAll',()=>{
+            if(cameraView.alertPreferences(this._cameras.state).available){
+                const types={};cameraView.ALERT_TYPES.forEach(type=>{types[type.key]=true;});
+                this._cameraCommand({cmd:'alert-preferences',cameraTypes:types});
+            }
+        });
         this._components.cameraWarningDistance.on('changed',step=>{
             const prefs=cameraView.alertPreferences(this._cameras.state), value=50+step*50;
             if(prefs.available&&Number.isInteger(step)&&step>=0&&step<=19&&value!==prefs.warningDistanceM)
@@ -378,25 +402,18 @@ class WazeClusterApp extends OnlineApp {
         });
         this._bind('cameraResultMore', () => this._nextCameraResult());
         this._bind('cameraDiagResultMore', () => this._nextCameraResult());
-        this._components.cameraCardTarget.on('action',(event)=>{
-            const target=['hud','map'][event&&event.row];
-            if(!target)return;
-            const active=!!((this._cameras.state||{}).displayTest||{}).active;
-            this._cameraCardTarget=target; this._cameraCardSelectionReason=null;
-            delete this._written['cell:cameraCardTarget:SelectedItem'];
-            if(active){
-                const allowed=this._cameraTestGuard();
-                if(allowed.allowed)this._cameraAction('displayTest','display-test',{target});
-                else {
-                    this._cameraCardSelectionReason=allowed.reason;
-                    this._cameraAction('displayTestStop','display-test-stop',{target});
-                }
-            }
-            this._renderCameras();
+        ['cameraAlertsResultMore','cameraDatabaseResultMore','cameraOverspeedResultMore'].forEach(name=>this._bind(name,()=>this._nextCameraResult()));
+        this._bind('cameraCardOutput',()=>{
+            this._cameraCommand(cameraView.outputCommand(this._cameras.state,this._cameraCardTarget==='hud'?'hud':'cluster'));
         });
-        this._bind('cameraTestStart',()=>this._startCameraTest(false));
-        this._bind('cameraTestStop',()=>this._cameraAction('displayTestStop','display-test-stop',{target:this._cameraCardTarget}));
-        this._bind('cameraCardSave',()=>this._cameraAction('displayTestStop','display-test-stop',{target:this._cameraCardTarget}));
+        this._components.cameraCardOutput.on('action',()=>{delete this._written['selected:cameraCardOutput'];this._renderCameraCard();});
+        this._bind('cameraTestStart',()=>this._toggleCameraTest());
+        this._bind('cameraPositionTest',()=>this._toggleCameraTest());
+        this._bind('cameraCardPosition',()=>this._openCameraPage('position'));
+        this._bind('cameraCardSave',()=>{
+            if(this._cameraAction('displayTestStop','display-test-stop',{target:this._cameraCardTarget})&&this._cameraPending)
+                this._cameraPending.returnOnSaved=true;
+        });
         this._bind('cameraCardReset',()=>this._cameraAction('cardLayout','card-layout-reset',{target:this._cameraCardTarget}));
         Object.keys(CARD_MOVE_NAMES).forEach(direction=>{
             const name=CARD_MOVE_NAMES[direction],component=this._components[name];
@@ -407,7 +424,7 @@ class WazeClusterApp extends OnlineApp {
                 this._syncCameraHold();
             });
             this._bind(name,()=>{
-                if(this._cameraConsumedArrow===direction&&Date.now()<this._cameraSuppressUntil)return;
+                if(this._cameraArrowSuppressed(direction))return;
                 if(this._holdBridge.status().held){this._holdBridge.stopHeld('MANUAL_ARROW');this._moveRepeater.stop('MANUAL_ARROW');}
                 if(this._cameraPending)return;
                 const guard=this._cameraMoveGuard();
@@ -429,24 +446,27 @@ class WazeClusterApp extends OnlineApp {
         this._bind('cameraDiagnostics', () => {
             this._diagPage = 0; this._diagBlock = 0;
             this._cameras.send({ cmd: 'status' }); this._renderDiagnostics();
-            return Promise.resolve(rhmi.openState(DIAG_STATE)).catch(() => logger.warn('camera diagnostics page unavailable'));
+            return this._openCameraPage('diagnostics');
         });
         this._bind('cameraDiagFreeze', () => {
-            if (this._cameras.state) {
+            if(this._diagFrozen){
+                this._diagFrozen=null;this._diagBlock=0;this._cameraFeedback={message:'Живые данные включены'};
+            }else if (this._cameras.state) {
                 this._diagFrozen = cameraDiagnostics.capture(this._cameraDiagnosticState(),this._packageJson.version,Date.now());
                 this._cameraFeedback = {message:'Снимок '+this._diagFrozen.id+' зафиксирован; команды остаются живыми'};
                 this._diagBlock = 0;
             } else this._cameraFeedback = {message:'Снимок недоступен: сервис не отвечает'};
             this._renderDiagnostics();
         });
-        this._bind('cameraDiagLive', () => { this._diagFrozen = null; this._diagBlock=0;
-            this._cameraFeedback={message:'Живые данные включены'}; this._renderDiagnostics(); });
-        this._bind('cameraDiagTest', () => {this._startCameraTest(false);return rhmi.openState(CAMERA_STATE);});
-        this._bind('cameraDiagCalibration', () => {this._startCameraTest(true);return rhmi.openState(CAMERA_STATE);});
+        this._components.cameraDiagSelector.on('action',event=>{
+            const row=event&&event.row;
+            if(Number.isInteger(row)&&row>=0&&row<cameraDiagnostics.PAGE_TITLES.length){this._diagPage=row;this._diagBlock=0;}
+            delete this._written['cell:cameraDiagSelector:SelectedItem'];this._renderDiagnostics();
+        });
+        this._bind('cameraDiagTest', () => {if(this._startCameraTest(false))return this._openCameraPage('calibration');});
+        this._bind('cameraDiagCalibration', () => {if(this._startCameraTest(true))return this._openCameraPage('calibration');});
         this._bind('cameraDiagAudio', () => this._cameraAction('audioTest','audio-test'));
         this._bind('cameraDiagExport', () => this._exportDiagnostic());
-        this._bind('cameraDiagPrev', () => { this._diagPage=(this._diagPage+5)%6; this._diagBlock=0; this._renderDiagnostics(); });
-        this._bind('cameraDiagNext', () => { this._diagPage=(this._diagPage+1)%6; this._diagBlock=0; this._renderDiagnostics(); });
         this._bind('cameraDiagMore', () => {
             const page=cameraDiagnostics.reportPage(this._diagFrozen,this._cameraDiagnosticState(),this._packageJson.version,this._diagPage,this._diagBlock);
             this._diagBlock=(this._diagBlock+1)%page.blocks;
@@ -492,18 +512,16 @@ class WazeClusterApp extends OnlineApp {
             this._renderLogs();
             this._renderCameras();
         });
-        this._state.on('visible', (event) => this._pageVisible('main', isTrue(event && event.visible)));
-        this._logsState.on('visible', (event) => this._pageVisible('logs', isTrue(event && event.visible)));
-        this._cameraState.on('visible', (event) => this._pageVisible('cameras', isTrue(event && event.visible)));
-        this._cameraState.on('focus',event=>{
-            const focus=event&&(event.focus!==undefined?event.focus:event.value);
-            if(focus===false||focus===0||focus==='false'||focus==='0'){
-                this._cameraFocusedArrow=null;this._syncCameraHold();this._moveRepeater.stop('PAGE_FOCUS_LOST');
-            }
+        Object.keys(this._rhmiStates).forEach(page=>{
+            const state=this._rhmiStates[page];
+            state.on('visible',event=>this._pageVisible(page,isTrue(event&&event.visible)));
+            state.on('focus',event=>{
+                const focus=event&&(event.focus!==undefined?event.focus:event.value);
+                if(page==='position'&&(focus===false||focus===0||focus==='false'||focus==='0'))this._cancelCameraHold('PAGE_FOCUS_LOST');
+            });
         });
-        this._diagState.on('visible', (event) => this._pageVisible('diagnostics', isTrue(event && event.visible)));
         this._removeStaleQr();
-        return Promise.all([this._state.updateResources(), this._logsState.updateResources(), this._cameraState.updateResources(), this._diagState.updateResources()]).then(() => {
+        return Promise.all(Object.keys(this._rhmiStates).map(page=>this._rhmiStates[page].updateResources())).then(() => {
             logger.info(`page ready: ${names.length} components found`);
             this._render();
             this._renderLogs();
@@ -553,8 +571,9 @@ class WazeClusterApp extends OnlineApp {
     }
 
     _press(name, handler) {
-        const now = Date.now();
-        if (now - (this._lastPress[name] || 0) < PRESS_DEDUPE_MS) {
+        const now = this._observeAppClock();
+        const elapsed=now-this._lastPress[name];
+        if (Object.prototype.hasOwnProperty.call(this._lastPress,name)&&elapsed>=0&&elapsed<PRESS_DEDUPE_MS) {
             return;
         }
         this._lastPress[name] = now;
@@ -564,6 +583,61 @@ class WazeClusterApp extends OnlineApp {
         } catch (err) {
             logger.warn(`${name} failed: ${err && err.message}`);
         }
+    }
+
+    _emptyPages() {
+        const pages={};Object.keys(PAGE_STATES).forEach(page=>{pages[page]=false;});return pages;
+    }
+
+    _cancelCameraHold(reason) {
+        this._cameraFocusedArrow=null;
+        if(this._holdBridge)this._holdBridge.stopHeld(reason);
+        if(this._moveRepeater)this._moveRepeater.stop(reason);
+        this._syncCameraHold();
+    }
+
+    _observeAppClock() {
+        const now=Date.now(),previous=this._appLastWallMs;
+        // Record before synchronous held/change listeners render again.
+        this._appLastWallMs=now;
+        if(Number.isFinite(previous)&&now<previous){
+            this._appClockRollback={previousWallMs:previous,wallMs:now,deltaMs:now-previous};
+            this._cancelCameraHold('CLOCK_ROLLBACK');
+            this._cameraConsumedArrow=null;this._cameraSuppressStartedAt=null;this._cameraSuppressUntil=0;
+        }
+        return now;
+    }
+
+    _cameraArrowSuppressed(direction) {
+        this._observeAppClock();
+        if(this._cameraConsumedArrow!==direction)return false;
+        if(this._holdBridge.status().held)return true;
+        const elapsed=Date.now()-this._cameraSuppressStartedAt;
+        // A release recorded in the old wall epoch cannot suppress a new press.
+        return Number.isFinite(this._cameraSuppressStartedAt)&&elapsed>=0&&elapsed<450;
+    }
+
+    _openCameraPage(page) {
+        if(!PAGE_STATES[page]||this._shutdownPromise)return Promise.resolve(false);
+        this._cancelCameraHold('NAVIGATION');
+        if(this._cameraPending&&page!=='calibration')this._cameraPending.returnOnSaved=false;
+        return Promise.resolve(this.rhmiApplication.openState(PAGE_STATES[page]))
+            .then(()=>true,err=>{logger.warn('camera page: '+(err&&err.message));return false;});
+    }
+
+    _openCalibration(target) {
+        if(target!=='hud'&&target!=='map')return Promise.resolve(false);
+        this._cancelCameraHold('TARGET_CHANGED');
+        this._cameraCardTarget=target;this._cameraCardSelectionReason=null;
+        this._renderCameraCard();
+        // Selecting a profile never mutates settings or replaces another preview.
+        return this._openCameraPage('calibration');
+    }
+
+    _toggleCameraTest() {
+        const test=(this._cameras.state||{}).displayTest||{};
+        return test.active&&test.target===this._cameraCardTarget?
+            this._cameraAction('displayTestStop','display-test-stop',{target:this._cameraCardTarget}):this._startCameraTest(false);
     }
 
     /* The app manager inserts the public tile from application.json and hands
@@ -595,10 +669,9 @@ class WazeClusterApp extends OnlineApp {
         /* the tile opens the main page, whichever page the app was left on;
          * its stack change may have come first and opened the Logs page's socket */
         this._shownPage = 'main';
-        this._pages.logs = false;
+        this._pages = this._emptyPages();
         this._logs.close();
-        this._pages.cameras = false;
-        this._pages.diagnostics = false;
+        this._cancelCameraHold('ENTRY_POINT');
         this._diagFrozen = null;
         this._setVisible(true);
         return Promise.resolve(this.rhmiApplication.openEntryState(uuid))
@@ -612,12 +685,12 @@ class WazeClusterApp extends OnlineApp {
         if (this._shutdownPromise) {
             return;
         }
+        if(!Object.prototype.hasOwnProperty.call(PAGE_STATES,page))return;
         this._pages[page] = visible;
-        if(page==='cameras'&&!visible)this._cameraFocusedArrow=null;
+        if(page==='position'&&!visible||visible&&page!=='position')this._cancelCameraHold('PAGE_CHANGED');
+        if(page==='calibration'&&!visible&&this._cameraPending)this._cameraPending.returnOnSaved=false;
         this._syncCameraHold();
-        if (visible) {
-            this._shownPage = page;
-        }
+        if (visible) {this._shownPage = page;this._syncCameraHold();}
         if (page === 'logs') {
             if (visible) {
                 this._logs.open();
@@ -625,7 +698,7 @@ class WazeClusterApp extends OnlineApp {
                 this._logs.close();
             }
         }
-        if (page === 'cameras' || page === 'diagnostics') {
+        if (page !== 'main' && page !== 'logs') {
             if (visible) this._cameras.open();
         }
         clearTimeout(this._hideTimer);
@@ -633,7 +706,7 @@ class WazeClusterApp extends OnlineApp {
         if (visible) {
             this._sawForeground = true;
             this._setVisible(true);
-        } else if (!this._pages.main && !this._pages.logs && !this._pages.cameras && !this._pages.diagnostics) {
+        } else if (!Object.keys(this._pages).some(key=>this._pages[key])) {
             this._hideTimer = setTimeout(() => {
                 this._hideTimer = null;
                 this._setVisible(false);
@@ -642,9 +715,11 @@ class WazeClusterApp extends OnlineApp {
     }
 
     _setVisible(visible) {
+        clearTimeout(this._hideTimer);this._hideTimer=null;
         if (!visible) {
-            this._pages = { main: false, logs: false, cameras: false, diagnostics: false };
-            this._cameraFocusedArrow=null;this._syncCameraHold();
+            this._pages = this._emptyPages();
+            this._cancelCameraHold('APP_HIDDEN');
+            if(this._cameraPending)this._cameraPending.returnOnSaved=false;
             this._logs.close();
             this._cameras.close();
         }
@@ -657,16 +732,14 @@ class WazeClusterApp extends OnlineApp {
         if (visible) {
             this._control.open();
             this._cameras.open();
+            if(Object.prototype.hasOwnProperty.call(this._pages,this._shownPage))this._pages[this._shownPage]=true;
             /* back from an overlay or another app on the Logs page, which
              * says nothing of its own */
             if (this._shownPage === 'logs') {
                 this._pages.logs = true;
                 this._logs.open();
             }
-            if (this._shownPage === 'cameras') {
-                this._pages.cameras = true;
-                this._cameras.open();
-            }
+            this._syncCameraHold();
         } else {
             this._control.close();
             this._cameras.close();
@@ -850,21 +923,25 @@ class WazeClusterApp extends OnlineApp {
                     pending.pending=false; pending.awaiting=true;
                     pending.message='Нет окончательного подтверждения: '+commandName+'; проверьте связь и обновите сервис';
                     this._cameraFeedback=pending;
+                    if(pending.command==='card-move'){
+                        this._cameraPending=null;this._cancelCameraHold('MOVE_ACK_TIMEOUT');
+                    }
                     this._renderCameras();
                 }
             },6000);
             if(this._cameraCommandTimer.unref)this._cameraCommandTimer.unref();
         }
         this._renderCameras();
+        return this._cameraPending===pending?requestId:null;
     }
 
     _cameraAction(name,command,fields) {
         const a=cameraDiagnostics.action(this._cameras.state,name);
         if(!a.allowed){
             this._cameraFeedback={message:a.reason||'Действие недоступно ('+a.code+')'};
-            this._renderCameras(); return;
+            this._renderCameras(); return null;
         }
-        this._cameraCommand(Object.assign({cmd:command},fields||{}));
+        return this._cameraCommand(Object.assign({cmd:command},fields||{}));
     }
 
     _cameraTestGuard() {
@@ -878,21 +955,21 @@ class WazeClusterApp extends OnlineApp {
     _startCameraTest(calibration) {
         const allowed=this._cameraTestGuard();
         this._cameraCardSelectionReason=allowed.allowed?null:allowed.reason;
-        if(!allowed.allowed){this._cameraFeedback={message:allowed.reason};this._renderCameras();return;}
-        this._cameraAction(calibration?'calibrationTest':'displayTest',calibration?'calibration-test':'display-test',
+        if(!allowed.allowed){this._cameraFeedback={message:allowed.reason};this._renderCameras();return null;}
+        return this._cameraAction(calibration?'calibrationTest':'displayTest',calibration?'calibration-test':'display-test',
             {target:this._cameraCardTarget});
     }
 
     _syncCameraHold() {
         if(!this._holdBridge)return;
         const state=this._cameras.state||{},test=state.displayTest||{},renderer=state.rendererDetails||{},stationary=cameraDiagnostics.action(this._cameras.state,'cardLayout');
-        this._holdBridge.setContext({visible:!!this._pages.cameras&&!this._shutdownPromise,focusedDirection:this._cameraFocusedArrow,target:this._cameraCardTarget,
+        this._holdBridge.setContext({visible:!!this._pages.position&&this._shownPage==='position'&&!this._shutdownPromise,focusedDirection:this._cameraFocusedArrow,target:this._cameraCardTarget,
             stationary:stationary.allowed===true,activeTest:test.active===true&&test.target===this._cameraCardTarget,
             serviceReady:this._cameras.link==='up'&&renderer.connection==='ready'});
     }
     _cameraHeldMoveGuard(context) {
         const state=this._cameras.state||{},test=state.displayTest||{},renderer=state.rendererDetails||{},hold=this._holdBridge.status(),profile=(state.cardLayout||{})[context.target];
-        if(!hold.held||!this._pages.cameras||this._cameraFocusedArrow!==context.direction||this._cameraCardTarget!==context.target||!test.active||test.target!==context.target||renderer.connection!=='ready')return {allowed:false,reason:'CONTEXT_LOST'};
+        if(!hold.held||!this._pages.position||this._shownPage!=='position'||this._cameraFocusedArrow!==context.direction||this._cameraCardTarget!==context.target||!test.active||test.target!==context.target||renderer.connection!=='ready')return {allowed:false,reason:'CONTEXT_LOST'};
         const still=cameraDiagnostics.action(this._cameras.state,'cardLayout');if(!still.allowed)return still;
         if(!profile)return {allowed:false,reason:'PROFILE_UNAVAILABLE'};
         if((context.direction==='left'&&profile.x<=0)||(context.direction==='right'&&profile.x>=1000)||(context.direction==='up'&&profile.y<=0)||(context.direction==='down'&&profile.y>=1000))return{allowed:false,reason:'EDGE_REACHED'};
@@ -916,7 +993,10 @@ class WazeClusterApp extends OnlineApp {
         this._cameraInputEvents.push({at:new Date().toISOString(),component:name,data:safe});if(this._cameraInputEvents.length>6)this._cameraInputEvents.shift();
     }
     _cameraDiagnosticState() {
-        return Object.assign({},this._cameras.state||{},{calibrationInput:{controller:this._holdBridge.status(),repeat:this._moveRepeater.status(),focusedDirection:this._cameraFocusedArrow,
+        const wallMs=this._observeAppClock();
+        return Object.assign({},this._cameras.state||{},{appClock:{wallMs,wallUtc:new Date(wallMs).toISOString(),
+            clockDiscontinuity:!!this._appClockRollback,lastRollback:this._appClockRollback&&Object.assign({},this._appClockRollback)},
+            calibrationInput:{controller:this._holdBridge.status(),repeat:this._moveRepeater.status(),focusedDirection:this._cameraFocusedArrow,
             stopReason:this._cameraHoldStop,touchHoldConfirmed:false,events:this._cameraInputEvents.map(e=>Object.assign({},e))}});
     }
 
@@ -940,15 +1020,19 @@ class WazeClusterApp extends OnlineApp {
             test=state.displayTest||{}, guard=cameraDiagnostics.action(this._cameras.state,'cardLayout'), storage=state.storage||{},
             name=target==='hud'?'HUD':'Приборы', move=this._cameraMoveGuard(), feedback=this._cameraFeedback,
             cardFeedback=feedback&&feedback.target===target&&(/^(card-|display-test|calibration-test)/.test(feedback.command||''));
-        this._write('cameraHeadCalibration','Настройка предупреждения • на стоянке');
-        this._writeCell('cameraCardTarget','HeaderText','Настраивать','Text');
-        ['HUD','Приборы'].forEach((label,row)=>this._writeCell('cameraCardTarget','ItemText',label,'Text',row));
-        this._writeCell('cameraCardTarget','SelectedItem',target==='hud'?0:1,'UInt');
-        this._setEnabled('cameraCardTarget',true);
-        this._write('cameraTestStart','Показать тест • до остановки');
-        this._write('cameraTestStop','Скрыть тест');
+        this._write('cameraCalibrationTitle','Настройка '+name);
+        this._write('cameraPositionTitle','Положение '+name);
+        this._write('cameraHeadCalibration',name+' • настройка на стоянке');
+        this._write('cameraCardOutput','Вывод предупреждений на '+name);
+        this._setSelected('cameraCardOutput',!!(state.outputs||{})[target==='hud'?'hud':'cluster']);
+        this._setEnabled('cameraCardOutput',!!(state.capabilities||{}).outputs);
+        const ownTest=test.active&&test.target===target;
+        this._write('cameraTestStart',ownTest?'Скрыть тест '+name:'Показать тест '+name+' • до остановки');
+        this._write('cameraPositionTest',ownTest?'Скрыть тест '+name:'Показать тест '+name);
         this._write('cameraCardSave','Готово • сохранить и скрыть тест');
-        this._write('cameraCardReset','Сбросить настройки '+name);
+        this._write('cameraCardBaselinePosition','Базовый '+name+': X 50 % • Y '+(target==='hud'?'82':'88')+' %');
+        this._write('cameraCardBaselineAppearance','Размер 100 % • яркость 100 % • прозрачность 0 %');
+        this._write('cameraCardReset','Базовый профиль '+name+' • не проверен на X6M');
         this._write('cameraCardStatus',this._cameraCardSelectionReason||
             (cardFeedback&&(feedback.pending||feedback.awaiting||feedback.phase==='error'||feedback.command==='display-test-stop')?
                 cameraDiagnostics.commandPage(null,feedback.message,0).command:null)||
@@ -958,6 +1042,8 @@ class WazeClusterApp extends OnlineApp {
             'Настройки предупреждения: сервис не сообщил профиль');
         this._write('cameraCardHint',move.allowed?(this._holdBridge.status().state==='ready'?'Контроллер: удерживайте стрелку • сенсор: ползунки X/Y':'Быстро: ползунки X/Y • стрелки: один шаг'):
             move.reason||'Покажите тест на выбранном выходе для перемещения');
+        this._write('cameraPositionStatus',profile?name+' • X '+(profile.x/10).toFixed(1)+' % • Y '+(profile.y/10).toFixed(1)+' %':name+' • профиль недоступен');
+        this._write('cameraPositionHint',move.allowed?'Сенсор: X/Y • iDrive: короткое нажатие; удержание при подтверждённом вводе':move.reason);
         this._write('cameraCardStorage',!profile?'Обновите сервис для настройки предупреждения':
             !guard.allowed?guard.reason||'Настройка доступна на стоянке со свежей скоростью':
             storage.settingsSaved===true&&storage.persistent===true?'Изменения сохранены в автомобиле':
@@ -974,7 +1060,7 @@ class WazeClusterApp extends OnlineApp {
         const held=this._holdBridge.status(),waitingForRenderer=move.reason==='Дождитесь подтверждения текущих настроек изображения';
         Object.keys(CARD_MOVE_NAMES).forEach(direction=>this._setEnabled(CARD_MOVE_NAMES[direction],move.allowed||
             held.held&&held.direction===direction&&held.target===target&&guard.allowed&&test.active&&test.target===target&&waitingForRenderer));
-        ['cameraTestStart','cameraTestStop','cameraCardSave','cameraCardReset'].forEach(component=>this._setEnabled(component,true));
+        ['cameraTestStart','cameraPositionTest','cameraCardPosition','cameraCardSave','cameraCardReset'].forEach(component=>this._setEnabled(component,true));
     }
 
     _refreshCameraFeedback() {
@@ -996,6 +1082,15 @@ class WazeClusterApp extends OnlineApp {
         if(pending.command==='card-move'&&this._cameraFeedback.phase==='error')this._moveRepeater.stop('MOVE_REJECTED');
         this._cameraPending=null;
         clearTimeout(this._cameraCommandTimer); this._cameraCommandTimer=null;
+        if(pending.returnOnSaved&&this._pages.calibration&&this._shownPage==='calibration'&&
+            this._cameraFeedback.phase==='finished'){
+            const state=this._cameras.state||{};
+            if(state.displayTest&&state.displayTest.active===false&&state.storage&&state.storage.settingsSaved===true&&state.storage.persistent===true)
+                this._openCameraPage('cameras');
+            else if(!state.storage||state.storage.settingsSaved!==true||state.storage.persistent!==true)
+                this._cameraFeedback.message+=' • Сохранение в автомобиле не подтверждено; оставайтесь в настройке';
+            else this._cameraFeedback.message+=' • Остановка теста не подтверждена; оставайтесь в настройке';
+        }
     }
 
     _cameraResultView() {
@@ -1051,6 +1146,10 @@ class WazeClusterApp extends OnlineApp {
         this._write('cameraPreferencesStatus',summary+temporary);
         this._write('cameraPreferencesHint',prefs.available?feedback&&feedback.command==='alert-preferences'?
             feedback.message:'У комплекса достаточно любого включённого типа':'Нужен обновлённый сервис и подтверждённые настройки');
+        this._write('cameraDistanceRecommended','Рекомендуется: дистанция 1000 м');this._setEnabled('cameraDistanceRecommended',prefs.available);
+        this._write('cameraTypesAll','Включить все 11 типов • рекомендуется');this._setEnabled('cameraTypesAll',prefs.available);
+        this._write('cameraTypesStatus',summary+temporary);
+        this._write('cameraTypesHint',!prefs.available?prefs.reason:'У комплекса достаточно любого включённого типа');
         cameraView.ALERT_TYPES.forEach(type=>{
             const name='cameraType_'+type.key;
             this._write(name,type.label+(prefs.available?'':' • нет данных'));
@@ -1086,10 +1185,12 @@ class WazeClusterApp extends OnlineApp {
         this._write('cameraGpsReset','Сбросить историю GPS');this._setEnabled('cameraGpsReset',resetAvailable);
         this._write('cameraGpsResetHint',!resetAvailable?'Для сброса истории GPS обновите сервис камер':
             feedback&&feedback.command==='gps-reset'?feedback.message:
-            reset.reason||reset.message||'После ошибки UTC начните новый сеанс и дождитесь свежих координат');
+            (state.clock&&state.clock.issue!=='NONE'&&state.clock.reason)||reset.reason||reset.message||
+                'После исправления даты явно сбросьте историю GPS и дождитесь свежих координат');
     }
 
     _renderCameras() {
+        this._observeAppClock();
         if (!this._cameraState || this._shutdownPromise) return;
         const view = cameraView.model(this._cameras.state);
         if (!this._cameras.state) view.text.cameraStatus = this._cameras.diagnostic();
@@ -1097,8 +1198,29 @@ class WazeClusterApp extends OnlineApp {
         const result=this._cameraResultView();
         view.text.cameraCommand=result.command; view.text.cameraCommandMore=result.commandMore;
         view.text.cameraResultMore=result.label;
-        Object.keys(view.text).forEach((name) => this._write(name, view.text[name]));
-        Object.keys(view.enabled).forEach((name) => this._setEnabled(name, view.enabled[name]));
+        Object.keys(view.text).filter(name=>this._components[name]&&name!=='cameraCommand'&&name!=='cameraCommandMore').forEach((name) => this._write(name, view.text[name]));
+        Object.keys(view.enabled).filter(name=>this._components[name]).forEach((name) => this._setEnabled(name, view.enabled[name]));
+        // Calibration already has eight task controls. Its full result uses
+        // native, scrollable reading rows rather than a ninth paging action.
+        // Native results are <=300 chars; transport errors are <=1024 chars.
+        const commandLines=cameraDiagnostics.commandLines(result.text);
+        this._write('cameraCommand',commandLines[0]);this._write('cameraCommandMore',commandLines[1]||' ');
+        for(let i=2;i<32;i++){
+            const name='cameraCardResultLine'+(i+1);this._write(name,commandLines[i]||' ');this._setVisibleComp(name,i<commandLines.length);
+        }
+        this._write('cameraStatus',cameraView.hubSummary(this._cameras.state));
+        const links={cameraDiagnostics:'Диагностика',cameraAlertsLink:'Оповещения',cameraTypesLink:'Типы камер',
+            cameraHudSetup:'HUD',cameraMapSetup:'Приборы',cameraDatabaseLink:'База',cameraOverspeedLink:'Мигание и звук',cameraCoverageDetails:'Подробности покрытия'};
+        Object.keys(links).forEach(name=>{this._write(name,links[name]);this._setEnabled(name,true);});
+        // Each action page carries its own immediate result; diagnostics retains
+        // the complete paged message, including frozen-report/live-result mode.
+        [['cameraAlertCommand','cameraAlertCommandMore','cameraAlertsResultMore'],
+            ['cameraTypesCommand','cameraTypesCommandMore'],['cameraDatabaseCommand','cameraDatabaseCommandMore','cameraDatabaseResultMore'],
+            ['cameraOverspeedCommand','cameraOverspeedCommandMore','cameraOverspeedResultMore'],
+            ['cameraPositionCommand','cameraPositionCommandMore']].forEach(names=>{
+                this._write(names[0],result.command);this._write(names[1],result.commandMore);
+                if(names[2]){this._write(names[2],result.label);this._setEnabled(names[2],true);}
+            });
         this._setEnabled('cameraResultMore',true);
         this._renderAlertPreferences();
         this._renderOverspeedPreferences();
@@ -1113,16 +1235,18 @@ class WazeClusterApp extends OnlineApp {
             this._cameraFeedback&&this._cameraFeedback.message,result.block);
         this._diagBlock=page.block;
         cameraDiagnostics.PAGE_KEYS.forEach(key=>this._write('cameraDiag_'+key,page.rows[key]));
-        this._write('cameraDiagFreeze','Зафиксировать снимок'); this._write('cameraDiagLive','Живые данные');
-        this._write('cameraDiagPrev','← Предыдущая страница'); this._write('cameraDiagNext','Следующая страница →');
+        this._writeCell('cameraDiagSelector','HeaderText','Страница отчёта','Text');
+        cameraDiagnostics.PAGE_TITLES.forEach((title,row)=>this._writeCell('cameraDiagSelector','ItemText',title,'Text',row));
+        this._writeCell('cameraDiagSelector','SelectedItem',this._diagPage,'UInt');this._setEnabled('cameraDiagSelector',true);
+        this._write('cameraDiagFreeze',this._diagFrozen?'Вернуться к живым данным':'Зафиксировать снимок');
         this._write('cameraDiagMore',page.blocks>1?'Следующие строки • '+(page.block+1)+'/'+page.blocks:'Все строки показаны');
         this._write('cameraDiagResultMore',result.label);
         this._write('cameraDiagTest','Тест изображения • на стоянке');
         this._write('cameraDiagCalibration','Проверить границы • на стоянке');
         this._write('cameraDiagAudio','Проверить звук'); this._write('cameraDiagExport','Сохранить JSON локально • RAM');
         // Keep diagnostic actions reachable: every press either acts or explains the exact service guard.
-        ['cameraDiagFreeze','cameraDiagLive','cameraDiagTest','cameraDiagCalibration','cameraDiagAudio','cameraDiagExport',
-            'cameraDiagPrev','cameraDiagNext','cameraDiagMore','cameraDiagResultMore'].forEach(name=>this._setEnabled(name,true));
+        ['cameraDiagFreeze','cameraDiagTest','cameraDiagCalibration','cameraDiagAudio','cameraDiagExport',
+            'cameraDiagMore','cameraDiagResultMore'].forEach(name=>this._setEnabled(name,true));
     }
 
     _renderLogs() {

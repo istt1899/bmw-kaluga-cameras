@@ -37,6 +37,9 @@ function checkGraph(xml, ui) {
         assert(!names.has(desc.name), 'Duplicate RHMI name ' + desc.name); names.add(desc.name);
         const parent = desc.properties && desc.properties.ParentState;
         if (parent) assert(ui.containers[String(parent.value)], 'Missing parent state ' + parent.value);
+        const head=xml.split('<container id="'+id+'"')[1].split('<layoutGroup')[0];
+        const xmlParent=/<property id="9" value="(\d+)"\s*\/>/.exec(head);
+        assert.strictEqual(xmlParent?Number(xmlParent[1]):null,parent?parent.value:null,'Native XML / JSON parent of '+id);
         assert.deepStrictEqual(Array.from(declaration.components.keys()).sort(), Object.keys(desc.components).sort(), 'XML / JSON components of ' + id);
         Object.keys(desc.components).forEach((cid) => {
             const component = desc.components[cid];

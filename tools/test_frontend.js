@@ -56,17 +56,19 @@ check('RHMI identity and action components match implementation', () => {
     assert.strictEqual(m.id, 'marku_kaluga_cameras');
     assert.strictEqual(p.name, m.id); assert.strictEqual(p.version, m.version);
     const names = Object.keys(ui.containers['3'].components).map((k) => ui.containers['3'].components[k].name);
-    ['cameraCluster', 'cameraHud', 'cameraUpdate', 'cameraDiagnostics', 'cameraAlert'].forEach((n) => assert(names.indexOf(n) >= 0));
+    ['cameraDiagnostics','cameraAlertsLink','cameraTypesLink','cameraHudSetup','cameraMapSetup','cameraDatabaseLink'].forEach((n) => assert(names.indexOf(n) >= 0));
     assert.strictEqual(p.mguLocalOnly, true);
 });
-check('settings use non-focusable iDrive section headers', () => {
-    const m = JSON.parse(fs.readFileSync(path.join(APP, 'mgu-app.json'), 'utf8'));
-    const ui = JSON.parse(fs.readFileSync(path.join(APP, m.tree, 'rhmiData', 'uiDescriptions', 'ID7', 'uiDescription.json'), 'utf8'));
-    const xml = fs.readFileSync(path.join(APP, m.tree, 'rhmiData', 'uiDescriptions', 'ID7', 'application.xml'), 'utf8');
-    ['390', '391', '392'].forEach((id) => {
-        assert.strictEqual(ui.containers['3'].components[id].properties.Focusable.value, 0);
-        assert(xml.includes('<component id="' + id + '" type="label" widget="LT_Label_Header_1Row">'));
-    });
+check('camera hub contains only six native child links and one unfocusable status', () => {
+    const m=JSON.parse(fs.readFileSync(path.join(APP,'mgu-app.json'),'utf8'));
+    const ui=JSON.parse(fs.readFileSync(path.join(APP,m.tree,'rhmiData/uiDescriptions/ID7/uiDescription.json'),'utf8'));
+    const root=Object.values(ui.containers['3'].components);
+    assert.strictEqual(root.filter(c=>c.type==='button').length,6);
+    assert.strictEqual(root.find(c=>c.name==='cameraStatus').properties.Focusable.value,0);
+    assert(!root.some(c=>c.type==='slider'||c.type==='checkBox'||c.type==='dropDownMenu'));
+    ['4','5','6','7','9'].forEach(id=>assert.strictEqual(ui.containers[id].properties.ParentState.value,3));
+    assert.strictEqual(ui.containers['8'].properties.ParentState.value,7);
+    assert.strictEqual(ui.containers['11'].properties.ParentState.value,5);
 });
 check('full Waze controls retained with separate camera child and confirmed opacity slider', () => {
     const m = JSON.parse(fs.readFileSync(path.join(APP, 'mgu-app.json'), 'utf8'));

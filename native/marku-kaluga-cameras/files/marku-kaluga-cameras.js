@@ -9,6 +9,17 @@ var warningPolicy = require('./warning-policy');
 var databaseCoverage = require('./database-coverage');
 var officialData = require('./official-camera-data'), databaseVersion = require('./database-version.json');
 var crypto = require('crypto');
+function clockSnapshot(now, input) {
+  var c = input && typeof input === 'object' ? input : {}, wall = Number.isFinite(now) ? now : null;
+  function num(key) { return Number.isFinite(c[key]) ? c[key] : null; }
+  function str(key) { return typeof c[key] === 'string' ? c[key].slice(0, 300) : null; }
+  return { serviceWallMs: wall, serviceWallUtc: wall !== null && isFinite(new Date(wall).getTime()) ? new Date(wall).toISOString() : null,
+    sourceUtcMs: num('sourceUtcMs'), sourceUtc: str('sourceUtc'), sourceDeltaMs: num('sourceDeltaMs'),
+    lastPacketAgeMs: num('lastPacketAgeMs'), packetReceiptDeltaMs: num('packetReceiptDeltaMs'),
+    receiptClockDiscontinuity: typeof c.receiptClockDiscontinuity === 'boolean' ? c.receiptClockDiscontinuity : null,
+    admissionAfterUtcMs: num('admissionAfterUtcMs'), admissionAfterUtc: str('admissionAfterUtc'),
+    issue: str('issue') || 'SOURCE_UTC_UNKNOWN', reason: str('reason') || 'Данные часов источника GPS недоступны' };
+}
 function validPosition(f, now) {
   return f && [f.timeMs, f.lat, f.lon, f.accuracyM, now].every(Number.isFinite) && Math.abs(f.lat) <= 90 &&
     Math.abs(f.lon) <= 180 && f.accuracyM > 0 && f.accuracyM <= 15 && now - f.timeMs <= 3000 && f.timeMs <= now + 500;
@@ -63,7 +74,7 @@ function start(options) {
   var settingsPath = path.join(dataDir, 'settings.json'), settings;
   try { settings = readSettings(settingsPath); }
   catch (e) { storageError = e.message; settings = { enabled: true, outputs: { cluster: false, hud: false }, hudOpacityPct: 100, cardLayout: cardLayout.defaultLayouts(), alertPreferences: alertPreferences.normalize(), overspeedPreferences: warningPolicy.normalize() }; }
-  var state = { serviceVersion: '0.7.0', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
+  var state = { serviceVersion: '0.8.0', enabled: settings.enabled, outputs: settings.outputs, hudOpacityPct: settings.hudOpacityPct,
     cardLayout: settings.cardLayout,
     alertPreferences: settings.alertPreferences,
     overspeedPreferences: settings.overspeedPreferences,
@@ -74,7 +85,7 @@ function start(options) {
     commandResult: null, actions: {}, databaseUpdate: { phase: 'idle', busy: false }, nearestCandidates: [],
     hudDimming: 'unavailable', capabilities: { outputs: false, update: false, hudOpacity: false, displayTest: false, alertPreferences: true, overspeedPreferences: true, gpsReset: false },
     rendererDetails: {}, displayTest: { active: false, pinned: false, target: null, calibration: false, untilMs: 0 },
-    gps: 'Ожидание моста GPS BMW', gpsFix: null,
+    gps: 'Ожидание моста GPS BMW', gpsFix: null, clock: clockSnapshot(Date.now(), null),
     gpsBridge: { state: 'stopped', errorCode: null, ageMs: null },
     gpsInput: { source: 'bmw-nmea', packets: 0, badPackets: 0, checksumErrors: 0, sentences: { RMC: 0, GGA: 0, GST: 0 }, lastPacketAgeMs: null, fixUtcAgeMs: null },
     database: { state: 'error', source: 'OpenStreetMap', count: 0, error: null },
@@ -237,8 +248,10 @@ function start(options) {
     if(state.gpsReset.phase==='waiting-new-fix'&&validPosition(fix,now)&&fix.timeMs>state.gpsReset.afterUtc)state.gpsReset.phase='receiving';
     if (state.street.observedAtMs !== null && now - state.street.observedAtMs > 15000) state.street = { name: null, source: 'BMW', state: 'stale', reason: 'Название улицы BMW устарело', observedAtMs: null };
     state.actions = actionPolicy.policies(state, fix, now);
+    state.clock = clockSnapshot(now, null);
     if (typeof gps.diagnostics === 'function') {
       var gpsDiagnostics = gps.diagnostics(now); state.gpsBridge = gpsDiagnostics.gpsBridge; state.gpsInput = gpsDiagnostics.gpsInput;
+      state.clock = clockSnapshot(now, gpsDiagnostics.clock);
     }
     state.gps = typeof gps.description === 'function' ? gps.description(fix, now) : !fix ? 'Нет свежих подтверждённых координат UTC (максимум 3 с)' :
       !valid ? 'Координаты есть; точность, скорость или курс не подтверждены' : 'Свежие координаты, скорость, курс и точность получены';

@@ -63,10 +63,12 @@ function check(label,fn){fn();console.log('ok '+(++count)+' - '+label);}
 (async()=>{
     await app._setupRhmi();apply(state());await tick();
     check('native order, two checkboxes, two 0–30 sliders and explicit recommendation',()=>{
-        const camera=ui.containers['3'].components,section=xml.split('<container id="3"')[1].split('<container id="4"')[0];
+        const camera=ui.containers['11'].components,section=xml.split('<container id="11"')[1].split('</container>')[0];
         const names=[],regex=/<component id="(\d+)"/g;let match;while((match=regex.exec(section)))names.push(camera[match[1]].name);
-        assert(names.indexOf('cameraOverspeedHead')>names.indexOf('cameraPreferencesHint'));
-        assert(names.indexOf('cameraGpsResetHint')<names.indexOf('cameraHeadCalibration'));
+        assert(names.includes('cameraOverspeedRecommended')&&names.includes('cameraDiagAudio'));
+        assert.strictEqual(ui.containers['11'].properties.ParentState.value,5);
+        assert(!names.includes('cameraGpsReset'));
+        assert(Object.values(ui.containers['4'].components).some(c=>c.name==='cameraGpsReset'));
         ['cameraVisualFlash','cameraSoundEnabled'].forEach(name=>assert.strictEqual(byName[name].desc.type,'checkBox'));
         ['cameraVisualOffset','cameraSoundOffset'].forEach(name=>{
             const r=byName[name].desc.rows[0];assert.deepStrictEqual([r.MinValue.value,r.MaxValue.value,r.NumberOfSteps.value],[0,30,30]);

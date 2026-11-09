@@ -6,19 +6,19 @@ on:
       version:
         type: string
         required: true
-        default: '0.7.0'
+        default: '0.8.0'
       catalog_sha256:
         type: string
         required: true
-        default: '4dacff17853d7d31c90036e6cc0d1fdb8d1425a3e0b3791d2f6d640f5fb35f51'
+        default: 'a0a4e31a1f1db38dad9f40257a42654c5a5e655bfe4060e41815d26203d6d7f6'
       app_sha256:
         type: string
         required: true
-        default: 'ef42d79938839f459be43f80aee54f4c5019efdf752498a59ed498b7e022bb18'
+        default: 'cc5f3b4d3f5910fe9be58a5c9b7382925e053cde20591e82c730dad2192fd759'
       service_sha256:
         type: string
         required: true
-        default: '6803b036d111048ff32ab2cba7fa40eff3a6105d80b1cc520feee7f626fa51f5'
+        default: 'e82b77e280ab62e8f5f0b844744569521fd0aa46874462d37c2e0a83a72bdb06'
 
 permissions:
   contents: read
